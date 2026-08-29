@@ -1,0 +1,1946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="16x16" href="https://eunobyvdokmswxbfxent.supabase.co/storage/v1/object/sign/pulak%20chakma/logo.png?token=eyJraWQiOiJjOTk5NTg3MC0yODYxLTRlN2YtODMxMi0yNDBjYzg1NzQ4ODkiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwdWxhayBjaGFrbWEvbG9nby5wbmciLCJzY29wZSI6ImRvd25sb2FkIiwiaWF0IjoxNzg3OTc0NDgwLCJleHAiOjI0MTg2OTQ0ODB9.9j-A-_QBZ9aVadYrLOdLeBHDNJ33FpuBKJ9ZCrk4dO0">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome Premium icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Chart.js for Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Tailwind Config for Tracker App -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            DEFAULT: '#38BDF8',
+                            dark: '#2c528c',
+                            light: '#eef4fc',
+                            hover: '#315c99'
+                        }
+                    },
+                    keyframes: {
+                        shake: {
+                            '0%, 100%': { transform: 'translateX(0)' },
+                            '10%, 30%, 50%, 70%, 90%': { transform: 'translateX(-5px)' },
+                            '20%, 40%, 60%, 80%': { transform: 'translateX(5px)' }
+                        }
+                    },
+                    animation: {
+                        shake: 'shake 0.4s ease-in-out'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+       @import url('https://fonts.googleapis.com/css2?family=Times+New+Roman&display=swap');
+    
+    /* Times New Roman global font layout wrapper (preserves font-awesome icons) */
+    html, body, p, h1, h2, h3, h4, h5, h6, input, select, textarea, button, span:not(.fa-solid):not(.fa-regular):not(.fa-brands):not(.fa), div:not(.fa-solid):not(.fa-regular):not(.fa-brands):not(.fa), td, th, a {
+        font-family: 'Times New Roman', Times, serif !important;
+    }
+    html {
+        scroll-behavior: smooth;
+    }
+    body {
+        color: #1a2a3a;
+        -webkit-tap-highlight-color: transparent;
+        background-color: #f8fafc;
+    }
+    
+    /* Tracker Specific Overrides */
+    .fa, .fa-solid, .fa-regular, .fa-brands, .fas, .far, .fab {
+        font-family: "Font Awesome 6 Free" !important;
+        font-style: normal !important;
+    }
+    .fa-brands {
+        font-family: "Font Awesome 6 Brands" !important;
+        font-style: normal !important;
+    }
+    
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    
+    /* Smooth height transitions */
+    .step-container { transition: opacity 0.3s ease, transform 0.3s ease; }
+    .step-hidden { opacity: 0; pointer-events: none; position: absolute; transform: translateY(10px); }
+    .step-active { opacity: 1; pointer-events: auto; position: relative; transform: translateY(0); }
+    </style>
+</head>
+<body class="min-h-screen bg-slate-50 text-[#94A3B8]">
+
+    <!-- ================= EXPENSE TRACKER APP ================= -->
+    <div id="expense-tracker-system" class="bg-slate-50 overflow-y-auto w-full min-h-screen">
+        
+        <!-- TRACKER: LOGIN GATEWAY -->
+        <div id="login-view" class="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 bg-slate-50 transition-opacity duration-500 relative">
+            <div class="mb-8 text-center">
+                <div class="inline-flex items-center justify-center p-3.5 bg-[#1E293B] border border-slate-200 rounded-2xl text-primary mb-5 shadow-sm">
+                    <i class="fa-solid fa-building-columns text-3xl"></i>
+                </div>
+                <h1 class="text-3xl sm:text-4xl font-bold text-slate-800 tracking-tight">Expense Tracker</h1>
+                <p class="text-slate-400 text-xs sm:text-sm mt-2 uppercase tracking-widest font-bold">Secure OTP Protection</p>
+            </div>
+
+            <div id="login-card" class="bg-white border border-slate-200 rounded-[2rem] shadow-xl w-full max-w-md p-8 sm:p-10 relative overflow-hidden transition-all duration-300">
+                <div class="absolute top-0 left-0 w-full h-1.5 bg-primary"></div>
+
+                <div class="relative w-full">
+                    
+                    <!-- STEP 1: CREDENTIALS -->
+                    <form id="step-1-credentials" onsubmit="handleTrackerLogin(event)" class="space-y-6 step-container step-active w-full">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2" for="login-id">Login Username / Email</label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-3.5 text-slate-400 text-sm"><i class="fa-solid fa-user-shield"></i></span>
+                                <input type="text" id="login-id" autocomplete="username" placeholder="Enter login id" class="w-full border border-slate-200 rounded-2xl pl-11 pr-4 py-3 bg-slate-50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none text-sm font-bold text-slate-700 transition-all">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2" for="login-pass">Secure Password</label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-3.5 text-slate-400 text-sm"><i class="fa-solid fa-lock"></i></span>
+                                <input type="password" id="login-pass" autocomplete="current-password" placeholder="Enter password" class="w-full border border-slate-200 rounded-2xl pl-11 pr-4 py-3 bg-slate-50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none text-sm font-bold text-slate-700 transition-all">
+                            </div>
+                        </div>
+
+                        <div id="login-error" class="hidden bg-red-50 text-red-600 border border-red-100 text-xs p-3.5 rounded-2xl font-bold flex items-center gap-2.5 transition-all">
+                            <i class="fa-solid fa-circle-exclamation text-base"></i> Authentication failed. Check credentials.
+                        </div>
+
+                        <button id="login-btn-submit" type="submit" class="w-full bg-primary hover:bg-primary-hover text-white font-bold py-4 rounded-2xl shadow-md transition-all flex items-center justify-center gap-2.5 text-sm active:scale-[0.98]">
+                            <i class="fa-solid fa-shield-halved"></i> <span>Authenticate &amp; Request OTP</span>
+                        </button>
+                    </form>
+
+                    <!-- STEP 2: TELEGRAM OTP -->
+                    <form id="step-2-otp" onsubmit="verifyTrackerOTP(event)" class="space-y-6 step-container step-hidden w-full">
+                        <div class="text-center mb-2">
+                            <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4 text-primary text-2xl animate-pulse">
+                                <i class="fa-brands fa-telegram"></i>
+                            </div>
+                            <h3 class="text-xl font-bold text-slate-800">Check Telegram</h3>
+                            <p class="text-xs text-slate-500 mt-2 leading-relaxed">We sent a 6-digit verification code to your connected bot. Enter it to confirm your identity.</p>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2" for="login-otp">Security Code</label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-3.5 text-slate-400 text-sm"><i class="fa-solid fa-key"></i></span>
+                                <input type="text" id="login-otp" maxlength="6" autocomplete="off" placeholder="• • • • • •" class="w-full border border-slate-200 rounded-2xl pl-11 pr-4 py-3 text-center tracking-[0.5em] bg-slate-50 focus:ring-2 focus:ring-primary/20 focus:border-primary focus:bg-white outline-none text-lg font-bold text-slate-700 transition-all">
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button type="button" onclick="cancelOTPLogin()" class="px-5 py-4 bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-2xl transition font-bold text-sm">
+                                <i class="fa-solid fa-arrow-left"></i>
+                            </button>
+                            <button id="verify-btn-submit" type="submit" class="flex-1 bg-primary hover:bg-primary-hover text-white font-bold py-4 rounded-2xl shadow-md transition-all flex items-center justify-center gap-2.5 text-sm active:scale-[0.98]">
+                                <span>Verify &amp; Enter</span> <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                            </button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+            <p class="mt-8 text-xs text-slate-400 font-bold">Copyright &copy; 2026 by Pulak Chakma</p>
+        </div>
+
+        <!-- TRACKER: MAIN APPLICATION -->
+        <div id="app-view" class="hidden min-h-screen flex-col justify-between mb-16 md:mb-0">
+            
+            <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex justify-between items-center">
+                    <div class="flex items-center gap-3">
+                        <div class="p-2.5 bg-primary/10 rounded-xl text-primary">
+                            <i class="fa-solid fa-wallet text-2xl"></i>
+                        </div>
+                        <div>
+                            <h1 class="text-xl md:text-2xl font-bold text-primary tracking-wide">Expense Tracker</h1>
+                            <p class="text-[11px] text-slate-400 font-bold uppercase tracking-widest">Smart Money Management</p>
+                        </div>
+                    </div>
+                    
+                    <div class="hidden lg:flex items-center gap-1.5">
+                        <button onclick="switchTrackerTab('home')" id="desktop-nav-home" class="px-3.5 py-2 text-sm font-bold rounded-xl text-primary bg-primary/10 transition"><i class="fa-solid fa-chart-line mr-1.5"></i>Dashboard</button>
+                        <button onclick="switchTrackerTab('add')" id="desktop-nav-add" class="px-3.5 py-2 text-sm font-bold rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition"><i class="fa-solid fa-circle-plus mr-1.5"></i>Add Entry</button>
+                        <button onclick="switchTrackerTab('transfer')" id="desktop-nav-transfer" class="px-3.5 py-2 text-sm font-bold rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition"><i class="fa-solid fa-money-bill-transfer mr-1.5"></i>Bank Transfer</button>
+                        <button onclick="switchTrackerTab('dps')" id="desktop-nav-dps" class="px-3.5 py-2 text-sm font-bold rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition"><i class="fa-solid fa-piggy-bank mr-1.5"></i>DPS Savings</button>
+                        <button onclick="switchTrackerTab('history')" id="desktop-nav-history" class="px-3.5 py-2 text-sm font-bold rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition"><i class="fa-solid fa-receipt mr-1.5"></i>Ledger Logs</button>
+                        <button onclick="switchTrackerTab('reports')" id="desktop-nav-reports" class="px-3.5 py-2 text-sm font-bold rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition"><i class="fa-solid fa-chart-pie mr-1.5"></i>Analytics & Reports</button>
+                        
+                        <button onclick="handleTrackerLogout()" class="ml-2 px-3.5 py-2 text-sm font-bold rounded-xl text-red-500 hover:text-white hover:bg-red-500 transition border border-red-100" title="Lock Tracker"><i class="fa-solid fa-right-from-bracket"></i></button>
+                    </div>
+
+                    <div class="bg-primary/5 border border-primary/15 px-3 py-1.5 rounded-xl flex items-center gap-2 text-primary shadow-xs">
+                        <i class="fa-regular fa-clock text-xs animate-pulse"></i>
+                        <span id="live-clock" class="text-xs md:text-sm font-bold font-mono">Loading...</span>
+                    </div>
+                </div>
+            </header>
+
+            <main class="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6 flex-1 relative">
+                
+                <div id="tracker-toast-container" class="fixed top-6 right-6 z-[300] flex flex-col gap-3 w-11/12 max-w-sm pointer-events-none"></div>
+
+                <div id="loading-banner" class="hidden mb-6 bg-primary-light border border-primary/20 p-4 rounded-2xl flex items-center gap-4 shadow-sm transition-all animate-pulse">
+                    <i class="fa-solid fa-spinner animate-spin text-primary text-xl"></i>
+                    <div class="flex-1">
+                        <p class="font-bold text-sm text-primary" id="loading-title">Syncing Cloud Database...</p>
+                        <p class="text-xs text-slate-500" id="loading-desc">Your Google Sheet is being updated live.</p>
+                    </div>
+                </div>
+
+                <!-- VIEW 1: HOME/WALLET DASHBOARD -->
+                <div id="view-home" class="view-panel space-y-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white p-6 rounded-3xl shadow-md relative overflow-hidden transition-transform hover:scale-[1.01]">
+                            <div class="absolute right-4 bottom-4 text-white/10 text-7xl"><i class="fa-solid fa-coins"></i></div>
+                            <div class="flex justify-between items-start">
+                                <p class="text-xs text-emerald-100 font-semibold uppercase tracking-widest">Pocket Cash Wallet</p>
+                                <span class="bg-white/15 px-2 py-0.5 rounded-lg text-[10px] font-bold">Active Live</span>
+                            </div>
+                            <h2 id="balance-cash" class="text-3xl lg:text-4xl font-bold mt-4">৳ 0.00</h2>
+                            <p class="text-xs text-emerald-100/80 mt-3"><i class="fa-solid fa-wallet text-[9px] mr-1.5"></i>Available cash </p>
+                        </div>
+                        <div class="bg-gradient-to-br from-primary to-primary-dark text-white p-6 rounded-3xl shadow-md relative overflow-hidden transition-transform hover:scale-[1.01]">
+                            <div class="absolute right-4 bottom-4 text-white/10 text-7xl"><i class="fa-solid fa-building-columns"></i></div>
+                            <div class="flex justify-between items-start">
+                                <p class="text-xs text-blue-100 font-semibold uppercase tracking-widest">Total Bank Account Balance</p>
+                                <span class="bg-white/15 px-2 py-0.5 rounded-lg text-[10px] font-bold">Secure Vault</span>
+                            </div>
+                            <h2 id="balance-bank" class="text-3xl lg:text-4xl font-bold mt-4">৳ 0.00</h2>
+                            <p class="text-xs text-blue-100/80 mt-3"><i class="fa-solid fa-shield text-[9px] mr-1.5"></i>Sum of all added accounts</p>
+                        </div>
+                        <div class="bg-gradient-to-br from-pink-500 to-pink-600 text-white p-6 rounded-3xl shadow-md sm:col-span-2 lg:col-span-1 relative overflow-hidden transition-transform hover:scale-[1.01]">
+                            <div class="absolute right-4 bottom-4 text-white/10 text-7xl"><i class="fa-solid fa-piggy-bank"></i></div>
+                            <div class="flex justify-between items-start">
+                                <p class="text-xs text-pink-100 font-semibold uppercase tracking-widest">Cumulative DPS Deposit</p>
+                                <span class="bg-white/15 px-2 py-0.5 rounded-lg text-[10px] font-bold">Target Savings</span>
+                            </div>
+                            <h2 id="balance-dps" class="text-3xl lg:text-4xl font-bold mt-4">৳ 0.00</h2>
+                            <p class="text-xs text-pink-100/80 mt-3"><i class="fa-solid fa-circle-nodes text-[9px] mr-1.5"></i>Long-term academic investments</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-white border border-slate-200 p-6 rounded-3xl shadow-xs">
+                        <h3 class="font-bold text-sm md:text-base text-slate-800 mb-4"><i class="fa-solid fa-building-columns text-primary mr-2"></i>My Saved Bank Accounts Balances</h3>
+                        <div id="bank-accounts-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                            <div class="col-span-full text-center text-slate-400 py-4 text-xs font-bold uppercase tracking-wider">No custom accounts added yet.</div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="bg-white border border-slate-200 p-6 rounded-3xl shadow-xs lg:col-span-2 flex flex-col justify-between">
+                            <div>
+                                <div class="flex justify-between items-center mb-4">
+                                    <h3 class="font-bold text-base text-slate-800"><i class="fa-solid fa-chart-pie text-primary mr-2"></i>Monthly Snapshot Statistics</h3>
+                                    <span class="text-xs bg-slate-100 text-slate-500 font-bold px-3 py-1 rounded-full uppercase tracking-wider">Current Month</span>
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 my-2">
+                                    <div class="bg-red-50 p-4 rounded-2xl border border-red-100">
+                                        <span class="text-xs text-red-500 font-bold uppercase tracking-wider block mb-1">Total Expended This Month</span>
+                                        <p id="stat-month-expense" class="text-2xl font-bold text-red-600">৳ 0.00</p>
+                                    </div>
+                                    <div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-100">
+                                        <span class="text-xs text-emerald-500 font-bold uppercase tracking-wider block mb-1">Total Inflow Deposits</span>
+                                        <p id="stat-month-income" class="text-2xl font-bold text-emerald-600">৳ 0.00</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="stat-comparison-text" class="text-sm text-slate-600 bg-slate-50 p-4 rounded-2xl border border-slate-200 leading-relaxed mt-4">
+                                <i class="fa-solid fa-brain text-primary mr-1.5 animate-pulse"></i>Analyzing your spending trends... (Excludes lend/return from)
+                            </div>
+                        </div>
+
+                        <div class="bg-white border border-slate-200 p-6 rounded-3xl shadow-xs flex flex-col justify-between">
+                            <h3 class="font-bold text-base text-slate-800 mb-3"><i class="fa-solid fa-bolt text-amber-500 mr-2"></i>Quick Ledger Controls</h3>
+                            <div class="grid grid-cols-1 gap-3">
+                                <button onclick="switchTrackerTab('add'); selectFormType('Cash', 'Expense')" class="flex items-center gap-3.5 bg-slate-50 border border-slate-200 hover:border-red-300 p-3.5 rounded-2xl text-left transition hover:bg-red-50/25">
+                                    <div class="w-10 h-10 bg-red-100 text-red-600 rounded-xl flex items-center justify-center text-sm font-bold shrink-0"><i class="fa-solid fa-coins"></i></div>
+                                    <div><h4 class="text-sm font-bold text-slate-700">Add Cash Expense</h4><p class="text-[10px] text-slate-400">Log snacks, transport, photocopies...</p></div>
+                                </button>
+                                <button onclick="switchTrackerTab('add'); selectFormType('Bank', 'Expense')" class="flex items-center gap-3.5 bg-slate-50 border border-slate-200 hover:border-blue-300 p-3.5 rounded-2xl text-left transition hover:bg-blue-50/25">
+                                    <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center text-sm font-bold shrink-0"><i class="fa-solid fa-building-columns"></i></div>
+                                    <div><h4 class="text-sm font-bold text-slate-700">Add Bank Expense</h4><p class="text-[10px] text-slate-400">Select which bank to pay from...</p></div>
+                                </button>
+                                <button onclick="switchTrackerTab('transfer')" class="flex items-center gap-3.5 bg-slate-50 border border-slate-200 hover:border-primary-light p-3.5 rounded-2xl text-left transition hover:bg-primary-light/10">
+                                    <div class="w-10 h-10 bg-primary/10 text-primary rounded-xl flex items-center justify-center text-sm font-bold shrink-0"><i class="fa-solid fa-money-bill-transfer"></i></div>
+                                    <div><h4 class="text-sm font-bold text-slate-700">Withdrawal to Cash</h4><p class="text-[10px] text-slate-400">Move bank balances into cash wallet</p></div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white border border-slate-200 rounded-3xl shadow-xs overflow-hidden">
+                        <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+                            <h3 class="font-bold text-sm md:text-base text-slate-800"><i class="fa-solid fa-clock-rotate-left text-slate-500 mr-2"></i>Latest Log Activity</h3>
+                            <button onclick="switchTrackerTab('history')" class="text-xs font-bold text-primary hover:underline hover:text-primary-hover flex items-center gap-1">View Master Ledger <i class="fa-solid fa-arrow-right"></i></button>
+                        </div>
+                        <div id="mini-ledger-list" class="divide-y divide-slate-150">
+                            <div class="p-8 text-center text-slate-400"><i class="fa-solid fa-arrows-spin animate-spin text-primary text-2xl mb-2"></i><p class="text-sm">Connecting Live Google Sheets Ledger...</p></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW 2: ADD NEW TRANSACTION -->
+                <div id="view-add" class="view-panel hidden">
+                    <div class="max-w-2xl mx-auto bg-white border border-slate-200 p-6 md:p-8 rounded-3xl shadow-xs">
+                        <div class="text-center mb-6">
+                            <h2 class="text-xl font-bold text-slate-800">Add Account Transaction</h2>
+                            <p class="text-xs text-slate-400 mt-1">Archive deposits or expenses into specific accounts</p>
+                        </div>
+                        <div class="flex bg-slate-100 p-1 rounded-2xl mb-6">
+                            <button id="acc-tab-cash" onclick="toggleAccountSection('Cash')" class="flex-1 py-2.5 text-center text-xs md:text-sm font-bold rounded-xl bg-white text-slate-800 shadow-sm transition">💵 Pocket Cash Wallet</button>
+                            <button id="acc-tab-bank" onclick="toggleAccountSection('Bank')" class="flex-1 py-2.5 text-center text-xs md:text-sm font-bold rounded-xl text-slate-500 hover:text-slate-800 transition">🏦 Bank Savings Accounts</button>
+                        </div>
+                        <form id="tx-form" onsubmit="handleTransactionSubmit(event)" class="space-y-5">
+                            <input type="hidden" name="tx_source" id="tx_source" value="Cash">
+                            <div id="custom-bank-selector-container" class="hidden">
+                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Select Target Bank Account</label>
+                                <select name="tx_custom_bank" id="tx_custom_bank" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 bg-slate-50 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-xs md:text-sm font-bold text-slate-700"></select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Transaction Action Type</label>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <label id="label-type-expense" class="cursor-pointer border-2 border-red-500 rounded-2xl p-3 text-center block bg-red-50/50 transition">
+                                        <input type="radio" name="tx_type" value="Expense" checked class="sr-only" onchange="onTxTypeChanged()">
+                                        <span class="block text-xs md:text-sm font-bold text-red-600"><i class="fa-solid fa-circle-minus mr-1.5"></i>Expense</span>
+                                    </label>
+                                    <label id="label-type-deposit" class="cursor-pointer border-2 border-slate-200 rounded-2xl p-3 text-center block bg-slate-50 transition">
+                                        <input type="radio" name="tx_type" value="Deposit" class="sr-only" onchange="onTxTypeChanged()">
+                                        <span class="block text-xs md:text-sm font-bold text-emerald-600"><i class="fa-solid fa-circle-plus mr-1.5"></i>Deposit Inflow</span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Transaction Value (৳)</label>
+                                <div class="relative">
+                                    <span class="absolute left-4 top-2.5 text-slate-400 font-bold text-base">৳</span>
+                                    <input type="number" step="0.01" name="tx_amount" required placeholder="0.00" class="w-full border border-slate-200 rounded-xl pl-9 pr-4 py-2.5 bg-slate-50 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm md:text-base font-bold">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Reason / Description Details</label>
+                                <textarea name="tx_description" rows="2" required placeholder="e.g. Snack, Rent, or 'return from Friend'" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 bg-slate-50 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-xs md:text-sm"></textarea>
+                            </div>
+                            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                                <div class="flex items-center justify-between">
+                                    <label class="text-xs font-bold text-slate-600 cursor-pointer" for="custom-time-toggle"><i class="fa-solid fa-calendar-days mr-1.5 text-slate-500"></i>Backdate Log (Enter Past Record)</label>
+                                    <input type="checkbox" id="custom-time-toggle" onchange="toggleCustomTimeFields(this, 'tx')" class="w-4.5 h-4.5 rounded text-primary focus:ring-primary border-slate-300">
+                                </div>
+                                <div id="custom-time-fields" class="hidden mt-3.5 grid grid-cols-1 sm:grid-cols-2 gap-3 border-t border-slate-200 pt-3.5">
+                                    <div><label class="block text-[11px] font-bold text-slate-500 mb-1">Date</label><input type="date" id="custom-date" class="w-full border border-slate-200 rounded-xl px-3 py-2 bg-white text-xs md:text-sm"></div>
+                                    <div><label class="block text-[11px] font-bold text-slate-500 mb-1">Time</label><input type="time" id="custom-time" class="w-full border border-slate-200 rounded-xl px-3 py-2 bg-white text-xs md:text-sm"></div>
+                                </div>
+                            </div>
+                            <button type="submit" class="w-full bg-primary hover:bg-primary-hover text-white font-bold py-3 rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 text-xs md:text-sm">
+                                <i class="fa-solid fa-floppy-disk"></i><span id="tx-btn-text">Save Cash Transaction</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- VIEW 3: TRANSFER VIEW -->
+                <div id="view-transfer" class="view-panel hidden">
+                    <div class="max-w-2xl mx-auto bg-white border border-slate-200 p-6 md:p-8 rounded-3xl shadow-xs">
+                        <div class="text-center mb-6">
+                            <h2 class="text-xl font-bold text-slate-800" id="transfer-heading">Bank to Cash Transfer</h2>
+                            <p class="text-xs text-slate-400 mt-1" id="transfer-subheading">Withdraw funds from any Bank Account into Pocket Cash Wallet</p>
+                        </div>
+
+                        <div class="flex bg-slate-100 rounded-2xl p-1 mb-5 gap-1">
+                            <button type="button" id="transfer-dir-b2c" onclick="setTransferDirection('Bank_to_Current')"
+                                class="flex-1 py-2.5 text-center text-xs md:text-sm font-bold rounded-xl bg-white text-slate-800 shadow-sm transition">
+                                <i class="fa-solid fa-arrow-down mr-1.5 text-primary"></i>Bank → Cash
+                            </button>
+                            <button type="button" id="transfer-dir-c2b" onclick="setTransferDirection('Cash_to_Bank')"
+                                class="flex-1 py-2.5 text-center text-xs md:text-sm font-bold rounded-xl text-slate-500 hover:text-slate-800 transition">
+                                <i class="fa-solid fa-arrow-up mr-1.5 text-emerald-500"></i>Cash → Bank
+                            </button>
+                        </div>
+
+                        <form id="transfer-form" onsubmit="handleTransferSubmit(event)" class="space-y-5">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2" id="transfer-bank-label">Transfer From Bank</label>
+                                <select name="transfer_source" id="transfer_source" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 bg-slate-50 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-xs md:text-sm font-bold text-slate-700"></select>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Amount (৳)</label>
+                                    <div class="relative">
+                                        <span class="absolute left-4 top-2.5 text-slate-400 font-bold text-base">৳</span>
+                                        <input type="number" step="0.01" name="transfer_amount" required placeholder="0.00" class="w-full border border-slate-200 rounded-xl pl-9 pr-4 py-2.5 bg-slate-50 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm md:text-base font-bold">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Fee (৳)</label>
+                                    <div class="relative">
+                                        <span class="absolute left-4 top-2.5 text-slate-400 font-bold text-base">৳</span>
+                                        <input type="number" step="0.01" name="transfer_fee" placeholder="0.00" value="0" class="w-full border border-slate-200 rounded-xl pl-9 pr-4 py-2.5 bg-slate-50 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-sm md:text-base font-bold">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Details Note</label>
+                                <input type="text" name="transfer_desc" required value="Withdrawn pocket cash from bank account" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 bg-slate-50 focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-xs md:text-sm">
+                            </div>
+
+                            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200">
+                                <div class="flex items-center justify-between">
+                                    <label class="text-xs font-bold text-slate-600 cursor-pointer" for="transfer-time-toggle"><i class="fa-solid fa-calendar-days mr-1.5 text-slate-500"></i>Backdate Transfer</label>
+                                    <input type="checkbox" id="transfer-time-toggle" onchange="toggleCustomTimeFields(this, 'transfer')" class="w-4.5 h-4.5 rounded text-primary focus:ring-primary border-slate-300">
+                                </div>
+                                <div id="transfer-time-fields" class="hidden mt-3.5 grid grid-cols-1 sm:grid-cols-2 gap-3 border-t border-slate-200 pt-3.5">
+                                    <div><label class="block text-[11px] font-bold text-slate-500 mb-1">Date</label><input type="date" id="transfer-date" class="w-full border border-slate-200 rounded-xl px-3 py-2 bg-white text-xs md:text-sm"></div>
+                                    <div><label class="block text-[11px] font-bold text-slate-500 mb-1">Time</label><input type="time" id="transfer-time" class="w-full border border-slate-200 rounded-xl px-3 py-2 bg-white text-xs md:text-sm"></div>
+                                </div>
+                            </div>
+                            <button type="submit" class="w-full bg-primary hover:bg-primary-hover text-white font-bold py-3 rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 text-xs md:text-sm">
+                                <i class="fa-solid fa-arrow-right-arrow-left"></i><span>Execute Balance Transfer</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- VIEW 4: DPS SAVINGS -->
+                <div id="view-dps" class="view-panel hidden">
+                    <div class="max-w-2xl mx-auto bg-white border border-slate-200 p-6 md:p-8 rounded-3xl shadow-xs">
+                        <div class="text-center mb-6">
+                            <h2 class="text-xl font-bold text-slate-800">DPS Savings Installment</h2>
+                            <p class="text-xs text-slate-400 mt-1">Register manual targets for long-term savings accounts</p>
+                        </div>
+                        <form id="dps-form" onsubmit="handleDPSSubmit(event)" class="space-y-5">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Bank / Institution</label>
+                                    <input type="text" name="dps_bank" required placeholder="e.g. Islami Bank" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 bg-slate-50 focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 outline-none text-xs md:text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">DPS A/C No.</label>
+                                    <input type="text" name="dps_ac_no" required placeholder="e.g. 2050XXXXX" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 bg-slate-50 focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 outline-none text-xs md:text-sm">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Deposit Amount (৳)</label>
+                                    <div class="relative">
+                                        <span class="absolute left-4 top-2.5 text-slate-400 font-bold text-base">৳</span>
+                                        <input type="number" step="0.01" name="dps_amount" required placeholder="0.00" class="w-full border border-slate-200 rounded-xl pl-9 pr-4 py-2.5 bg-slate-50 focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 outline-none text-sm md:text-base font-bold">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Installment Period</label>
+                                    <input type="text" name="dps_installment" required placeholder="e.g. Installment #12" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 bg-slate-50 focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 outline-none text-xs md:text-sm">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Date Deposited</label>
+                                    <input type="date" name="dps_date" id="dps-date-input" required class="w-full border border-slate-200 rounded-xl px-4 py-2.5 bg-slate-50 focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 outline-none text-xs md:text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Maturity Date (Optional)</label>
+                                    <input type="date" name="dps_maturity" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 bg-slate-50 focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 outline-none text-xs md:text-sm">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Remarks Note</label>
+                                <textarea name="dps_note" rows="2" placeholder="e.g. Transferred from Savings branch" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 bg-slate-50 focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500 outline-none text-xs md:text-sm"></textarea>
+                            </div>
+                            <button type="submit" class="w-full bg-pink-600 hover:bg-pink-700 text-white font-bold py-3 rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 text-xs md:text-sm">
+                                <i class="fa-solid fa-piggy-bank"></i><span>Register DPS Installment</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- VIEW 5: MASTER LEDGER HISTORY -->
+                <div id="view-history" class="view-panel hidden">
+                    <div class="bg-white border border-slate-200 p-6 rounded-3xl shadow-xs">
+                        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                            <div>
+                                <h3 class="font-bold text-lg text-slate-800">Master Financial Ledger</h3>
+                                <p class="text-xs text-slate-400 mt-0.5">Edit, filter, or erase historical entries</p>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full md:max-w-md">
+                                <div class="relative">
+                                    <span class="absolute left-3.5 top-2.5 text-slate-400 text-xs"><i class="fa-solid fa-magnifying-glass"></i></span>
+                                    <input type="text" id="ledger-search" oninput="filterLedgers()" placeholder="Search logs..." class="w-full border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-xs md:text-sm bg-slate-50 focus:border-primary focus:bg-white outline-none transition-all">
+                                </div>
+                                <select id="ledger-type-filter" onchange="filterLedgers()" class="border border-slate-200 rounded-xl px-3 py-2 text-xs md:text-sm bg-slate-50 text-slate-600 outline-none font-bold">
+                                    <option value="All">All Categories</option>
+                                    <option value="Expense">Expense Only</option>
+                                    <option value="Deposit">Deposit Only</option>
+                                    <option value="Transfer">Bank Transfers</option>
+                                    <option value="DPS">DPS Only</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="hidden md:block overflow-x-auto">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="border-b border-slate-200 text-slate-400 text-xs font-bold uppercase tracking-wider bg-slate-50/50">
+                                        <th class="py-3 px-4">Date &amp; Time</th>
+                                        <th class="py-3 px-4">Category</th>
+                                        <th class="py-3 px-4">Account/Source</th>
+                                        <th class="py-3 px-4">Description</th>
+                                        <th class="py-3 px-4 text-right">Value (৳)</th>
+                                        <th class="py-3 px-4 text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="master-ledger-table-body" class="divide-y divide-slate-100 text-sm"></tbody>
+                            </table>
+                        </div>
+
+                        <div class="block md:hidden space-y-3" id="master-ledger-vertical-container"></div>
+
+                        <div class="pt-4 mt-6 border-t border-slate-100 flex justify-between items-center text-xs text-slate-400 font-bold uppercase tracking-wider">
+                            <span id="table-total-indicator">Total Entries: 0</span>
+                            <button onclick="refreshLedgerData()" class="text-primary hover:underline"><i class="fa-solid fa-arrows-rotate mr-1"></i>Force Refresh</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- VIEW 6: SETUP & REPORTS & ANALYTICS -->
+                <div id="view-reports" class="view-panel hidden space-y-6">
+                    
+                    <!-- NEW PIE CHART ANALYTICS SECTION -->
+                    <div class="bg-white border border-slate-200 p-6 rounded-3xl shadow-xs">
+                        <div class="flex justify-between items-center mb-6 pb-3 border-b border-slate-100">
+                            <h3 class="font-bold text-lg text-slate-800 flex items-center gap-2"><i class="fa-solid fa-chart-pie text-primary"></i> Expense Analytics Breakdown</h3>
+                            <input type="month" id="analytics-month" onchange="generateAnalytics()" class="border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-600 bg-slate-50 outline-none">
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                            <!-- Chart Canvas Container -->
+                            <div class="w-full max-w-xs mx-auto relative min-h-[250px]">
+                                <canvas id="expense-pie-chart"></canvas>
+                            </div>
+                            <!-- Detailed Itemized List -->
+                            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 h-full max-h-80 overflow-y-auto">
+                                <h4 class="text-xs font-bold text-slate-500 uppercase mb-3 sticky top-0 bg-slate-50 pb-2">Itemized Details</h4>
+                                <div id="analytics-details" class="space-y-2">
+                                    <p class="text-xs text-slate-400">Loading details...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- GENERATE STATEMENTS & BANKS -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        
+                        <div class="bg-white border border-slate-200 p-6 rounded-3xl shadow-xs flex flex-col justify-between">
+                            <div>
+                                <h3 class="font-bold text-lg text-slate-800 border-b border-slate-100 pb-3 flex items-center gap-2"><i class="fa-solid fa-file-invoice-dollar text-primary"></i> Generate PDF Statements</h3>
+                                <p class="text-xs text-slate-500 leading-relaxed mt-3">Initiate PDF report compiled with starting/ending balances, transmitted directly via Telegram Bot for the selected month.</p>
+                            </div>
+                            <div class="space-y-3 mt-6">
+                                <div class="flex items-center gap-2">
+                                    <label class="text-xs font-bold text-slate-500">Report Month:</label>
+                                    <input type="month" id="pdf-report-month" class="border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-600 bg-slate-50 outline-none flex-1">
+                                </div>
+                                <button onclick="triggerTelegramPDFReport()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-2xl shadow-sm transition text-xs md:text-sm">
+                                    <i class="fa-solid fa-file-pdf text-red-400 mr-1.5"></i> Send Monthly PDF Report
+                                </button>
+                                <button onclick="triggerConnectionTest()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-2xl text-xs transition">
+                                    <i class="fa-solid fa-arrows-rotate mr-1.5"></i> Test Bot Connection
+                                </button>
+                                <button onclick="syncLegacyDataFromSheets()" class="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-600 border border-indigo-200 font-bold py-2.5 rounded-2xl text-xs transition flex items-center justify-center gap-2 mt-2">
+                                    <i class="fa-solid fa-cloud-arrow-down"></i> Pull Legacy Data from Sheets
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col gap-6">
+                            <!-- NEW: EMAIL PREFERENCES CARD -->
+                            <div class="bg-white border border-slate-200 p-6 rounded-3xl shadow-xs">
+                                <h3 class="font-bold text-base text-slate-800 border-b border-slate-100 pb-3 flex items-center gap-2 mb-4"><i class="fa-solid fa-envelope-circle-check text-primary"></i> Report Delivery Email</h3>
+                                
+                                <!-- Display State -->
+                                <div id="email-display-container">
+                                    <div class="flex items-center justify-between bg-slate-50 border border-slate-200 p-3 rounded-xl">
+                                        <span id="current-verified-email" class="font-bold text-slate-700 text-xs md:text-sm truncate mr-2">Not set</span>
+                                        <button onclick="startEmailChange()" class="text-primary hover:text-primary-hover text-xs font-bold px-2 py-1 shrink-0 bg-primary/10 rounded-lg"><i class="fa-solid fa-pen mr-1"></i>Change</button>
+                                    </div>
+                                    <p class="text-[10px] text-slate-400 mt-2">All future PDF reports will be sent here.</p>
+                                </div>
+
+                                <!-- Edit & Request OTP State -->
+                                <div id="email-edit-container" class="hidden space-y-3">
+                                    <input type="email" id="new-report-email" placeholder="Enter new email address" class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-xs md:text-sm bg-slate-50 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition">
+                                    <div class="flex gap-2">
+                                        <button onclick="cancelEmailChange()" class="px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition">Cancel</button>
+                                        <button id="btn-send-email-otp" onclick="requestReportEmailOTP()" class="flex-1 bg-slate-800 hover:bg-slate-900 text-white font-bold py-2.5 rounded-xl text-xs transition">Send Verification Code</button>
+                                    </div>
+                                </div>
+
+                                <!-- Verify OTP State -->
+                                <div id="email-otp-container" class="hidden space-y-3">
+                                    <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider text-center">Enter code sent to email</p>
+                                    <input type="text" id="email-verification-otp" maxlength="6" autocomplete="off" placeholder="• • • • • •" class="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-center tracking-[0.5em] text-lg font-bold bg-slate-50 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition">
+                                    <div class="flex gap-2">
+                                        <button onclick="cancelEmailChange()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl text-xs transition">Cancel</button>
+                                        <button id="btn-verify-email-otp" onclick="verifyReportEmailOTP()" class="flex-1 bg-primary hover:bg-primary-hover text-white font-bold py-2.5 rounded-xl text-xs transition">Verify & Save</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white border border-slate-200 p-6 rounded-3xl shadow-xs space-y-4">
+                                <h3 class="font-bold text-base text-slate-800 border-b border-slate-100 pb-3 flex items-center gap-2"><i class="fa-solid fa-building-columns text-primary"></i> Manage Banks</h3>
+                                <form id="add-bank-form" onsubmit="handleBankCreate(event)" class="space-y-3">
+                                    <div class="grid grid-cols-2 gap-2">
+                                        <input type="text" id="new-bank-name" placeholder="Name (e.g. bKash)" required class="border border-slate-200 rounded-xl px-3 py-2 text-xs bg-slate-50 outline-none font-bold">
+                                        <input type="text" id="new-bank-number" placeholder="No (e.g. 017...)" required class="border border-slate-200 rounded-xl px-3 py-2 text-xs bg-slate-50 outline-none font-bold">
+                                    </div>
+                                    <button id="bank-submit-btn" type="submit" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 rounded-xl text-xs transition">Add Account Card</button>
+                                </form>
+                                <div class="border-t border-slate-100 pt-3">
+                                    <h4 class="text-xs font-bold text-slate-500 uppercase mb-2.5">Active Banks:</h4>
+                                    <div id="setup-banks-list" class="space-y-2 max-h-44 overflow-y-auto pr-1"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+
+            <!-- TRACKER MODALS -->
+            <div id="edit-tx-modal" class="hidden fixed inset-0 bg-slate-900/40 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-all">
+                <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 relative">
+                    <button onclick="closeTxModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition text-xl"><i class="fa-solid fa-xmark"></i></button>
+                    <h3 class="font-bold text-base text-slate-800 mb-4 pb-2 border-b border-slate-100 flex items-center gap-2 text-primary">
+                        <i class="fa-solid fa-pen-to-square"></i> Edit Transaction
+                    </h3>
+                    <form id="edit-tx-form" onsubmit="handleTxEditSubmit(event)">
+                        <input type="hidden" name="edit_tx_id">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 mb-1">Category</label>
+                                <select name="edit_tx_type" class="w-full border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 text-xs font-bold" onchange="toggleEditTxSourceVisibility()">
+                                    <option value="Expense">Expense</option><option value="Deposit">Deposit</option><option value="Bank_to_Current">Bank to Cash Transfer</option>
+                                </select>
+                            </div>
+                            <div id="edit-tx-source-container">
+                                <label class="block text-xs font-bold text-slate-500 mb-1">Source</label>
+                                <select name="edit_tx_source" id="edit_tx_source_dropdown" class="w-full border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 text-xs font-bold"></select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 mb-1">Amount (৳)</label>
+                                <input type="number" step="0.01" name="edit_tx_amount" required class="w-full border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 text-xs font-bold">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 mb-1">Reason</label>
+                                <textarea name="edit_tx_description" rows="2" required class="w-full border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 text-xs"></textarea>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div><label class="block text-[11px] font-bold text-slate-500 mb-1">Date</label><input type="date" name="edit_tx_date" required class="w-full border border-slate-200 rounded-xl px-3 py-1.5 bg-slate-50 text-xs"></div>
+                                <div><label class="block text-[11px] font-bold text-slate-500 mb-1">Time</label><input type="time" name="edit_tx_time" required class="w-full border border-slate-200 rounded-xl px-3 py-1.5 bg-slate-50 text-xs"></div>
+                            </div>
+                            <div class="flex gap-2.5 pt-2 text-xs font-bold">
+                                <button type="button" onclick="closeTxModal()" class="flex-1 bg-slate-150 hover:bg-slate-200 text-slate-700 py-2.5 rounded-xl transition">Cancel</button>
+                                <button type="submit" class="flex-1 bg-primary hover:bg-primary-hover text-white py-2.5 rounded-xl transition">Save</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div id="edit-dps-modal" class="hidden fixed inset-0 bg-slate-900/40 z-50 flex items-center justify-center p-4 backdrop-blur-sm transition-all">
+                <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 relative">
+                    <button onclick="closeDPSModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition text-xl"><i class="fa-solid fa-xmark"></i></button>
+                    <h3 class="font-bold text-base text-slate-800 mb-4 pb-2 border-b border-slate-100 flex items-center gap-2 text-pink-600">
+                        <i class="fa-solid fa-piggy-bank"></i> Edit DPS Installment
+                    </h3>
+                    <form id="edit-dps-form" onsubmit="handleDPSEditSubmit(event)">
+                        <input type="hidden" name="edit_dps_id">
+                        <div class="space-y-3">
+                            <div class="grid grid-cols-2 gap-2">
+                                <div><label class="block text-[11px] font-bold text-slate-500 mb-1">Bank</label><input type="text" name="edit_dps_bank" class="w-full border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 text-xs"></div>
+                                <div><label class="block text-[11px] font-bold text-slate-500 mb-1">A/C No</label><input type="text" name="edit_dps_ac_no" class="w-full border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 text-xs"></div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div><label class="block text-[11px] font-bold text-slate-500 mb-1">Deposit Value (৳)</label><input type="number" step="0.01" name="edit_dps_amount" required class="w-full border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 text-xs font-bold"></div>
+                                <div><label class="block text-[11px] font-bold text-slate-500 mb-1">Month/Period</label><input type="text" name="edit_dps_installment" required class="w-full border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 text-xs"></div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div><label class="block text-[11px] font-bold text-slate-500 mb-1">Date Deposited</label><input type="date" name="edit_dps_date" required class="w-full border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 text-xs"></div>
+                                <div><label class="block text-[11px] font-bold text-slate-500 mb-1">Maturity Date</label><input type="date" name="edit_dps_maturity" class="w-full border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 text-xs"></div>
+                            </div>
+                            <div><label class="block text-[11px] font-bold text-slate-500 mb-1">Remarks</label><textarea name="edit_dps_note" rows="2" class="w-full border border-slate-200 rounded-xl px-3 py-2 bg-slate-50 text-xs"></textarea></div>
+                            <div class="flex gap-2.5 pt-2 text-xs font-bold">
+                                <button type="button" onclick="closeDPSModal()" class="flex-1 bg-slate-150 hover:bg-slate-200 text-slate-700 py-2.5 rounded-xl transition">Cancel</button>
+                                <button type="submit" class="flex-1 bg-pink-600 hover:bg-pink-700 text-white py-2.5 rounded-xl transition">Save</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div id="confirm-modal" class="hidden fixed inset-0 bg-slate-900/40 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+                <div class="bg-white rounded-3xl max-w-xs w-full p-5 shadow-2xl border border-slate-200 text-center">
+                    <div class="w-12 h-12 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-3.5 text-xl"><i class="fa-solid fa-circle-exclamation animate-bounce"></i></div>
+                    <h4 id="confirm-title" class="font-bold text-sm md:text-base text-slate-800">Erase this record?</h4>
+                    <p id="confirm-desc" class="text-xs text-slate-400 mt-1.5 leading-relaxed">This updates your Google Sheets live.</p>
+                    <div class="flex gap-2.5 mt-5 text-xs font-bold">
+                        <button id="confirm-cancel-btn" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 rounded-xl transition">Cancel</button>
+                        <button id="confirm-yes-btn" class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-xl transition">Confirm</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile Bottom Nav -->
+            <nav class="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-[0_-3px_12px_rgba(0,0,0,0.06)] z-40">
+                <div class="flex justify-around items-center py-2.5">
+                    <button onclick="switchTrackerTab('home')" id="mobile-nav-home" class="flex flex-col items-center justify-center flex-1 text-primary transition"><i class="fa-solid fa-house text-lg"></i><span class="text-[9px] sm:text-[10px] font-bold mt-1">Wallet</span></button>
+                    <button onclick="switchTrackerTab('add')" id="mobile-nav-add" class="flex flex-col items-center justify-center flex-1 text-slate-400 hover:text-slate-600 transition"><i class="fa-solid fa-circle-plus text-lg"></i><span class="text-[9px] sm:text-[10px] font-bold mt-1">Add</span></button>
+                    <button onclick="switchTrackerTab('transfer')" id="mobile-nav-transfer" class="flex flex-col items-center justify-center flex-1 text-slate-400 hover:text-slate-600 transition"><i class="fa-solid fa-money-bill-transfer text-lg"></i><span class="text-[9px] sm:text-[10px] font-bold mt-1">Transfer</span></button>
+                    <button onclick="switchTrackerTab('dps')" id="mobile-nav-dps" class="flex flex-col items-center justify-center flex-1 text-slate-400 hover:text-slate-600 transition"><i class="fa-solid fa-piggy-bank text-lg"></i><span class="text-[9px] sm:text-[10px] font-bold mt-1">DPS</span></button>
+                    <button onclick="switchTrackerTab('history')" id="mobile-nav-history" class="flex flex-col items-center justify-center flex-1 text-slate-400 hover:text-slate-600 transition"><i class="fa-solid fa-receipt text-lg"></i><span class="text-[9px] sm:text-[10px] font-bold mt-1">Logs</span></button>
+                    <button onclick="switchTrackerTab('reports')" id="mobile-nav-reports" class="flex flex-col items-center justify-center flex-1 text-slate-400 hover:text-slate-600 transition"><i class="fa-solid fa-chart-pie text-lg"></i><span class="text-[9px] sm:text-[10px] font-bold mt-1">Stats</span></button>
+                </div>
+            </nav>
+        </div>
+    </div> <!-- END TRACKER APP -->
+
+    <!-- Integrated modular Firebase Auth Setup with existing Expense Tracker Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
+        import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDLfFBYRtGaDxeS5etAa77EhqURt0h9Mzk",
+            authDomain: "studybuddyos.firebaseapp.com",
+            projectId: "studybuddyos",
+            storageBucket: "studybuddyos.firebasestorage.app",
+            messagingSenderId: "370999130200",
+            appId: "1:370999130200:web:44ec66cce124fed018722d",
+            measurementId: "G-CQBFDDB709"
+        };
+
+        // Initialize Firebase services
+        const firebaseApp = initializeApp(firebaseConfig);
+        const auth = getAuth(firebaseApp);
+
+        const supabaseUrl = 'https://jnaqclumiuhflcvirkgv.supabase.co';
+        const supabaseKey = 'sb_publishable_hZyk2xZ6zy86jQJbKIa92g_TVlOup3O';
+        const supabase = createClient(supabaseUrl, supabaseKey);
+
+        // 7-day Session Management (7 * 24 * 60 * 60 * 1000 ms)
+        const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+
+        function isSessionValid() {
+            const verified = localStorage.getItem('otp_verified_studybuddy');
+            const timestamp = parseInt(localStorage.getItem('otp_verified_timestamp') || '0', 10);
+            if (verified === 'true' && timestamp > 0 && (Date.now() - timestamp < SEVEN_DAYS_MS)) {
+                return true;
+            }
+            return false;
+        }
+
+        function setSessionActive() {
+            localStorage.setItem('otp_verified_studybuddy', 'true');
+            localStorage.setItem('otp_verified_timestamp', Date.now().toString());
+        }
+
+        function clearSession() {
+            localStorage.removeItem('otp_verified_studybuddy');
+            localStorage.removeItem('otp_verified_timestamp');
+            sessionStorage.removeItem('otp_verified_studybuddy');
+        }
+
+        // REPLACE WITH YOUR ACTUAL DEPLOYED APPS SCRIPT URL
+        const API_URL = "https://script.google.com/macros/s/AKfycbzS7zWzvvOnFj_2ANzGRd7l2c9QD5Jpqejd32EXq4fVnny1UADVMpq2fACDRxq27zPL/exec";
+        
+        async function runRemoteAPI(action, payload) {
+            setLoadingState(true, "Synchronizing...", "Connecting with Google Sheets & Telegram Bot.");
+            try {
+                const response = await fetch(API_URL, { 
+                    method: 'POST', 
+                    redirect: 'follow', 
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
+                    body: JSON.stringify({ action, payload }) 
+                });
+                if (!response.ok) throw new Error(`HTTP Error Code: ${response.status}`);
+                const result = await response.json();
+                if (result.status === 'success') return result; 
+                else throw new Error(result.message || "Failed execution on backend API.");
+            } catch (error) { 
+                console.error("API error: ", error); 
+                showTrackerToast(`Trouble encountered: ${error.message}`, 'error'); 
+                return null; 
+            } finally { 
+                setLoadingState(false); 
+            }
+        }
+
+        // Silent background sync for Google Sheets (Fire and Forget)
+        function runRemoteAPISilent(action, payload) {
+            fetch(API_URL, { 
+                method: 'POST', 
+                redirect: 'follow', 
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
+                body: JSON.stringify({ action, payload }) 
+            }).catch(e => console.error("Sheets sync failed:", e));
+        }
+
+        // ==========================================
+        // LOGIN & SECURE TELEGRAM OTP SYSTEM
+        // ==========================================
+        async function handleTrackerLogin(event) {
+            event.preventDefault();
+            const idInput = document.getElementById('login-id').value.trim();
+            const passInput = document.getElementById('login-pass').value;
+            const errorEl = document.getElementById('login-error');
+            const loginCard = document.getElementById('login-card');
+            const submitBtn = document.getElementById('login-btn-submit');
+
+            if (!idInput || !passInput) {
+                showTrackerToast("Please fill in both fields.", "error");
+                return;
+            }
+
+            // Standardize Username to match Firebase email logic (e.g. pulak -> pulak@studybuddyos.com)
+            let email = idInput;
+            if (!email.includes('@')) {
+                email = idInput + "@studybuddyos.com";
+            }
+
+            errorEl.classList.add('hidden');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin mr-2"></i> <span>Authenticating...</span>`;
+            submitBtn.disabled = true;
+
+            try {
+                // Phase 1: Verify against Firebase Authentication
+                const userCredential = await signInWithEmailAndPassword(auth, email, passInput);
+                const user = userCredential.user;
+                const idToken = await user.getIdToken();
+
+                showTrackerToast("Credential verified! Requesting Telegram OTP...", "success");
+
+                // Phase 2: Securely request OTP via Sheets/Telegram bot backend
+                const res = await runRemoteAPI('requestOTP', {
+                    uid: user.uid,
+                    email: user.email,
+                    token: idToken
+                });
+
+                if (res && res.status === 'success') {
+                    // Switch UI view cleanly to Step 2
+                    document.getElementById('step-1-credentials').classList.remove('step-active');
+                    document.getElementById('step-1-credentials').classList.add('step-hidden');
+                    
+                    document.getElementById('step-2-otp').classList.remove('step-hidden');
+                    document.getElementById('step-2-otp').classList.add('step-active');
+                    
+                    showTrackerToast("A security code was sent to your Telegram Bot!", "success");
+                } else {
+                    throw new Error("Unable to contact Telegram OTP service.");
+                }
+            } catch (err) {
+                console.error("Login / OTP Request failed: ", err);
+                errorEl.classList.remove('hidden');
+                loginCard.classList.add('animate-shake');
+                setTimeout(() => { loginCard.classList.remove('animate-shake'); }, 400);
+                showTrackerToast(err.message || "Invalid credentials. Try again.", "error");
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+
+        async function verifyTrackerOTP(event) {
+            event.preventDefault();
+            const otpInput = document.getElementById('login-otp').value.trim();
+            const submitBtn = document.getElementById('verify-btn-submit');
+            
+            if (!otpInput || otpInput.length < 5) {
+                showTrackerToast("Please enter the complete OTP security code.", "error");
+                return;
+            }
+
+            if (!auth.currentUser) {
+                showTrackerToast("Authentication session not found. Please log in again.", "error");
+                cancelOTPLogin();
+                return;
+            }
+
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin mr-2"></i> <span>Verifying OTP...</span>`;
+            submitBtn.disabled = true;
+
+            try {
+                const res = await runRemoteAPI('verifyOTP', { 
+                    otp: otpInput,
+                    uid: auth.currentUser.uid,
+                    email: auth.currentUser.email
+                });
+                
+                if (res && res.status === 'success') {
+                    // Mark session as active for 7 days
+                    setSessionActive();
+                    showTrackerToast("Identity confirmed!", "success");
+                    
+                    document.getElementById('login-view').style.opacity = '0';
+                    setTimeout(() => {
+                        document.getElementById('login-view').classList.add('hidden');
+                        document.getElementById('app-view').classList.remove('hidden');
+                        document.getElementById('app-view').classList.add('flex');
+                        initTrackerApp();
+                    }, 400);
+                } else {
+                    throw new Error(res ? res.message : "Code mismatch.");
+                }
+            } catch (err) {
+                showTrackerToast(err.message || "The code entered is invalid or expired.", "error");
+                document.getElementById('login-otp').value = ""; // Reset code box
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+
+        function cancelOTPLogin() {
+            document.getElementById('step-2-otp').classList.remove('step-active');
+            document.getElementById('step-2-otp').classList.add('step-hidden');
+            
+            document.getElementById('step-1-credentials').classList.remove('step-hidden');
+            document.getElementById('step-1-credentials').classList.add('step-active');
+            
+            document.getElementById('login-otp').value = "";
+        }
+        
+        async function handleTrackerLogout() {
+            showConfirmModal("Lock Session?", "Log out and secure the gateway?", async () => {
+                try {
+                    await signOut(auth);
+                    clearSession();
+                    document.getElementById('login-id').value = '';
+                    document.getElementById('login-pass').value = '';
+                    cancelOTPLogin();
+                    
+                    const appView = document.getElementById('app-view');
+                    appView.classList.add('hidden');
+                    appView.classList.remove('flex');
+                    
+                    const loginView = document.getElementById('login-view');
+                    loginView.classList.remove('hidden');
+                    setTimeout(() => { loginView.style.opacity = '1'; }, 50);
+                    showTrackerToast("Successfully logged out.", "success");
+                } catch (e) {
+                    showTrackerToast("Logout failed.", "error");
+                }
+            });
+        }
+
+        // Automatic authentication observer mapping with 7-day persistence
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                // If already authenticated AND session is still valid within 7 days
+                if (isSessionValid()) {
+                    document.getElementById('login-view').classList.add('hidden');
+                    document.getElementById('app-view').classList.remove('hidden');
+                    document.getElementById('app-view').classList.add('flex');
+                    initTrackerApp();
+                } else {
+                    // 7 days expired or fresh device: Challenge OTP
+                    clearSession();
+                    document.getElementById('step-1-credentials').classList.remove('step-active');
+                    document.getElementById('step-1-credentials').classList.add('step-hidden');
+                    
+                    document.getElementById('step-2-otp').classList.remove('step-hidden');
+                    document.getElementById('step-2-otp').classList.add('step-active');
+                    
+                    // Request a fresh code automatically for convenience
+                    try {
+                        const token = await user.getIdToken();
+                        await runRemoteAPI('requestOTP', {
+                            uid: user.uid,
+                            email: user.email,
+                            token: token
+                        });
+                        showTrackerToast("Session renewal. Enter the new OTP sent to Telegram.", "success");
+                    } catch (e) {
+                        showTrackerToast("Please re-authenticate.", "error");
+                        cancelOTPLogin();
+                    }
+                }
+            } else {
+                // Not authenticated
+                clearSession();
+            }
+        });
+
+        // ==========================================
+        
+        let appState = { transactions: [], dps: [], balances: { cash: 0, bank: 0, dps: 0, bankAccounts: {} } };
+        let bankAccounts = []; 
+        let currentTrackerTab = 'home';
+        let confirmingCallback = null;
+        let analyticsPieChart = null; // Used for destroying and re-rendering pie chart
+
+        function initTrackerApp() {
+            startClockService();
+            loadLocalBanks();
+            setTodayDateInputs();
+            loadVerifiedEmail();
+            fetchInitialLedgerData();
+        }
+
+        function loadVerifiedEmail() {
+            // Load custom verified email if it exists, otherwise fallback to login email
+            let saved = localStorage.getItem('verified_report_email');
+            if (!saved && auth.currentUser) saved = auth.currentUser.email;
+            document.getElementById('current-verified-email').textContent = saved || "No email configured";
+        }
+
+        function startEmailChange() {
+            document.getElementById('email-display-container').classList.add('hidden');
+            document.getElementById('email-edit-container').classList.remove('hidden');
+            document.getElementById('new-report-email').value = '';
+        }
+
+        function cancelEmailChange() {
+            document.getElementById('email-edit-container').classList.add('hidden');
+            document.getElementById('email-otp-container').classList.add('hidden');
+            document.getElementById('email-display-container').classList.remove('hidden');
+            document.getElementById('email-verification-otp').value = '';
+        }
+
+        async function requestReportEmailOTP() {
+            const email = document.getElementById('new-report-email').value.trim();
+            if(!email || !email.includes('@')) return showTrackerToast("Please enter a valid email address.", "error");
+            
+            const btn = document.getElementById('btn-send-email-otp');
+            const ogText = btn.innerHTML;
+            btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Sending...`;
+            btn.disabled = true;
+
+            const res = await runRemoteAPI('requestEmailOTP', { email });
+            btn.innerHTML = ogText;
+            btn.disabled = false;
+
+            if(res && res.status === 'success') {
+                showTrackerToast("Verification code sent to your email!", "success");
+                document.getElementById('email-edit-container').classList.add('hidden');
+                document.getElementById('email-otp-container').classList.remove('hidden');
+            }
+        }
+
+        async function verifyReportEmailOTP() {
+            const email = document.getElementById('new-report-email').value.trim();
+            const otp = document.getElementById('email-verification-otp').value.trim();
+            if(!otp || otp.length < 5) return showTrackerToast("Please enter the full code.", "error");
+
+            const btn = document.getElementById('btn-verify-email-otp');
+            const ogText = btn.innerHTML;
+            btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Verifying...`;
+            btn.disabled = true;
+
+            const res = await runRemoteAPI('verifyEmailOTP', { email, otp });
+            btn.innerHTML = ogText;
+            btn.disabled = false;
+
+            if(res && res.status === 'success') {
+                localStorage.setItem('verified_report_email', email);
+                showTrackerToast("Report Delivery Email updated successfully!", "success");
+                loadVerifiedEmail();
+                cancelEmailChange();
+            }
+        }
+
+        function loadLocalBanks() {
+            const saved = localStorage.getItem('pocket_banks');
+            if (saved) {
+                bankAccounts = JSON.parse(saved);
+            } else {
+                bankAccounts = []; // Ensure it defaults safely
+                localStorage.setItem('pocket_banks', JSON.stringify(bankAccounts));
+            }
+            populateBankSelectors();
+            renderSetupBanks();
+        }
+
+        function saveBanks() {
+            localStorage.setItem('pocket_banks', JSON.stringify(bankAccounts));
+            populateBankSelectors(); renderSetupBanks(); updateUIWidgets();
+        }
+
+        function populateBankSelectors() {
+            const addDropdown = document.getElementById('tx_custom_bank');
+            const transDropdown = document.getElementById('transfer_source');
+            const editDropdown = document.getElementById('edit_tx_source_dropdown');
+            
+            addDropdown.innerHTML = ''; transDropdown.innerHTML = '';
+            editDropdown.innerHTML = `<option value="Cash">💵 Pocket Cash</option>`;
+
+            bankAccounts.forEach(b => {
+                const opt = `<option value="${b.name}">${b.name} (${b.number})</option>`;
+                addDropdown.insertAdjacentHTML('beforeend', opt);
+                transDropdown.insertAdjacentHTML('beforeend', opt);
+                editDropdown.insertAdjacentHTML('beforeend', `<option value="${b.name}">🏦 ${b.name}</option>`);
+            });
+        }
+
+        function startClockService() {
+            const clockEl = document.getElementById('live-clock');
+            function updateClock() {
+                const options = { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true };
+                clockEl.textContent = new Date().toLocaleTimeString('en-US', options);
+            }
+            updateClock(); setInterval(updateClock, 1000);
+        }
+
+        function setTodayDateInputs() {
+            const now = new Date();
+            const todayStr = now.toISOString().split('T')[0];
+            const currentYM = now.toISOString().substring(0, 7);
+            
+            document.getElementById('custom-date').value = todayStr;
+            document.getElementById('dps-date-input').value = todayStr;
+            document.getElementById('transfer-date').value = todayStr;
+            
+            // Set month selectors for analytics and report
+            document.getElementById('analytics-month').value = currentYM;
+            document.getElementById('pdf-report-month').value = currentYM;
+
+            const h = String(now.getHours()).padStart(2, '0');
+            const m = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('custom-time').value = `${h}:${m}`;
+            document.getElementById('transfer-time').value = `${h}:${m}`;
+        }
+
+        function toggleCustomTimeFields(checkbox, formType) {
+            const containerId = formType === 'tx' ? 'custom-time-fields' : 'transfer-time-fields';
+            if (checkbox.checked) document.getElementById(containerId).classList.remove('hidden');
+            else { document.getElementById(containerId).classList.add('hidden'); setTodayDateInputs(); }
+        }
+
+        function switchTrackerTab(tabId) {
+            currentTrackerTab = tabId;
+            document.querySelectorAll('.view-panel').forEach(p => p.classList.add('hidden'));
+            document.getElementById(`view-${tabId}`).classList.remove('hidden');
+
+            ['home', 'add', 'transfer', 'dps', 'history', 'reports'].forEach(b => {
+                const btnMobile = document.getElementById(`mobile-nav-${b}`);
+                if (btnMobile) btnMobile.className = b === tabId ? "flex flex-col items-center justify-center text-primary transition w-16" : "flex flex-col items-center justify-center text-slate-400 hover:text-slate-600 transition w-16";
+                const btnDesktop = document.getElementById(`desktop-nav-${b}`);
+                if (btnDesktop) btnDesktop.className = b === tabId ? "px-3.5 py-2 text-sm font-bold rounded-xl text-primary bg-primary/10 transition" : "px-3.5 py-2 text-sm font-bold rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition";
+            });
+            document.getElementById('expense-tracker-system').scrollTo({ top: 0, behavior: 'smooth' });
+
+            // Ensure analytics chart is rendered if we switch to the reports tab
+            if(tabId === 'reports') {
+                generateAnalytics();
+            }
+        }
+
+        function toggleAccountSection(accountSource) {
+            document.getElementById('tx_source').value = accountSource;
+            const tabCash = document.getElementById('acc-tab-cash'), tabBank = document.getElementById('acc-tab-bank');
+            const btnText = document.getElementById('tx-btn-text'), bankContainer = document.getElementById('custom-bank-selector-container');
+            if (accountSource === 'Cash') {
+                tabCash.className = "flex-1 py-2.5 text-center text-xs md:text-sm font-bold rounded-xl bg-white text-slate-800 shadow-sm transition";
+                tabBank.className = "flex-1 py-2.5 text-center text-xs md:text-sm font-bold rounded-xl text-slate-500 hover:text-slate-800 transition";
+                btnText.textContent = "Save Cash Transaction"; bankContainer.classList.add('hidden');
+            } else {
+                tabCash.className = "flex-1 py-2.5 text-center text-xs md:text-sm font-bold rounded-xl text-slate-500 hover:text-slate-800 transition";
+                tabBank.className = "flex-1 py-2.5 text-center text-xs md:text-sm font-bold rounded-xl bg-white text-slate-800 shadow-sm transition";
+                btnText.textContent = "Save Bank Transaction"; bankContainer.classList.remove('hidden');
+            }
+        }
+
+        function selectFormType(source, type) {
+            toggleAccountSection(source);
+            const radioEl = document.querySelector(`input[name="tx_type"][value="${type}"]`);
+            if (radioEl) { radioEl.checked = true; onTxTypeChanged(); }
+        }
+
+        function onTxTypeChanged() {
+            const selectedType = document.querySelector('input[name="tx_type"]:checked').value;
+            const labelExpense = document.getElementById('label-type-expense'), labelDeposit = document.getElementById('label-type-deposit');
+            labelExpense.className = selectedType === 'Expense' ? "cursor-pointer border-2 border-red-500 rounded-2xl p-3 text-center block bg-red-50/50 transition" : "cursor-pointer border-2 border-slate-200 rounded-2xl p-3 text-center block bg-slate-50 transition";
+            labelDeposit.className = selectedType === 'Deposit' ? "cursor-pointer border-2 border-emerald-500 rounded-2xl p-3 text-center block bg-emerald-50/50 transition" : "cursor-pointer border-2 border-slate-200 rounded-2xl p-3 text-center block bg-slate-50 transition";
+        }
+
+        function showTrackerToast(message, type = 'success') {
+            const container = document.getElementById('tracker-toast-container');
+            const toast = document.createElement('div');
+            let borderClass = type === 'success' ? 'border-emerald-500' : 'border-red-500';
+            let iconClass = type === 'success' ? 'fa-solid fa-circle-check text-emerald-500' : 'fa-solid fa-triangle-exclamation text-red-500';
+            toast.className = `p-4 bg-white border-l-4 ${borderClass} shadow-lg rounded-2xl flex items-center gap-3 w-full transition-all duration-300 transform translate-y-2 opacity-0 pointer-events-auto`;
+            toast.innerHTML = `<i class="${iconClass} text-base shrink-0"></i><div class="flex-1 text-xs md:text-sm font-semibold text-slate-700">${message}</div><button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-slate-600 text-xs shrink-0"><i class="fa-solid fa-xmark"></i></button>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
+            setTimeout(() => { toast.classList.add('opacity-0', 'translate-y-2'); setTimeout(() => toast.remove(), 300); }, 4500);
+        }
+
+        function setLoadingState(show, title = 'Syncing Records...', desc = 'Updating Google Sheet data.') {
+            const banner = document.getElementById('loading-banner');
+            if (banner) {
+                document.getElementById('loading-title').textContent = title; 
+                document.getElementById('loading-desc').textContent = desc;
+                banner.classList[show ? 'remove' : 'add']('hidden');
+            }
+        }
+
+        function showConfirmModal(title, desc, onConfirm) {
+            document.getElementById('confirm-title').textContent = title; document.getElementById('confirm-desc').textContent = desc;
+            document.getElementById('confirm-modal').classList.remove('hidden'); confirmingCallback = onConfirm;
+            document.getElementById('confirm-cancel-btn').onclick = () => { document.getElementById('confirm-modal').classList.add('hidden'); confirmingCallback = null; };
+            document.getElementById('confirm-yes-btn').onclick = () => { document.getElementById('confirm-modal').classList.add('hidden'); if(confirmingCallback) confirmingCallback(); confirmingCallback = null; };
+        }
+
+        async function fetchInitialLedgerData() {
+            setLoadingState(true, "Loading Records...", "Fetching data from Supabase instantly...");
+            try {
+                // Fetch core data from Supabase
+                const { data: txs, error: txErr } = await supabase.from('transactions').select('*').order('date', { ascending: false }).order('time', { ascending: false });
+                const { data: dpss, error: dpsErr } = await supabase.from('dps').select('*').order('date', { ascending: false });
+
+                if (txErr) throw txErr;
+                if (dpsErr) throw dpsErr;
+
+                let cashBal = 0, bankBal = 0, dpsBal = 0;
+                let bankAccs = {};
+
+                // Process transactions and calculate balances on the client side
+                const formattedTxs = txs.map(item => {
+                    if (item.type === 'Expense') {
+                        if (item.source === 'Cash') cashBal -= item.amount;
+                        else { bankBal -= item.amount; bankAccs[item.source] = (bankAccs[item.source] || 0) - item.amount; }
+                    } else if (item.type === 'Deposit') {
+                        if (item.source === 'Cash') cashBal += item.amount;
+                        else { bankBal += item.amount; bankAccs[item.source] = (bankAccs[item.source] || 0) + item.amount; }
+                    } else if (item.type === 'Bank_to_Current') { 
+                        cashBal += item.amount; bankBal -= item.amount;
+                        if(item.source !== 'Cash') { bankAccs[item.source] = (bankAccs[item.source] || 0) - item.amount; }
+                    } else if (item.type === 'Cash_to_Bank') {
+                        cashBal -= item.amount; bankBal += item.amount;
+                        if(item.source !== 'Cash') { bankAccs[item.source] = (bankAccs[item.source] || 0) + item.amount; }
+                    }
+                    return { ...item, timestamp: item.created_at };
+                });
+
+                const formattedDps = dpss.map(item => {
+                    dpsBal += item.amount;
+                    return { id: item.id, amount: item.amount, installmentNo: item.installment_no, note: item.note, date: item.date, timestamp: item.created_at, bank: item.bank || '', acNo: item.ac_no || '', maturityDate: item.maturity_date || '' };
+                });
+
+                appState = {
+                    transactions: formattedTxs,
+                    dps: formattedDps,
+                    balances: { cash: cashBal, bank: bankBal, dps: dpsBal, bankAccounts: bankAccs }
+                };
+
+                detectAndAddMissingBanks(); 
+                updateUIWidgets();
+            } catch (err) {
+                console.error(err);
+                showTrackerToast("Could not retrieve ledger from Supabase.", "error");
+            } finally {
+                setLoadingState(false);
+            }
+        }
+
+        function detectAndAddMissingBanks() {
+            let changed = false;
+            appState.transactions.forEach(t => {
+                if (t.source && t.source !== 'Cash' && t.source !== 'Bank' && !bankAccounts.some(b => b.name === t.source)) {
+                    bankAccounts.push({ name: t.source, number: "Discovered Account" }); changed = true;
+                }
+            });
+            if (changed) saveBanks();
+        }
+
+        function updateUIWidgets() {
+            document.getElementById('balance-cash').textContent = `৳ ${appState.balances.cash.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('balance-bank').textContent = `৳ ${appState.balances.bank.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('balance-dps').textContent = `৳ ${appState.balances.dps.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+
+            const bankGrid = document.getElementById('bank-accounts-grid'); bankGrid.innerHTML = '';
+            if (bankAccounts.length === 0) bankGrid.innerHTML = `<div class="col-span-full text-center text-slate-400 py-4 text-xs font-bold uppercase tracking-wider">No custom accounts added yet.</div>`;
+            else bankAccounts.forEach(b => {
+                const balance = appState.balances.bankAccounts[b.name] || 0;
+                bankGrid.insertAdjacentHTML('beforeend', `<div class="bg-slate-50 border border-slate-200 p-4 rounded-2xl shadow-xs"><span class="text-[10px] font-bold text-slate-400 uppercase font-mono block truncate">${b.name}</span><span class="text-[9px] text-slate-400 block truncate font-mono">${b.number}</span><p class="text-sm md:text-base font-bold text-primary mt-2">৳ ${balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</p></div>`);
+            });
+            renderLedgerList(); 
+            calculateStudentAllowanceStatistics();
+            if(currentTrackerTab === 'reports') generateAnalytics();
+        }
+
+        function calculateStudentAllowanceStatistics() {
+            const txs = appState.transactions, now = new Date(), currentYM = now.toISOString().substring(0, 7);
+            const lastMonth = new Date(); lastMonth.setMonth(now.getMonth() - 1); const lastYM = lastMonth.toISOString().substring(0, 7);
+            let curExp = 0, curInc = 0, lastExp = 0;
+            
+            txs.forEach(t => {
+                const descLower = (t.description || '').toLowerCase().trim();
+                const isLendRet = descLower.startsWith('lend') || descLower.startsWith('return from');
+                
+                if (!t.date || isLendRet) return; 
+                
+                const txM = String(t.date).substring(0, 7);
+                if (txM === currentYM) { 
+                    if (t.type === 'Expense') curExp += Number(t.amount); 
+                    else if (t.type === 'Deposit') curInc += Number(t.amount); 
+                } else if (txM === lastYM && t.type === 'Expense') {
+                    lastExp += Number(t.amount);
+                }
+            });
+            
+            document.getElementById('stat-month-expense').textContent = `৳ ${curExp.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            document.getElementById('stat-month-income').textContent = `৳ ${curInc.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            
+            const diff = curExp - lastExp;
+            let text = lastExp === 0 ? `You spent <strong>৳${curExp.toLocaleString()}</strong> this month.` : diff > 0 ? `⚠️ Spent <strong>৳${curExp.toLocaleString()}</strong> (<strong>৳${diff.toLocaleString()} more</strong> than last month).` : `🎉 Spent <strong>৳${curExp.toLocaleString()}</strong> (<strong>৳${Math.abs(diff).toLocaleString()} less</strong> than last month).`;
+            document.getElementById('stat-comparison-text').innerHTML = `<i class="fa-solid fa-brain text-primary mr-1.5 animate-pulse"></i>${text} (Excludes lend/return from)`;
+        }
+
+        // ==========================================
+        // ANALYTICS PIE CHART GENERATOR
+        // ==========================================
+        function generateAnalytics() {
+            const monthVal = document.getElementById('analytics-month').value;
+            if(!monthVal) return;
+            
+            const txs = appState.transactions.filter(t => t.date && t.date.startsWith(monthVal) && t.type === 'Expense');
+            
+            const validTxs = txs.filter(t => {
+                const desc = (t.description || '').toLowerCase().trim();
+                return !(desc.startsWith('lend') || desc.startsWith('return from'));
+            });
+
+            const groups = {};
+            validTxs.forEach(t => {
+                const cat = (t.description || 'Unknown').trim().charAt(0).toUpperCase() + (t.description || 'Unknown').trim().slice(1).toLowerCase();
+                groups[cat] = (groups[cat] || 0) + Number(t.amount);
+            });
+
+            const labels = Object.keys(groups);
+            const data = Object.values(groups);
+            const colors = ['#f87171', '#60a5fa', '#34d399', '#fbbf24', '#a78bfa', '#f472b6', '#38bdf8', '#c084fc', '#fcd34d'];
+
+            if(analyticsPieChart) analyticsPieChart.destroy();
+            
+            const ctx = document.getElementById('expense-pie-chart').getContext('2d');
+            
+            if (labels.length === 0) {
+                analyticsPieChart = new Chart(ctx, {
+                    type: 'pie',
+                    data: { labels: ['No Expenses'], datasets: [{ data: [1], backgroundColor: ['#f1f5f9'] }] },
+                    options: { plugins: { tooltip: { enabled: false } } }
+                });
+            } else {
+                analyticsPieChart = new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: data,
+                            backgroundColor: colors.slice(0, labels.length)
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'bottom', labels: { font: { size: 10, family: 'Times New Roman' } } }
+                        }
+                    }
+                });
+            }
+
+            const detailsContainer = document.getElementById('analytics-details');
+            if (validTxs.length === 0) {
+                detailsContainer.innerHTML = '<p class="text-xs text-slate-400">No qualifying expenses for this month.</p>';
+            } else {
+                validTxs.sort((a,b) => b.amount - a.amount);
+                const listHtml = validTxs.map(t => `
+                    <div class="flex justify-between items-center text-xs py-2 border-b border-slate-200 last:border-0 bg-white px-3 rounded-lg shadow-sm">
+                        <div class="flex-1 min-w-0 pr-2">
+                            <p class="font-bold text-slate-700 truncate">${t.description}</p>
+                            <p class="text-[9px] text-slate-400 font-mono mt-0.5">${t.date} | ${t.source}</p>
+                        </div>
+                        <span class="font-bold text-red-500 shrink-0">৳${Number(t.amount).toLocaleString()}</span>
+                    </div>
+                `).join('');
+                detailsContainer.innerHTML = listHtml;
+            }
+        }
+
+        function getCombinedJournal() {
+            let j = appState.transactions.map(t => ({ masterId: t.id, dbType: 'transaction', date: t.date, time: t.time, type: t.type, source: t.source, amount: t.amount, description: t.description, timestamp: t.timestamp }));
+            appState.dps.forEach(d => j.push({ masterId: d.id, dbType: 'dps', date: d.date, time: '12:00', type: 'DPS', source: d.bank || 'Bank', amount: d.amount, description: `DPS Deposit: ${d.installmentNo} ${d.acNo ? `(A/C: ${d.acNo})` : ''}`, timestamp: d.timestamp }));
+            return j.sort((a, b) => new Date(`${b.date}T${b.time || '00:00'}`) - new Date(`${a.date}T${a.time || '00:00'}`));
+        }
+
+        function renderLedgerList() {
+            const search = document.getElementById('ledger-search').value.toLowerCase();
+            const filter = document.getElementById('ledger-type-filter').value;
+            const mobile = document.getElementById('master-ledger-vertical-container');
+            const desk = document.getElementById('master-ledger-table-body');
+            const mini = document.getElementById('mini-ledger-list');
+            
+            mobile.innerHTML = ''; desk.innerHTML = ''; mini.innerHTML = '';
+
+            const journal = getCombinedJournal().filter(i => {
+                const desc = (i.description || '').toLowerCase().trim();
+                const type = (i.type || '').toLowerCase();
+                return (desc.includes(search) || type.includes(search)) && 
+                       (filter === 'All' || (filter === 'Transfer' ? i.type === 'Bank_to_Current' : filter === 'DPS' ? i.dbType === 'dps' : i.type === filter));
+            });
+
+            if (journal.length === 0) {
+                mobile.innerHTML = `<div class="p-8 text-center text-slate-400 bg-white border border-slate-200 rounded-3xl"><p class="text-xs">No records found.</p></div>`;
+                desk.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-slate-400">No matching records found.</td></tr>`;
+            } else {
+                journal.forEach(item => {
+                    let c = 'text-slate-800', s = '', l = item.type;
+                    const desc = (item.description || '').toLowerCase().trim();
+                    const isLendRet = desc.startsWith('lend') || desc.startsWith('return from');
+
+                    if (item.type === 'Expense') { c = 'text-red-600'; s = '-'; l = 'Expense'; } 
+                    else if (item.type === 'Deposit') { c = 'text-emerald-600'; s = '+'; l = 'Deposit'; } 
+                    else if (item.type === 'Bank_to_Current') { c = 'text-primary'; l = 'Transfer↓'; } 
+                    else if (item.type === 'Cash_to_Bank') { c = 'text-teal-600'; s = '+'; l = 'Transfer↑'; } 
+                    else if (item.type === 'Lend_Log') { c = 'text-amber-500'; l = 'Lend/Return'; } 
+                    else if (item.type === 'DPS') { c = 'text-pink-600'; l = 'DPS'; }
+                    
+                    if (isLendRet) { c = 'text-amber-500'; l = 'Lend/Return'; }
+
+                    let dStr = item.date; 
+                    try { dStr = new Date(item.date).toLocaleDateString('en-US', {month: 'short', day: 'numeric'}); } catch(e){}
+
+                    mobile.insertAdjacentHTML('beforeend', `<div class="bg-white border border-slate-200 p-4 rounded-2xl flex justify-between items-center gap-2 hover:bg-slate-50 transition-all"><div class="flex-1 min-w-0"><div class="flex items-center gap-1.5"><span class="text-[10px] font-bold text-slate-400 uppercase font-mono">${dStr}</span><span class="text-[9px] font-bold bg-slate-50 border border-slate-200 px-1.5 rounded-md text-slate-500 uppercase">${l}</span></div><p class="text-xs font-bold text-slate-700 mt-1 truncate">${item.description}</p></div><div class="text-right flex flex-col items-end shrink-0"><span class="text-xs font-bold ${c}">${s} ৳${item.amount.toLocaleString()}</span><div class="flex gap-2 mt-1.5"><button onclick="openEditModal('${item.dbType}', '${item.masterId}')" class="text-[10px] text-primary hover:underline font-bold">Edit</button><button onclick="triggerDeletionPrompt('${item.dbType}', '${item.masterId}')" class="text-[10px] text-red-500 hover:underline font-bold">Delete</button></div></div></div>`);
+
+                    desk.insertAdjacentHTML('beforeend', `<tr class="hover:bg-slate-50/50"><td class="py-3 px-4 font-mono text-xs text-slate-500">${item.date} <span class="text-[10px]">${item.time || ''}</span></td><td class="py-3 px-4"><span class="text-xs font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 border border-slate-200">${l}</span></td><td class="py-3 px-4 text-xs font-semibold text-slate-600">${item.source}</td><td class="py-3 px-4 text-xs font-bold text-slate-700 truncate max-w-xs">${item.description}</td><td class="py-3 px-4 text-right font-bold ${c} text-xs">${s} ৳${item.amount.toLocaleString()}</td><td class="py-3 px-4 text-center"><button onclick="openEditModal('${item.dbType}', '${item.masterId}')" class="text-xs text-primary hover:underline font-bold mr-3"><i class="fa-solid fa-pen"></i></button><button onclick="triggerDeletionPrompt('${item.dbType}', '${item.masterId}')" class="text-xs text-red-500 hover:underline font-bold"><i class="fa-solid fa-trash"></i></button></td></tr>`);
+                });
+            }
+
+            const min = getCombinedJournal().slice(0, 3);
+            if (min.length === 0) {
+                mini.innerHTML = `<p class="p-6 text-center text-xs text-slate-400">No logs saved yet.</p>`;
+            } else {
+                min.forEach(i => {
+                    let c = 'text-slate-800', s = '';
+                    const desc = (i.description || '').toLowerCase().trim();
+                    const isLendRet = desc.startsWith('lend') || desc.startsWith('return from');
+
+                    if (i.type === 'Expense') { c = 'text-red-600'; s = '-'; } 
+                    else if (i.type === 'Deposit') { c = 'text-emerald-600'; s = '+'; } 
+                    else if (i.type === 'Bank_to_Current') c = 'text-primary'; 
+                    else if (i.type === 'Cash_to_Bank') c = 'text-teal-600'; 
+                    else if (i.type === 'Lend_Log') c = 'text-amber-500'; 
+                    else if (i.type === 'DPS') c = 'text-pink-600';
+                    
+                    if (isLendRet) { c = 'text-amber-500'; }
+
+                    mini.insertAdjacentHTML('beforeend', `<div class="p-4 flex justify-between items-center text-xs md:text-sm hover:bg-slate-50 bg-white"><div class="min-w-0 flex-1"><p class="font-bold text-slate-700 truncate">${i.description}</p><p class="text-[9px] text-slate-400 mt-0.5">${i.date} | ${i.source}</p></div><span class="font-bold shrink-0 ml-3 ${c}">${s} ৳${i.amount.toLocaleString()}</span></div>`);
+                });
+            }
+            document.getElementById('table-total-indicator').textContent = `Total active logs: ${journal.length}`;
+        }
+
+        function filterLedgers() { renderLedgerList(); }
+        function refreshLedgerData() { fetchInitialLedgerData(); }
+
+        async function handleTransactionSubmit(event) {
+            event.preventDefault(); const fd = new FormData(event.target);
+            const isCust = document.getElementById('custom-time-toggle').checked, now = new Date();
+            const descriptionValue = fd.get('tx_description') || '';
+
+            const descLower = descriptionValue.toLowerCase().trim();
+            const isLendOrReturn = descLower.startsWith('lend') || descLower.startsWith('return from');
+            
+            const payload = { 
+                date: isCust ? document.getElementById('custom-date').value : now.toISOString().split('T')[0], 
+                time: isCust ? document.getElementById('custom-time').value : `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`, 
+                type: fd.get('tx_type'), 
+                amount: parseFloat(fd.get('tx_amount')), 
+                source: fd.get('tx_source') === 'Cash' ? 'Cash' : fd.get('tx_custom_bank'), 
+                description: descriptionValue
+            };
+
+            setLoadingState(true, "Saving...", "Writing to Supabase.");
+            try {
+                // 1. Fast write to Supabase
+                const { data, error } = await supabase.from('transactions').insert([payload]).select();
+                if (error) throw error;
+                
+                // 2. Get the generated ID and send to Google Sheets silently in background
+                payload.id = data[0].id;
+                runRemoteAPISilent('addTransaction', payload);
+
+                const msg = isLendOrReturn ? "Lend/Return logged!" : "Transaction saved instantly!";
+                showTrackerToast(msg, "success"); 
+                event.target.reset();
+                document.getElementById('custom-time-toggle').checked = false; document.getElementById('custom-time-fields').classList.add('hidden');
+                setTodayDateInputs(); 
+                await fetchInitialLedgerData(); 
+            } catch (err) {
+                showTrackerToast("Failed to save transaction.", "error");
+                setLoadingState(false);
+            }
+        }
+        
+        async function handleDPSSubmit(event) {
+            event.preventDefault(); const fd = new FormData(event.target);
+            const payload = { 
+                amount: parseFloat(fd.get('dps_amount')), 
+                installment_no: fd.get('dps_installment'), 
+                note: fd.get('dps_note') || "", 
+                date: fd.get('dps_date'),
+                bank: fd.get('dps_bank') || "",
+                ac_no: fd.get('dps_ac_no') || "",
+                maturity_date: fd.get('dps_maturity') || null
+            };
+            
+            setLoadingState(true, "Saving...", "Writing to Supabase.");
+            try {
+                const { data, error } = await supabase.from('dps').insert([payload]).select();
+                if (error) throw error;
+                
+                // Format payload for Sheets backup
+                const sheetsPayload = { ...payload, id: data[0].id, installmentNo: payload.installment_no, acNo: payload.ac_no, maturityDate: payload.maturity_date };
+                runRemoteAPISilent('addDPS', sheetsPayload);
+
+                showTrackerToast("DPS installment logged instantly!", "success"); 
+                event.target.reset();
+                setTodayDateInputs(); 
+                await fetchInitialLedgerData(); 
+            } catch (err) {
+                showTrackerToast("Failed to save DPS.", "error");
+                setLoadingState(false);
+            }
+        }
+
+        let currentTransferDirection = 'Bank_to_Current';
+
+        function setTransferDirection(direction) {
+            currentTransferDirection = direction;
+            const b2c = document.getElementById('transfer-dir-b2c');
+            const c2b = document.getElementById('transfer-dir-c2b');
+            const heading = document.getElementById('transfer-heading');
+            const subheading = document.getElementById('transfer-subheading');
+            const bankLabel = document.getElementById('transfer-bank-label');
+            const descInput = document.querySelector('input[name="transfer_desc"]');
+
+            if (direction === 'Bank_to_Current') {
+                b2c.className = "flex-1 py-2.5 text-center text-xs md:text-sm font-bold rounded-xl bg-white text-slate-800 shadow-sm transition";
+                c2b.className = "flex-1 py-2.5 text-center text-xs md:text-sm font-bold rounded-xl text-slate-500 hover:text-slate-800 transition";
+                heading.textContent = "Bank to Cash Transfer";
+                subheading.textContent = "Withdraw funds from any Bank Account into Pocket Cash Wallet";
+                bankLabel.textContent = "Transfer From Bank";
+                if (descInput) descInput.value = "Withdrawn pocket cash from bank account";
+            } else {
+                c2b.className = "flex-1 py-2.5 text-center text-xs md:text-sm font-bold rounded-xl bg-white text-slate-800 shadow-sm transition";
+                b2c.className = "flex-1 py-2.5 text-center text-xs md:text-sm font-bold rounded-xl text-slate-500 hover:text-slate-800 transition";
+                heading.textContent = "Cash to Bank Deposit";
+                subheading.textContent = "Deposit Pocket Cash into a Bank Account";
+                bankLabel.textContent = "Deposit Into Bank";
+                if (descInput) descInput.value = "Deposited pocket cash into bank account";
+            }
+        }
+
+        async function handleTransferSubmit(event) {
+            event.preventDefault(); const fd = new FormData(event.target);
+            const isCust = document.getElementById('transfer-time-toggle').checked, now = new Date();
+            const payload = { 
+                date: isCust ? document.getElementById('transfer-date').value : now.toISOString().split('T')[0], 
+                time: isCust ? document.getElementById('transfer-time').value : `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`, 
+                type: currentTransferDirection,
+                amount: parseFloat(fd.get('transfer_amount')), 
+                source: fd.get('transfer_source'), 
+                description: fd.get('transfer_desc') 
+            };
+            
+            setLoadingState(true, "Transferring...", "Updating Supabase database.");
+            try {
+                const { data, error } = await supabase.from('transactions').insert([payload]).select();
+                if (error) throw error;
+
+                payload.id = data[0].id;
+                runRemoteAPISilent('addTransaction', payload);
+
+                showTrackerToast("Transfer logged instantly!", "success"); 
+                event.target.reset();
+                document.getElementById('transfer-time-toggle').checked = false; document.getElementById('transfer-time-fields').classList.add('hidden');
+                setTransferDirection('Bank_to_Current');
+                setTodayDateInputs(); 
+                await fetchInitialLedgerData(); 
+            } catch (err) {
+                showTrackerToast("Failed to complete transfer.", "error");
+                setLoadingState(false);
+            }
+        }
+
+        function closeTxModal() { document.getElementById('edit-tx-modal').classList.add('hidden'); }
+        function closeDPSModal() { document.getElementById('edit-dps-modal').classList.add('hidden'); }
+        
+        function toggleEditTxSourceVisibility() { 
+            const sourceContainer = document.getElementById('edit-tx-source-container');
+            if (sourceContainer) {
+                sourceContainer.classList[document.querySelector('select[name="edit_tx_type"]').value === 'Bank_to_Current' ? 'add' : 'remove']('hidden'); 
+            }
+        }
+
+        async function handleTxEditSubmit(e) {
+            e.preventDefault(); const f = e.target;
+            const payload = { id: f.edit_tx_id.value, type: f.edit_tx_type.value, source: f.edit_tx_source.value, amount: parseFloat(f.edit_tx_amount.value), description: f.edit_tx_description.value, date: f.edit_tx_date.value, time: f.edit_tx_time.value };
+            closeTxModal();
+            
+            setLoadingState(true, "Updating...", "Modifying record in Supabase.");
+            try {
+                const { error } = await supabase.from('transactions').update({
+                    type: payload.type, source: payload.source, amount: payload.amount, description: payload.description, date: payload.date, time: payload.time
+                }).eq('id', payload.id);
+                if (error) throw error;
+
+                runRemoteAPISilent('editTransaction', payload);
+                showTrackerToast("Updated instantly!", "success"); 
+                await fetchInitialLedgerData();
+            } catch (err) {
+                showTrackerToast("Update failed.", "error");
+                setLoadingState(false);
+            }
+        }
+
+        async function handleDPSEditSubmit(e) {
+            e.preventDefault(); const f = e.target;
+            const payload = { 
+                id: f.edit_dps_id.value, 
+                amount: parseFloat(f.edit_dps_amount.value), 
+                installmentNo: f.edit_dps_installment.value, 
+                note: f.edit_dps_note.value, 
+                date: f.edit_dps_date.value,
+                bank: f.edit_dps_bank.value,
+                acNo: f.edit_dps_ac_no.value,
+                maturityDate: f.edit_dps_maturity.value || null
+            };
+            closeDPSModal(); 
+            
+            setLoadingState(true, "Updating...", "Modifying DPS in Supabase.");
+            try {
+                const { error } = await supabase.from('dps').update({
+                    amount: payload.amount, installment_no: payload.installmentNo, note: payload.note, date: payload.date,
+                    bank: payload.bank, ac_no: payload.acNo, maturity_date: payload.maturityDate
+                }).eq('id', payload.id);
+                if (error) throw error;
+
+                runRemoteAPISilent('editDPS', payload);
+                showTrackerToast("DPS modified instantly!", "success"); 
+                await fetchInitialLedgerData();
+            } catch (err) {
+                showTrackerToast("DPS Update failed.", "error");
+                setLoadingState(false);
+            }
+        }
+
+        function triggerDeletionPrompt(dbType, id) {
+            showConfirmModal("Delete record?", "Are you sure you want to permanently erase this?", async () => {
+                setLoadingState(true, "Deleting...", "Removing from Supabase.");
+                try {
+                    const table = dbType === 'transaction' ? 'transactions' : 'dps';
+                    const { error } = await supabase.from(table).delete().eq('id', id);
+                    if (error) throw error;
+
+                    // Tell Sheets to delete in background
+                    const action = dbType === 'transaction' ? 'deleteTransaction' : 'deleteDPS';
+                    runRemoteAPISilent(action, { id });
+
+                    showTrackerToast("Record wiped.", "success"); 
+                    await fetchInitialLedgerData();
+                } catch (err) {
+                    showTrackerToast("Deletion failed.", "error");
+                    setLoadingState(false);
+                }
+            });
+        }
+
+        let editingBankIndex = -1;
+
+        function handleBankCreate(e) {
+            e.preventDefault(); 
+            const name = document.getElementById('new-bank-name').value.trim();
+            const number = document.getElementById('new-bank-number').value.trim();
+            
+            if (!name) return showTrackerToast("Bank name is required.", "error");
+            
+            const duplicateIdx = bankAccounts.findIndex(b => b.name.toLowerCase() === name.toLowerCase());
+            if (duplicateIdx !== -1 && duplicateIdx !== editingBankIndex) {
+                return showTrackerToast("Bank already exists.", "error");
+            }
+            
+            if (editingBankIndex > -1) {
+                bankAccounts[editingBankIndex] = { name, number };
+                showTrackerToast("Account updated successfully.", "success");
+                editingBankIndex = -1;
+                document.getElementById('bank-submit-btn').textContent = "Add Account Card";
+            } else {
+                bankAccounts.push({ name, number }); 
+                showTrackerToast("Account created successfully.", "success");
+            }
+            
+            saveBanks(); 
+            e.target.reset(); 
+        }
+
+        function editBank(i) {
+            document.getElementById('new-bank-name').value = bankAccounts[i].name;
+            document.getElementById('new-bank-number').value = bankAccounts[i].number;
+            document.getElementById('bank-submit-btn').textContent = "Update Account Card";
+            editingBankIndex = i;
+        }
+
+        function deleteBank(i) { showConfirmModal("Delete Bank Card?", "Delete from selector?", () => { bankAccounts.splice(i, 1); saveBanks(); showTrackerToast("Bank hidden.", "success"); }); }
+        
+        function renderSetupBanks() { 
+            const l = document.getElementById('setup-banks-list'); 
+            if (!l) return;
+            l.innerHTML = ''; 
+            bankAccounts.forEach((b, i) => l.insertAdjacentHTML('beforeend', `<div class="flex justify-between items-center bg-slate-50 border border-slate-155 p-2.5 rounded-xl text-xs"><div><span class="font-bold text-slate-700 block">${b.name}</span><span class="text-[10px] text-slate-400 font-mono">${b.number}</span></div><div><button type="button" onclick="editBank(${i})" class="text-primary hover:text-primary-hover mr-3"><i class="fa-solid fa-pen"></i></button><button type="button" onclick="deleteBank(${i})" class="text-red-500 hover:text-red-700"><i class="fa-solid fa-trash-can"></i></button></div></div>`)); 
+        }
+
+        let bulkRowIndex = 0;
+        function addBulkRow() {
+            const tbody = document.getElementById('bulk-rows-container'), rowId = `bulk-row-${bulkRowIndex++}`;
+            let opts = ''; bankAccounts.forEach(b => opts += `<option value="${b.name}">${b.name}</option>`);
+            tbody.insertAdjacentHTML('beforeend', `<tr id="${rowId}" class="border-b border-slate-150"><td class="p-2"><input type="date" name="bulk_date" value="${new Date().toISOString().split('T')[0]}" required class="border border-slate-200 rounded-lg px-2 py-1 text-xs w-full"></td><td class="p-2"><select name="bulk_type" class="border border-slate-200 rounded-lg px-2 py-1 text-xs w-full"><option value="Expense">Expense</option><option value="Deposit">Deposit</option></select></td><td class="p-2"><select name="bulk_source" class="border border-slate-200 rounded-lg px-2 py-1 text-xs w-full"><option value="Cash">Cash Wallet</option>${opts}</select></td><td class="p-2"><input type="number" step="0.01" name="bulk_amount" required placeholder="0.00" class="border border-slate-200 rounded-lg px-2 py-1 text-xs w-16"></td><td class="p-2"><input type="text" name="bulk_description" required placeholder="Reason" class="border border-slate-200 rounded-lg px-2 py-1 text-xs w-full"></td><td class="p-2 text-center"><button onclick="document.getElementById('${rowId}').remove(); toggleBulkSubmitVisibility();" class="text-red-500"><i class="fa-solid fa-trash"></i></button></td></tr>`);
+            toggleBulkSubmitVisibility();
+        }
+
+        function toggleBulkSubmitVisibility() { document.getElementById('bulk-submit-btn').classList[document.getElementById('bulk-rows-container').children.length > 0 ? 'remove' : 'add']('hidden'); }
+
+        async function submitBulkEntries() {
+            const rows = document.getElementById('bulk-rows-container').children; let txs = [];
+            for (let i = 0; i < rows.length; i++) {
+                const r = rows[i], date = r.querySelector('[name="bulk_date"]').value, amount = parseFloat(r.querySelector('[name="bulk_amount"]').value), desc = r.querySelector('[name="bulk_description"]').value.trim();
+                if (!date || isNaN(amount) || !desc) return showTrackerToast("Fill all bulk fields.", "error");
+                txs.push({ date, time: "12:00", type: r.querySelector('[name="bulk_type"]').value, amount, source: r.querySelector('[name="bulk_source"]').value, description: desc });
+            }
+            showConfirmModal("Upload Bulk?", `Push ${txs.length} past records to databases?`, async () => {
+                setLoadingState(true, "Uploading Bulk...", "Inserting rows into Supabase.");
+                try {
+                    const { data, error } = await supabase.from('transactions').insert(txs).select();
+                    if (error) throw error;
+
+                    // Append the generated IDs so Sheets can sync correctly
+                    const sheetsTxs = txs.map((t, index) => ({ ...t, id: data[index].id }));
+                    runRemoteAPISilent('addBulkTransactions', { transactions: sheetsTxs });
+
+                    showTrackerToast(`Uploaded ${txs.length} transactions instantly!`, "success"); 
+                    document.getElementById('bulk-rows-container').innerHTML = ''; 
+                    toggleBulkSubmitVisibility(); 
+                    await fetchInitialLedgerData(); 
+                } catch (err) {
+                    showTrackerToast("Bulk upload failed.", "error");
+                    setLoadingState(false);
+                }
+            });
+        }
+        
+        async function triggerTelegramPDFReport() {
+            const selectedMonth = document.getElementById('pdf-report-month').value;
+            
+            // Get verified custom email, or fallback to login email
+            let reportEmail = localStorage.getItem('verified_report_email');
+            if (!reportEmail && auth.currentUser) reportEmail = auth.currentUser.email;
+
+            showConfirmModal("Send PDF Report?", `Generate and send the PDF Report for ${selectedMonth}?`, async () => {
+                if (await runRemoteAPI('generateReport', { month: selectedMonth, email: reportEmail })) {
+                    showTrackerToast(`Report for ${selectedMonth} sent to Telegram & ${reportEmail}!`, "success");
+                }
+            });
+        }
+        
+        async function triggerConnectionTest() {
+             showTrackerToast("Testing connection with API...", "success");
+        }
+
+        async function syncLegacyDataFromSheets() {
+            showConfirmModal("Sync Legacy Data?", "Download all old records from Google Sheets and push them to Supabase? (Safe to run multiple times, avoids duplicates)", async () => {
+                setLoadingState(true, "Downloading...", "Fetching legacy data from Google Sheets.");
+                try {
+                    // 1. Fetch all data from sheets via Apps Script
+                    const result = await runRemoteAPI('getData', {});
+                    if (!result || !result.data) throw new Error("No data received from Sheets.");
+                    
+                    const sheetsData = result.data;
+                    const txs = sheetsData.transactions || [];
+                    const dpss = sheetsData.dps || [];
+                    
+                    if(txs.length === 0 && dpss.length === 0) {
+                         showTrackerToast("No legacy data found in Sheets.", "success");
+                         return;
+                    }
+
+                    setLoadingState(true, "Uploading...", `Migrating ${txs.length} transactions and ${dpss.length} DPS records to Supabase.`);
+                    
+                    // Helpers to clean up old Google Sheet formatting
+                    const parseTimeSafe = (timeStr) => {
+                        if (!timeStr) return '12:00';
+                        const str = String(timeStr).trim();
+                        
+                        if (/^([01]\d|2[0-3]):?([0-5]\d)(:?[0-5]\d)?$/.test(str)) {
+                            return str.substring(0, 5); // Return HH:MM
+                        }
+
+                        if (str.includes('T')) {
+                             const timePart = str.split('T')[1];
+                             if (timePart && timePart.length >= 5) {
+                                  return timePart.substring(0,5);
+                             }
+                        }
+                        
+                        try {
+                            const parsedDate = new Date(str);
+                            if (!isNaN(parsedDate.getTime())) {
+                                const h = String(parsedDate.getHours()).padStart(2, '0');
+                                const m = String(parsedDate.getMinutes()).padStart(2, '0');
+                                return `${h}:${m}`;
+                            }
+                        } catch(e) {}
+                        
+                        console.warn(`Could not safely parse time: "${str}", defaulting to 12:00`);
+                        return '12:00';
+                    };
+
+                    const parseDateSafe = (dateStr) => {
+                        if (!dateStr) return new Date().toISOString().split('T')[0];
+                        return String(dateStr).split('T')[0];
+                    };
+
+                    // 2. Format Transactions for Supabase
+                    const formattedTxs = txs.map(t => ({
+                        id: (t.id && String(t.id).length === 36) ? t.id : crypto.randomUUID(),
+                        date: parseDateSafe(t.date),
+                        time: parseTimeSafe(t.time),
+                        type: t.type,
+                        amount: parseFloat(t.amount) || 0,
+                        source: t.source,
+                        description: t.description || '',
+                        created_at: t.timestamp ? new Date(t.timestamp).toISOString() : new Date().toISOString()
+                    }));
+                    
+                    // 3. Format DPS for Supabase
+                    const formattedDps = dpss.map(d => ({
+                        id: (d.id && String(d.id).length === 36) ? d.id : crypto.randomUUID(),
+                        amount: parseFloat(d.amount) || 0,
+                        installment_no: d.installmentNo || '',
+                        note: d.note || '',
+                        date: parseDateSafe(d.date),
+                        created_at: d.timestamp ? new Date(d.timestamp).toISOString() : new Date().toISOString()
+                    }));
+                    
+                    // 4. Batch Upsert to Supabase
+                    if (formattedTxs.length > 0) {
+                        const { error: txErr } = await supabase.from('transactions').upsert(formattedTxs, { onConflict: 'id' });
+                        if (txErr) throw txErr;
+                    }
+                    
+                    if (formattedDps.length > 0) {
+                        const { error: dpsErr } = await supabase.from('dps').upsert(formattedDps, { onConflict: 'id' });
+                        if (dpsErr) throw dpsErr;
+                    }
+                    
+                    showTrackerToast("Legacy data successfully synced to Supabase!", "success");
+                    await fetchInitialLedgerData();
+                } catch (err) {
+                    console.error(err);
+                    showTrackerToast("Sync failed: " + err.message, "error");
+                } finally {
+                    setLoadingState(false);
+                }
+            });
+        }
+
+        // Open Edit Modal Function
+        function openEditModal(dbType, id) {
+            const item = getCombinedJournal().find(i => i.masterId === id && i.dbType === dbType);
+            if (!item) return;
+
+            if (dbType === 'transaction') {
+                const f = document.getElementById('edit-tx-form');
+                f.edit_tx_id.value = item.masterId;
+                f.edit_tx_type.value = item.type;
+                toggleEditTxSourceVisibility();
+                f.edit_tx_source.value = item.source;
+                f.edit_tx_amount.value = item.amount;
+                f.edit_tx_description.value = item.description;
+                f.edit_tx_date.value = item.date;
+                f.edit_tx_time.value = item.time;
+                document.getElementById('edit-tx-modal').classList.remove('hidden');
+            } else {
+                const f = document.getElementById('edit-dps-form');
+                const dpsItem = appState.dps.find(d => d.id === id);
+                f.edit_dps_id.value = item.masterId;
+                f.edit_dps_bank.value = dpsItem.bank || "";
+                f.edit_dps_ac_no.value = dpsItem.acNo || "";
+                f.edit_dps_amount.value = dpsItem.amount;
+                f.edit_dps_installment.value = dpsItem.installmentNo;
+                f.edit_dps_note.value = dpsItem.note || "";
+                f.edit_dps_date.value = dpsItem.date;
+                f.edit_dps_maturity.value = dpsItem.maturityDate || "";
+                document.getElementById('edit-dps-modal').classList.remove('hidden');
+            }
+        }
+
+        // Global Bindings to support original HTML event attributes
+        window.handleTrackerLogin = handleTrackerLogin;
+        window.verifyTrackerOTP = verifyTrackerOTP;
+        window.cancelOTPLogin = cancelOTPLogin;
+        window.handleTrackerLogout = handleTrackerLogout;
+        window.switchTrackerTab = switchTrackerTab;
+        window.toggleAccountSection = toggleAccountSection;
+        window.selectFormType = selectFormType;
+        window.onTxTypeChanged = onTxTypeChanged;
+        window.toggleCustomTimeFields = toggleCustomTimeFields;
+        window.handleTransactionSubmit = handleTransactionSubmit;
+        window.handleDPSSubmit = handleDPSSubmit;
+        window.setTransferDirection = setTransferDirection;
+        window.handleTransferSubmit = handleTransferSubmit;
+        window.closeTxModal = closeTxModal;
+        window.closeDPSModal = closeDPSModal;
+        window.toggleEditTxSourceVisibility = toggleEditTxSourceVisibility;
+        window.handleTxEditSubmit = handleTxEditSubmit;
+        window.handleDPSEditSubmit = handleDPSEditSubmit;
+        window.triggerDeletionPrompt = triggerDeletionPrompt;
+        window.handleBankCreate = handleBankCreate;
+        window.editBank = editBank;
+        window.deleteBank = deleteBank;
+        window.addBulkRow = addBulkRow;
+        window.submitBulkEntries = submitBulkEntries;
+        window.triggerTelegramPDFReport = triggerTelegramPDFReport;
+        window.triggerConnectionTest = triggerConnectionTest;
+        window.syncLegacyDataFromSheets = syncLegacyDataFromSheets;
+        window.openEditModal = openEditModal;
+        window.filterLedgers = filterLedgers;
+        window.refreshLedgerData = refreshLedgerData;
+        window.generateAnalytics = generateAnalytics;
+        window.startEmailChange = startEmailChange;
+        window.cancelEmailChange = cancelEmailChange;
+        window.requestReportEmailOTP = requestReportEmailOTP;
+        window.verifyReportEmailOTP = verifyReportEmailOTP;
+    </script>
+</body>
+</html>
