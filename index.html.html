@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Expense Tracker — Smart Financial Management</title>
     
+    <!-- PWA Manifest & App Info -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#05070a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Tracker">
+    
     <!-- Favicon -->
     <link rel="icon" type="image/png" sizes="16x16" href="https://eunobyvdokmswxbfxent.supabase.co/storage/v1/object/sign/pulak%20chakma/logo.png?token=eyJraWQiOiJjOTk5NTg3MC0yODYxLTRlN2YtODMxMi0yNDBjYzg1NzQ4ODkiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwdWxhayBjaGFrbWEvbG9nby5wbmciLCJzY29wZSI6ImRvd25sb2FkIiwiaWF0IjoxNzg3OTc0NDgwLCJleHAiOjI0MTg2OTQ0ODB9.9j-A-_QBZ9aVadYrLOdLeBHDNJ33FpuBKJ9ZCrk4dO0">
     
@@ -40,12 +47,6 @@
                             800: '#075985',
                             900: '#0c4a6e',
                             950: '#082f49'
-                        },
-                        primary: {
-                            DEFAULT: '#38bdf8',
-                            dark: '#0284c7',
-                            light: '#e0f2fe',
-                            hover: '#0ea5e9'
                         }
                     },
                     keyframes: {
@@ -91,13 +92,11 @@
             overflow-x: hidden;
         }
         
-        /* Modern Minimalist Dark Scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #05070a; }
         ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 9999px; border: 1px solid rgba(255,255,255,0.06); }
         ::-webkit-scrollbar-thumb:hover { background: #334155; }
         
-        /* Protect FontAwesome Icons from font override */
         .fa, .fa-solid, .fa-regular, .fa-brands, .fas, .far, .fab {
             font-family: "Font Awesome 6 Free" !important;
             font-style: normal !important;
@@ -107,7 +106,6 @@
             font-style: normal !important;
         }
 
-        /* Ambient Glassmorphism */
         .glass-panel {
             background: rgba(13, 17, 27, 0.78);
             backdrop-filter: blur(18px);
@@ -133,7 +131,6 @@
             box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.16), 0 0 15px rgba(56, 189, 248, 0.1);
         }
         
-        /* Step Morphing Transitions */
         .step-container { 
             transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1); 
         }
@@ -150,7 +147,6 @@
             transform: translateY(0) scale(1); 
         }
 
-        /* Subtle Grid Pattern */
         .cyber-grid {
             background-size: 36px 36px;
             background-image: 
@@ -158,7 +154,17 @@
                 linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
         }
 
-        /* Accessibility: Reduced Motion */
+        .suggestion-chip {
+            background: rgba(14, 165, 233, 0.15);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            transition: all 0.2s ease;
+        }
+        .suggestion-chip:hover {
+            background: rgba(14, 165, 233, 0.35);
+            border-color: rgba(56, 189, 248, 0.7);
+            transform: translateY(-1px);
+        }
+
         @media (prefers-reduced-motion: reduce) {
             *, ::before, ::after {
                 animation-duration: 0.01ms !important;
@@ -184,7 +190,6 @@
         <!-- LOGIN GATEWAY -->
         <div id="login-view" class="min-h-screen flex flex-col items-center justify-center p-4 sm:p-8 relative transition-opacity duration-500">
             
-            <!-- Security Header Indicator -->
             <div class="mb-7 text-center animate-fadeInScale">
                 <div class="relative inline-block mb-4">
                     <div class="absolute -inset-1.5 bg-gradient-to-r from-brand-500/30 to-emerald-500/20 rounded-3xl blur-md opacity-70 group-hover:opacity-100 transition duration-500 animate-pulseGlow"></div>
@@ -204,12 +209,11 @@
 
             <!-- Authentication Card -->
             <div id="login-card" class="glass-panel-elevated rounded-3xl w-full max-w-md p-7 sm:p-10 relative overflow-hidden transition-all duration-300 border border-white/10 shadow-2xl animate-fadeInScale">
-                <!-- Top neon accent line -->
                 <div class="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-brand-400 to-transparent"></div>
                 
                 <div class="relative w-full">
                     
-                    <!-- STEP 1: CREDENTIALS & CHANNEL SELECTOR -->
+                    <!-- STEP 1: CREDENTIALS -->
                     <form id="step-1-credentials" onsubmit="handleTrackerLogin(event)" class="space-y-5 step-container step-active w-full">
                         <div class="flex items-center justify-between pb-1 border-b border-white/5">
                             <span class="text-xs uppercase tracking-wider font-semibold text-slate-400">Step 01 / Identity</span>
@@ -258,7 +262,7 @@
                         </button>
                     </form>
 
-                    <!-- STEP 2: OTP + 1-TAP APPROVAL LISTENER -->
+                    <!-- STEP 2: OTP + 1-TAP APPROVAL -->
                     <form id="step-2-otp" onsubmit="verifyTrackerOTP(event)" class="space-y-5 step-container step-hidden w-full">
                         <div class="flex items-center justify-between pb-1 border-b border-white/5">
                             <span class="text-xs uppercase tracking-wider font-semibold text-slate-400">Step 02 / 2FA Verify</span>
@@ -277,7 +281,6 @@
                             </p>
                         </div>
 
-                        <!-- 1-Tap Auto-Approve Live Listening Indicator -->
                         <div class="p-3 bg-brand-500/10 border border-brand-500/20 rounded-2xl flex items-center gap-3">
                             <div class="w-2 h-2 rounded-full bg-brand-400 animate-ping shrink-0"></div>
                             <div class="text-left flex-1 min-w-0">
@@ -336,9 +339,15 @@
                             <i class="fa-solid fa-wallet text-xl md:text-2xl"></i>
                         </div>
                         <div>
-                            <h1 class="text-lg md:text-xl font-bold text-white tracking-tight">
-                                Expense Tracker
-                            </h1>
+                            <div class="flex items-center gap-2">
+                                <h1 class="text-lg md:text-xl font-bold text-white tracking-tight">
+                                    Expense Tracker
+                                </h1>
+                                <!-- Realtime Network Status Pill -->
+                                <span id="network-status-badge" class="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Online
+                                </span>
+                            </div>
                             <p class="text-[11px] text-slate-400 font-medium uppercase tracking-widest">Smart Money Management</p>
                         </div>
                     </div>
@@ -355,7 +364,7 @@
                         </button>
                         <button onclick="switchTrackerTab('transfer')" id="desktop-nav-transfer" 
                             class="px-3.5 py-2 text-xs font-semibold rounded-xl text-slate-400 hover:text-slate-100 hover:bg-white/5 transition-all duration-200">
-                            <i class="fa-solid fa-money-bill-transfer mr-1.5"></i>Bank Transfer
+                            <i class="fa-solid fa-money-bill-transfer mr-1.5"></i>Transfer
                         </button>
                         <button onclick="switchTrackerTab('dps')" id="desktop-nav-dps" 
                             class="px-3.5 py-2 text-xs font-semibold rounded-xl text-slate-400 hover:text-slate-100 hover:bg-white/5 transition-all duration-200">
@@ -367,7 +376,7 @@
                         </button>
                         <button onclick="switchTrackerTab('reports')" id="desktop-nav-reports" 
                             class="px-3.5 py-2 text-xs font-semibold rounded-xl text-slate-400 hover:text-slate-100 hover:bg-white/5 transition-all duration-200">
-                            <i class="fa-solid fa-chart-pie mr-1.5"></i>Analytics &amp; Reports
+                            <i class="fa-solid fa-chart-pie mr-1.5"></i>Reports &amp; Analytics
                         </button>
                     </div>
 
@@ -445,7 +454,7 @@
                             </div>
                             <h2 id="balance-bank" class="text-3xl lg:text-4xl font-extrabold text-white mt-5 tracking-tight">৳ 0.00</h2>
                             <p class="text-xs text-slate-400 mt-3 flex items-center gap-1.5">
-                                <i class="fa-solid fa-shield text-brand-400 text-[10px]"></i> Sum of all added accounts
+                                <i class="fa-solid fa-shield text-brand-400 text-[10px]"></i> Sum of all bank accounts
                             </p>
                         </div>
 
@@ -556,8 +565,8 @@
                                         <i class="fa-solid fa-money-bill-transfer"></i>
                                     </div>
                                     <div class="min-w-0 flex-1">
-                                        <h4 class="text-xs md:text-sm font-semibold text-white">Withdrawal to Cash</h4>
-                                        <p class="text-[11px] text-slate-400 truncate">Move bank balances into cash wallet</p>
+                                        <h4 class="text-xs md:text-sm font-semibold text-white">Bank Transfers &amp; Fees</h4>
+                                        <p class="text-[11px] text-slate-400 truncate">Move bank to bank or withdraw to cash</p>
                                     </div>
                                 </button>
                             </div>
@@ -591,7 +600,7 @@
                                 <i class="fa-solid fa-circle-plus"></i>
                             </div>
                             <h2 class="text-xl font-bold text-white">Add Account Transaction</h2>
-                            <p class="text-xs text-slate-400 mt-1">Archive deposits or expenses into specific accounts</p>
+                            <p class="text-xs text-slate-400 mt-1">Archive deposits or expenses into specific accounts with intelligent auto-suggestion</p>
                         </div>
 
                         <!-- Source Toggle Buttons -->
@@ -642,10 +651,27 @@
                                 </div>
                             </div>
 
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Reason / Description Details</label>
-                                <textarea name="tx_description" rows="2" required placeholder="e.g. Snack, Rent, or 'return from Friend'" 
-                                    class="w-full glass-input rounded-2xl px-4 py-3 text-xs sm:text-sm text-white outline-none placeholder:text-slate-500"></textarea>
+                            <!-- Reason Input with Auto-Save and 90% Keyword Auto-Match -->
+                            <div class="relative">
+                                <div class="flex items-center justify-between mb-2">
+                                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">Reason / Description Details</label>
+                                    <span class="text-[11px] text-brand-400 flex items-center gap-1 font-semibold">
+                                        <i class="fa-solid fa-wand-magic-sparkles text-[10px]"></i> 90%+ Match Auto-Fill
+                                    </span>
+                                </div>
+                                <div class="relative">
+                                    <input type="text" name="tx_description" id="tx_description" autocomplete="off" required 
+                                        placeholder="e.g. Snacks, Transport, Rent, Return from Friend..." 
+                                        oninput="handleKeywordInput(this, 'add-keyword-suggestions', 'tx_description')" 
+                                        onkeydown="handleKeywordKeydown(event, 'tx_description', 'add-keyword-suggestions')"
+                                        class="w-full glass-input rounded-2xl px-4 py-3 text-xs sm:text-sm text-white outline-none placeholder:text-slate-500">
+                                </div>
+
+                                <!-- Keyword Suggestions Chip List -->
+                                <div id="add-keyword-suggestions" class="hidden mt-2 flex-wrap gap-1.5 p-2.5 bg-slate-900/90 rounded-2xl border border-brand-500/20 shadow-lg"></div>
+                                <p class="text-[10px] text-slate-500 mt-1.5 flex items-center gap-1">
+                                    <i class="fa-solid fa-info-circle text-brand-400"></i> New reasons auto-save to memory. Tap suggestion or press <strong>Enter</strong> when &ge;90% matched to auto-complete.
+                                </p>
                             </div>
 
                             <div class="bg-slate-900/60 p-4 rounded-2xl border border-white/5">
@@ -684,31 +710,43 @@
                             <div class="w-12 h-12 rounded-2xl bg-brand-500/10 border border-brand-500/20 text-brand-400 flex items-center justify-center mx-auto mb-3 text-xl">
                                 <i class="fa-solid fa-money-bill-transfer"></i>
                             </div>
-                            <h2 class="text-xl font-bold text-white" id="transfer-heading">Bank to Cash Transfer</h2>
-                            <p class="text-xs text-slate-400 mt-1" id="transfer-subheading">Withdraw funds from any Bank Account into Pocket Cash Wallet</p>
+                            <h2 class="text-xl font-bold text-white" id="transfer-heading">Bank Transfers &amp; Fees</h2>
+                            <p class="text-xs text-slate-400 mt-1" id="transfer-subheading">Move balances between banks or physical cash with editable fees</p>
                         </div>
 
-                        <div class="flex bg-slate-950/60 rounded-2xl p-1 mb-5 gap-1 border border-white/5">
+                        <!-- 3 Direction Selectors: Bank to Cash, Cash to Bank, Bank to Bank -->
+                        <div class="grid grid-cols-3 bg-slate-950/60 rounded-2xl p-1 mb-5 gap-1 border border-white/5">
                             <button type="button" id="transfer-dir-b2c" onclick="setTransferDirection('Bank_to_Current')"
-                                class="flex-1 py-2.5 text-center text-xs sm:text-sm font-semibold rounded-xl bg-brand-500 text-slate-950 shadow-md transition-all duration-200">
-                                <i class="fa-solid fa-arrow-down mr-1.5"></i>Bank → Cash
+                                class="py-2.5 text-center text-xs font-semibold rounded-xl bg-brand-500 text-slate-950 shadow-md transition-all duration-200">
+                                <i class="fa-solid fa-arrow-down mr-1"></i>Bank → Cash
                             </button>
                             <button type="button" id="transfer-dir-c2b" onclick="setTransferDirection('Cash_to_Bank')"
-                                class="flex-1 py-2.5 text-center text-xs sm:text-sm font-semibold rounded-xl text-slate-400 hover:text-white transition-all duration-200">
-                                <i class="fa-solid fa-arrow-up mr-1.5 text-emerald-400"></i>Cash → Bank
+                                class="py-2.5 text-center text-xs font-semibold rounded-xl text-slate-400 hover:text-white transition-all duration-200">
+                                <i class="fa-solid fa-arrow-up mr-1 text-emerald-400"></i>Cash → Bank
+                            </button>
+                            <button type="button" id="transfer-dir-b2b" onclick="setTransferDirection('Bank_to_Bank')"
+                                class="py-2.5 text-center text-xs font-semibold rounded-xl text-slate-400 hover:text-white transition-all duration-200">
+                                <i class="fa-solid fa-arrow-right-arrow-left mr-1 text-indigo-400"></i>Bank → Bank
                             </button>
                         </div>
 
                         <form id="transfer-form" onsubmit="handleTransferSubmit(event)" class="space-y-5">
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2" id="transfer-bank-label">Transfer From Bank</label>
-                                <select name="transfer_source" id="transfer_source" 
-                                    class="w-full glass-input rounded-2xl px-4 py-3 text-xs sm:text-sm font-semibold text-white outline-none"></select>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2" id="transfer-source-label">Source Bank (From)</label>
+                                    <select name="transfer_source" id="transfer_source" 
+                                        class="w-full glass-input rounded-2xl px-4 py-3 text-xs sm:text-sm font-semibold text-white outline-none"></select>
+                                </div>
+                                <div id="transfer-destination-container" class="hidden">
+                                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2" id="transfer-dest-label">Destination Bank (To)</label>
+                                    <select name="transfer_dest" id="transfer_dest" 
+                                        class="w-full glass-input rounded-2xl px-4 py-3 text-xs sm:text-sm font-semibold text-white outline-none"></select>
+                                </div>
                             </div>
 
-                            <div class="grid grid-cols-2 gap-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
-                                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Amount (৳)</label>
+                                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Transfer Amount (৳)</label>
                                     <div class="relative">
                                         <span class="absolute left-4 top-3 text-slate-400 font-bold text-base">৳</span>
                                         <input type="number" step="0.01" name="transfer_amount" required placeholder="0.00" 
@@ -716,10 +754,13 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Fee (৳)</label>
+                                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 flex items-center justify-between">
+                                        <span>Transfer Fee (৳)</span>
+                                        <span class="text-[10px] text-brand-400 lowercase font-medium">editable in ledger</span>
+                                    </label>
                                     <div class="relative">
                                         <span class="absolute left-4 top-3 text-slate-400 font-bold text-base">৳</span>
-                                        <input type="number" step="0.01" name="transfer_fee" placeholder="0.00" value="0" 
+                                        <input type="number" step="0.01" name="transfer_fee" id="transfer_fee" placeholder="0.00" value="0.00" 
                                             class="w-full glass-input rounded-2xl pl-9 pr-4 py-3 text-sm sm:text-base font-bold text-white outline-none">
                                     </div>
                                 </div>
@@ -727,7 +768,7 @@
 
                             <div>
                                 <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Details Note</label>
-                                <input type="text" name="transfer_desc" required value="Withdrawn pocket cash from bank account" 
+                                <input type="text" name="transfer_desc" id="transfer_desc" required value="Withdrawn pocket cash from bank account" 
                                     class="w-full glass-input rounded-2xl px-4 py-3 text-xs sm:text-sm text-white outline-none">
                             </div>
 
@@ -754,7 +795,7 @@
                             <button type="submit" 
                                 class="w-full bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-400 hover:to-brand-500 text-slate-950 font-bold py-3.5 rounded-2xl shadow-lg shadow-brand-500/20 transition-all duration-200 flex items-center justify-center gap-2 text-xs sm:text-sm active:scale-[0.98]">
                                 <i class="fa-solid fa-arrow-right-arrow-left"></i>
-                                <span>Execute Balance Transfer</span>
+                                <span id="transfer-submit-btn-text">Execute Balance Transfer</span>
                             </button>
                         </form>
                     </div>
@@ -832,22 +873,33 @@
                                 <h3 class="font-bold text-lg text-white flex items-center gap-2">
                                     <i class="fa-solid fa-receipt text-brand-400"></i> Master Financial Ledger
                                 </h3>
-                                <p class="text-xs text-slate-400 mt-0.5">Edit, filter, or erase historical entries</p>
+                                <p class="text-xs text-slate-400 mt-0.5">Chronologically sorted by exact date and time. Filter by bank, description, or value.</p>
                             </div>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full md:max-w-md">
-                                <div class="relative">
+                            
+                            <!-- Search & Filter Controls -->
+                            <div class="grid grid-cols-1 sm:grid-cols-12 gap-2.5 w-full md:max-w-xl">
+                                <div class="relative sm:col-span-6">
                                     <span class="absolute left-3.5 top-3 text-slate-400 text-xs"><i class="fa-solid fa-magnifying-glass"></i></span>
-                                    <input type="text" id="ledger-search" oninput="filterLedgers()" placeholder="Search logs..." 
-                                        class="w-full glass-input rounded-xl pl-9 pr-3 py-2.5 text-xs sm:text-sm text-white outline-none placeholder:text-slate-500">
+                                    <input type="text" id="ledger-search" oninput="filterLedgers()" placeholder="Search bank, date, reason, fee..." 
+                                        class="w-full glass-input rounded-xl pl-9 pr-3 py-2 text-xs sm:text-sm text-white outline-none placeholder:text-slate-500">
                                 </div>
-                                <select id="ledger-type-filter" onchange="filterLedgers()" 
-                                    class="glass-input rounded-xl px-3 py-2.5 text-xs sm:text-sm text-white outline-none font-semibold">
-                                    <option value="All" class="bg-slate-900">All Categories</option>
-                                    <option value="Expense" class="bg-slate-900">Expense Only</option>
-                                    <option value="Deposit" class="bg-slate-900">Deposit Only</option>
-                                    <option value="Transfer" class="bg-slate-900">Bank Transfers</option>
-                                    <option value="DPS" class="bg-slate-900">DPS Only</option>
-                                </select>
+                                <div class="sm:col-span-3">
+                                    <select id="ledger-type-filter" onchange="filterLedgers()" 
+                                        class="w-full glass-input rounded-xl px-2.5 py-2 text-xs text-white outline-none font-semibold">
+                                        <option value="All" class="bg-slate-900">All Types</option>
+                                        <option value="Expense" class="bg-slate-900">Expense</option>
+                                        <option value="Deposit" class="bg-slate-900">Deposit</option>
+                                        <option value="Transfer" class="bg-slate-900">Transfers</option>
+                                        <option value="DPS" class="bg-slate-900">DPS</option>
+                                    </select>
+                                </div>
+                                <div class="sm:col-span-3">
+                                    <button type="button" onclick="toggleLedgerSortOrder()" id="btn-sort-order"
+                                        class="w-full bg-slate-900 hover:bg-slate-800 text-slate-200 border border-white/10 px-2.5 py-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition">
+                                        <i class="fa-solid fa-arrow-down-wide-short text-brand-400" id="sort-order-icon"></i>
+                                        <span id="sort-order-label">Newest</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -858,8 +910,8 @@
                                     <tr class="border-b border-white/10 text-slate-400 text-[11px] font-semibold uppercase tracking-wider bg-slate-900/60">
                                         <th class="py-3.5 px-4">Date &amp; Time</th>
                                         <th class="py-3.5 px-4">Category</th>
-                                        <th class="py-3.5 px-4">Account/Source</th>
-                                        <th class="py-3.5 px-4">Description</th>
+                                        <th class="py-3.5 px-4">Account / Route</th>
+                                        <th class="py-3.5 px-4">Description &amp; Transfer Fee</th>
                                         <th class="py-3.5 px-4 text-right">Value (৳)</th>
                                         <th class="py-3.5 px-4 text-center">Actions</th>
                                     </tr>
@@ -883,6 +935,90 @@
                 <!-- VIEW 6: SETUP & REPORTS & ANALYTICS -->
                 <div id="view-reports" class="view-panel hidden space-y-6 animate-fadeInScale">
                     
+                    <!-- AUTOMATED STATEMENT DISPATCHER COMPONENT -->
+                    <div class="glass-panel p-6 sm:p-8 rounded-3xl border border-brand-500/20">
+                        <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 pb-4 border-b border-white/5">
+                            <div>
+                                <h3 class="font-bold text-lg text-white flex items-center gap-2">
+                                    <i class="fa-solid fa-paper-plane text-brand-400"></i> Dispatch Automated Financial Reports
+                                </h3>
+                                <p class="text-xs text-slate-400 mt-1">Generate and transmit customized financial statements directly to Telegram and/or Email</p>
+                            </div>
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-500/10 text-brand-300 text-xs font-semibold border border-brand-500/20 self-start sm:self-auto">
+                                <i class="fa-solid fa-shield-halved text-brand-400"></i> Direct Channel Delivery
+                            </span>
+                        </div>
+
+                        <!-- Report Config Filter Controls -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 my-5">
+                            <div>
+                                <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">1. Report Type</label>
+                                <select id="auto-report-type" 
+                                    class="w-full glass-input rounded-xl px-3 py-2.5 text-xs font-semibold text-white outline-none">
+                                    <option value="short" class="bg-slate-900">📄 Short Summary Report</option>
+                                    <option value="details" class="bg-slate-900">📑 Detailed Itemized Ledger</option>
+                                    <option value="bank" class="bg-slate-900">🏦 Bank Accounts Statement</option>
+                                    <option value="cash" class="bg-slate-900">💵 Cash Wallet Activity Report</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">2. Reporting Period</label>
+                                <select id="auto-report-period" onchange="onReportPeriodChange()" 
+                                    class="w-full glass-input rounded-xl px-3 py-2.5 text-xs font-semibold text-white outline-none">
+                                    <option value="this_month" class="bg-slate-900">This Month</option>
+                                    <option value="last_month" class="bg-slate-900">Last Month</option>
+                                    <option value="all_time" class="bg-slate-900">All Time Historical</option>
+                                    <option value="custom" class="bg-slate-900">Custom Date Range</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">3. Send Delivery To</label>
+                                <select id="auto-report-channel" 
+                                    class="w-full glass-input rounded-xl px-3 py-2.5 text-xs font-semibold text-brand-300 outline-none">
+                                    <option value="both" class="bg-slate-900">✈️ + ✉️ Both (Telegram Bot &amp; Email)</option>
+                                    <option value="telegram" class="bg-slate-900">✈️ Telegram Bot Only</option>
+                                    <option value="email" class="bg-slate-900">✉️ Email Only</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Custom Date Range Row -->
+                        <div id="custom-range-row" class="hidden grid-cols-1 sm:grid-cols-2 gap-4 mb-5 p-3.5 bg-slate-900/60 rounded-2xl border border-white/5">
+                            <div>
+                                <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">From Date</label>
+                                <input type="date" id="auto-report-from" class="w-full glass-input rounded-xl px-3 py-2 text-xs text-white">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">To Date</label>
+                                <input type="date" id="auto-report-to" class="w-full glass-input rounded-xl px-3 py-2 text-xs text-white">
+                            </div>
+                        </div>
+
+                        <!-- Active Delivery Destination Info Banner -->
+                        <div class="p-4 bg-slate-900/50 rounded-2xl border border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 text-xs">
+                            <div class="space-y-1">
+                                <div class="text-slate-300 flex items-center gap-2">
+                                    <i class="fa-brands fa-telegram text-brand-400 text-sm"></i>
+                                    <span>Telegram Destination: <strong class="text-white">Active Connected Bot</strong></span>
+                                </div>
+                                <div class="text-slate-300 flex items-center gap-2">
+                                    <i class="fa-solid fa-envelope text-emerald-400 text-sm"></i>
+                                    <span>Email Destination: <strong class="text-white" id="report-target-email-preview">Loading...</strong></span>
+                                </div>
+                            </div>
+                            <span class="text-[11px] text-slate-400 font-medium">Reports are processed &amp; sent directly without saving to browser.</span>
+                        </div>
+
+                        <!-- Dispatch Trigger Button -->
+                        <button id="btn-dispatch-report" type="button" onclick="sendAutomatedReport()" 
+                            class="w-full bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-400 hover:to-brand-500 text-slate-950 font-bold py-3.5 rounded-2xl shadow-lg shadow-brand-500/20 hover:shadow-brand-500/35 transition-all duration-200 flex items-center justify-center gap-2 text-xs sm:text-sm active:scale-[0.98]">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            <span id="btn-dispatch-text">Send Report to Selected Channels</span>
+                        </button>
+                    </div>
+
                     <!-- Analytics Breakdown Card -->
                     <div class="glass-panel p-6 sm:p-8 rounded-3xl">
                         <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-6 pb-4 border-b border-white/5">
@@ -916,10 +1052,10 @@
                         <div class="glass-panel p-6 rounded-3xl flex flex-col justify-between">
                             <div>
                                 <h3 class="font-bold text-base md:text-lg text-white border-b border-white/5 pb-3 flex items-center gap-2">
-                                    <i class="fa-solid fa-file-invoice-dollar text-brand-400"></i> Generate PDF Statements
+                                    <i class="fa-solid fa-file-invoice-dollar text-brand-400"></i> Dispatch PDF Statements
                                 </h3>
                                 <p class="text-xs text-slate-400 leading-relaxed mt-3">
-                                    Initiate PDF report compiled with starting/ending balances, transmitted directly via Telegram Bot for the selected month.
+                                    Initiate formal PDF reports compiled with starting/ending balances, transmitted directly via Telegram Bot and verified Gmail.
                                 </p>
                             </div>
                             <div class="space-y-3 mt-6">
@@ -958,7 +1094,7 @@
                                             <i class="fa-solid fa-pen mr-1"></i>Change
                                         </button>
                                     </div>
-                                    <p class="text-[11px] text-slate-400 mt-2">All future PDF reports will be sent here.</p>
+                                    <p class="text-[11px] text-slate-400 mt-2">All future PDF statements will be delivered here.</p>
                                 </div>
 
                                 <!-- Edit & Request OTP State -->
@@ -1009,7 +1145,7 @@
                         </div>
                     </div>
 
-                    <!-- Lock Session & Logout Control in Stats Section -->
+                    <!-- Lock Session Control -->
                     <div class="glass-panel p-6 rounded-3xl border border-rose-500/20 bg-rose-950/10 flex flex-col sm:flex-row items-center justify-between gap-4 mt-6">
                         <div class="flex items-center gap-3 text-center sm:text-left">
                             <div class="w-10 h-10 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center text-lg shrink-0">
@@ -1040,41 +1176,59 @@
                 </p>
             </footer>
 
-            <!-- Modals -->
             <!-- Edit Transaction Modal -->
             <div id="edit-tx-modal" class="hidden fixed inset-0 bg-slate-950/80 z-50 flex items-center justify-center p-4 backdrop-blur-md transition-all">
                 <div class="glass-panel-elevated rounded-3xl max-w-md w-full p-6 sm:p-7 relative border border-white/10">
                     <button onclick="closeTxModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white transition text-lg"><i class="fa-solid fa-xmark"></i></button>
                     <h3 class="font-bold text-base text-white mb-4 pb-2 border-b border-white/5 flex items-center gap-2 text-brand-400">
-                        <i class="fa-solid fa-pen-to-square"></i> Edit Transaction
+                        <i class="fa-solid fa-pen-to-square"></i> Edit Transaction &amp; Fee
                     </h3>
                     <form id="edit-tx-form" onsubmit="handleTxEditSubmit(event)">
                         <input type="hidden" name="edit_tx_id">
                         <div class="space-y-4">
                             <div>
                                 <label class="block text-xs font-semibold text-slate-300 mb-1">Category</label>
-                                <select name="edit_tx_type" class="w-full glass-input rounded-xl px-3 py-2 text-xs font-semibold text-white outline-none" onchange="toggleEditTxSourceVisibility()">
+                                <select name="edit_tx_type" id="edit_tx_type" class="w-full glass-input rounded-xl px-3 py-2 text-xs font-semibold text-white outline-none" onchange="toggleEditTxSourceVisibility()">
                                     <option value="Expense" class="bg-slate-900">Expense</option>
                                     <option value="Deposit" class="bg-slate-900">Deposit</option>
                                     <option value="Bank_to_Current" class="bg-slate-900">Bank to Cash Transfer</option>
+                                    <option value="Cash_to_Bank" class="bg-slate-900">Cash to Bank Deposit</option>
+                                    <option value="Bank_to_Bank" class="bg-slate-900">Bank to Bank Transfer</option>
                                 </select>
                             </div>
-                            <div id="edit-tx-source-container">
-                                <label class="block text-xs font-semibold text-slate-300 mb-1">Source</label>
-                                <select name="edit_tx_source" id="edit_tx_source_dropdown" class="w-full glass-input rounded-xl px-3 py-2 text-xs font-semibold text-white outline-none"></select>
+                            
+                            <div class="grid grid-cols-2 gap-2" id="edit-tx-sources-row">
+                                <div id="edit-tx-source-container">
+                                    <label class="block text-xs font-semibold text-slate-300 mb-1" id="edit-source-label">Source Account</label>
+                                    <select name="edit_tx_source" id="edit_tx_source_dropdown" class="w-full glass-input rounded-xl px-3 py-2 text-xs font-semibold text-white outline-none"></select>
+                                </div>
+                                <div id="edit-tx-dest-container" class="hidden">
+                                    <label class="block text-xs font-semibold text-slate-300 mb-1">Target Account</label>
+                                    <select name="edit_tx_target" id="edit_tx_target_dropdown" class="w-full glass-input rounded-xl px-3 py-2 text-xs font-semibold text-white outline-none"></select>
+                                </div>
                             </div>
+
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-300 mb-1">Amount (৳)</label>
+                                    <input type="number" step="0.01" name="edit_tx_amount" required class="w-full glass-input rounded-xl px-3 py-2 text-xs font-bold text-white outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-300 mb-1">Transfer Fee (৳)</label>
+                                    <input type="number" step="0.01" name="edit_tx_fee" id="edit_tx_fee" class="w-full glass-input rounded-xl px-3 py-2 text-xs font-bold text-white outline-none" placeholder="0.00">
+                                </div>
+                            </div>
+
                             <div>
-                                <label class="block text-xs font-semibold text-slate-300 mb-1">Amount (৳)</label>
-                                <input type="number" step="0.01" name="edit_tx_amount" required class="w-full glass-input rounded-xl px-3 py-2 text-xs font-bold text-white outline-none">
+                                <label class="block text-xs font-semibold text-slate-300 mb-1">Reason / Description</label>
+                                <textarea name="edit_tx_description" id="edit_tx_description" rows="2" required class="w-full glass-input rounded-xl px-3 py-2 text-xs text-white outline-none"></textarea>
                             </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-slate-300 mb-1">Reason</label>
-                                <textarea name="edit_tx_description" rows="2" required class="w-full glass-input rounded-xl px-3 py-2 text-xs text-white outline-none"></textarea>
-                            </div>
+
                             <div class="grid grid-cols-2 gap-2">
                                 <div><label class="block text-[11px] font-semibold text-slate-400 mb-1">Date</label><input type="date" name="edit_tx_date" required class="w-full glass-input rounded-xl px-3 py-1.5 text-xs text-white"></div>
                                 <div><label class="block text-[11px] font-semibold text-slate-400 mb-1">Time</label><input type="time" name="edit_tx_time" required class="w-full glass-input rounded-xl px-3 py-1.5 text-xs text-white"></div>
                             </div>
+
                             <div class="flex gap-2.5 pt-3 text-xs font-semibold">
                                 <button type="button" onclick="closeTxModal()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 py-2.5 rounded-xl transition border border-white/5">Cancel</button>
                                 <button type="submit" class="flex-1 bg-brand-500 hover:bg-brand-400 text-slate-950 font-bold py-2.5 rounded-xl transition">Save Changes</button>
@@ -1156,7 +1310,7 @@
                     </button>
                     <button onclick="switchTrackerTab('reports')" id="mobile-nav-reports" class="flex flex-col items-center justify-center py-1 text-slate-400 hover:text-slate-200 transition w-14">
                         <i class="fa-solid fa-chart-pie text-base"></i>
-                        <span class="text-[10px] font-semibold mt-1">Stats</span>
+                        <span class="text-[10px] font-semibold mt-1">Reports</span>
                     </button>
                 </div>
             </nav>
@@ -1167,6 +1321,16 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.15.0/firebase-auth.js";
         import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').then((reg) => {
+                    console.log('Service Worker registered successfully with scope:', reg.scope);
+                }).catch((err) => {
+                    console.warn('Service Worker registration skipped or failed:', err);
+                });
+            });
+        }
 
         // Firebase configuration
         const firebaseConfig = {
@@ -1179,7 +1343,6 @@
             measurementId: "G-CQBFDDB709"
         };
 
-        // Initialize Firebase services
         const firebaseApp = initializeApp(firebaseConfig);
         const auth = getAuth(firebaseApp);
 
@@ -1187,20 +1350,174 @@
         const supabaseKey = 'sb_publishable_hZyk2xZ6zy86jQJbKIa92g_TVlOup3O';
         const supabase = createClient(supabaseUrl, supabaseKey);
 
-        // 2FA Polling & Session Variables
+        const DB_NAME = 'ExpenseTrackerDB';
+        const DB_VERSION = 1;
+        let idb = null;
+
+        function openIndexedDatabase() {
+            return new Promise((resolve, reject) => {
+                const req = indexedDB.open(DB_NAME, DB_VERSION);
+                req.onupgradeneeded = (e) => {
+                    const db = e.target.result;
+                    if (!db.objectStoreNames.contains('transactions')) {
+                        db.createObjectStore('transactions', { keyPath: 'id' });
+                    }
+                    if (!db.objectStoreNames.contains('dps')) {
+                        db.createObjectStore('dps', { keyPath: 'id' });
+                    }
+                    if (!db.objectStoreNames.contains('syncQueue')) {
+                        db.createObjectStore('syncQueue', { keyPath: 'queueId', autoIncrement: true });
+                    }
+                };
+                req.onsuccess = (e) => {
+                    idb = e.target.result;
+                    resolve(idb);
+                };
+                req.onerror = (e) => reject(e.target.error);
+            });
+        }
+
+        async function idbGetAll(storeName) {
+            if (!idb) await openIndexedDatabase();
+            return new Promise((resolve, reject) => {
+                const tx = idb.transaction(storeName, 'readonly');
+                const store = tx.objectStore(storeName);
+                const req = store.getAll();
+                req.onsuccess = () => resolve(req.result || []);
+                req.onerror = () => reject(req.error);
+            });
+        }
+
+        async function idbPut(storeName, item) {
+            if (!idb) await openIndexedDatabase();
+            return new Promise((resolve, reject) => {
+                const tx = idb.transaction(storeName, 'readwrite');
+                const store = tx.objectStore(storeName);
+                const req = store.put(item);
+                req.onsuccess = () => resolve(req.result);
+                req.onerror = () => reject(req.error);
+            });
+        }
+
+        async function idbDelete(storeName, key) {
+            if (!idb) await openIndexedDatabase();
+            return new Promise((resolve, reject) => {
+                const tx = idb.transaction(storeName, 'readwrite');
+                const store = tx.objectStore(storeName);
+                const req = store.delete(key);
+                req.onsuccess = () => resolve(req.result);
+                req.onerror = () => reject(req.error);
+            });
+        }
+
+        async function idbClear(storeName) {
+            if (!idb) await openIndexedDatabase();
+            return new Promise((resolve, reject) => {
+                const tx = idb.transaction(storeName, 'readwrite');
+                const store = tx.objectStore(storeName);
+                const req = store.clear();
+                req.onsuccess = () => resolve();
+                req.onerror = () => reject(req.error);
+            });
+        }
+
+        function updateNetworkStatusIndicator() {
+            const pill = document.getElementById('network-status-badge');
+            if (!pill) return;
+            if (navigator.onLine) {
+                pill.className = "px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1";
+                pill.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Online`;
+                processSyncQueue();
+            } else {
+                pill.className = "px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1";
+                pill.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span> Offline Vault`;
+            }
+        }
+
+        window.addEventListener('online', () => {
+            updateNetworkStatusIndicator();
+            showTrackerToast("Network restored! Synchronizing offline records...", "success");
+        });
+        window.addEventListener('offline', () => {
+            updateNetworkStatusIndicator();
+            showTrackerToast("Offline mode active. Your entries are saved locally.", "error");
+        });
+
+        let isSyncingQueue = false;
+        async function queueMutation(type, target, payload) {
+            const queueItem = {
+                type: type, // 'insert', 'update', 'delete'
+                target: target, // 'transaction', 'dps'
+                payload: payload,
+                timestamp: Date.now()
+            };
+            await idbPut('syncQueue', queueItem);
+            if (navigator.onLine) {
+                processSyncQueue();
+            }
+        }
+
+        async function processSyncQueue() {
+            if (!navigator.onLine || isSyncingQueue) return;
+            isSyncingQueue = true;
+            try {
+                const queue = await idbGetAll('syncQueue');
+                if (!queue || queue.length === 0) {
+                    isSyncingQueue = false;
+                    return;
+                }
+
+                for (const item of queue) {
+                    try {
+                        const table = item.target === 'transaction' ? 'transactions' : 'dps';
+                        
+                        if (item.type === 'insert') {
+                            const { error } = await supabase.from(table).upsert([item.payload], { onConflict: 'id' });
+                            if (!error) {
+                                if (item.target === 'transaction') {
+                                    runRemoteAPISilent('addTransaction', item.payload);
+                                } else {
+                                    runRemoteAPISilent('addDPS', item.payload);
+                                }
+                                await idbDelete('syncQueue', item.queueId);
+                            }
+                        } else if (item.type === 'update') {
+                            const { error } = await supabase.from(table).update(item.payload).eq('id', item.payload.id);
+                            if (!error) {
+                                if (item.target === 'transaction') {
+                                    runRemoteAPISilent('editTransaction', item.payload);
+                                } else {
+                                    runRemoteAPISilent('editDPS', item.payload);
+                                }
+                                await idbDelete('syncQueue', item.queueId);
+                            }
+                        } else if (item.type === 'delete') {
+                            const { error } = await supabase.from(table).delete().eq('id', item.payload.id);
+                            if (!error) {
+                                const action = item.target === 'transaction' ? 'deleteTransaction' : 'deleteDPS';
+                                runRemoteAPISilent(action, { id: item.payload.id });
+                                await idbDelete('syncQueue', item.queueId);
+                            }
+                        }
+                    } catch (e) {
+                        console.warn("Queue item sync deferred:", e);
+                    }
+                }
+            } catch (err) {
+                console.error("Queue process error:", err);
+            } finally {
+                isSyncingQueue = false;
+            }
+        }
+
         let approvalPollingTimer = null;
         let currentAuthSessionId = null;
-
-        // 7-day Session Management (7 * 24 * 60 * 60 * 1000 ms)
         const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
         function isSessionValid() {
             const verified = localStorage.getItem('otp_verified_studybuddy');
             const timestamp = parseInt(localStorage.getItem('otp_verified_timestamp') || '0', 10);
-            if (verified === 'true' && timestamp > 0 && (Date.now() - timestamp < SEVEN_DAYS_MS)) {
-                return true;
-            }
-            return false;
+            return (verified === 'true' && timestamp > 0 && (Date.now() - timestamp < SEVEN_DAYS_MS));
         }
 
         function setSessionActive() {
@@ -1214,10 +1531,13 @@
             sessionStorage.removeItem('otp_verified_studybuddy');
         }
 
-        // DEPLOYED APPS SCRIPT URL
-        const API_URL = "https://script.google.com/macros/s/AKfycbzYwEKiKlVBSeCsfFSvkjg_yp4dFaL9b6KXKAdHRehBZUzELM1wgTma7MNb0LwjiMXZ/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycby9qmVnSKniBfGnyoALGphh_ytshQuWkJKiObGn6gGjBC3nmiJJgQ5n2RGZFJQaQfs/exec";
         
         async function runRemoteAPI(action, payload) {
+            if (!navigator.onLine) {
+                showTrackerToast("You are offline. Connect to internet for this action.", 'error');
+                return null;
+            }
             setLoadingState(true, "Synchronizing...", "Connecting with Google Sheets & 2FA Service.");
             try {
                 const response = await fetch(API_URL, { 
@@ -1239,8 +1559,8 @@
             }
         }
 
-        // Silent background sync for Google Sheets (Fire and Forget)
         function runRemoteAPISilent(action, payload) {
+            if (!navigator.onLine) return;
             fetch(API_URL, { 
                 method: 'POST', 
                 redirect: 'follow', 
@@ -1248,40 +1568,23 @@
                 body: JSON.stringify({ action, payload }) 
             }).catch(e => console.error("Sheets sync failed:", e));
         }
-        // Helper to detect client Device, OS and Browser
+
         function getClientDeviceInfo() {
             const ua = navigator.userAgent;
-            let device = "Desktop PC";
-            let os = "Unknown OS";
-            let browser = "Browser";
-
-            if (/android/i.test(ua)) {
-                device = "Android Phone";
-                os = "Android";
-            } else if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) {
-                device = "iPhone / iPad";
-                os = "iOS";
-            } else if (/Macintosh|Mac OS X/.test(ua)) {
-                device = "MacBook / Mac";
-                os = "macOS";
-            } else if (/Windows/i.test(ua)) {
-                device = "Windows PC";
-                os = "Windows";
-            } else if (/Linux/i.test(ua)) {
-                device = "Linux Workstation";
-                os = "Linux";
-            }
+            let device = "Desktop PC", os = "Unknown OS", browser = "Browser";
+            if (/android/i.test(ua)) { device = "Android Phone"; os = "Android"; }
+            else if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) { device = "iPhone / iPad"; os = "iOS"; }
+            else if (/Macintosh|Mac OS X/.test(ua)) { device = "MacBook / Mac"; os = "macOS"; }
+            else if (/Windows/i.test(ua)) { device = "Windows PC"; os = "Windows"; }
+            else if (/Linux/i.test(ua)) { device = "Linux Workstation"; os = "Linux"; }
 
             if (/edg/i.test(ua)) browser = "Microsoft Edge";
             else if (/chrome|crios/i.test(ua)) browser = "Google Chrome";
             else if (/safari/i.test(ua) && !/chrome/i.test(ua)) browser = "Apple Safari";
             else if (/firefox|fxios/i.test(ua)) browser = "Mozilla Firefox";
-            else if (/opr\//i.test(ua)) browser = "Opera";
-
             return `${device} (${os} · ${browser})`;
         }
 
-        // Smart Clipboard & URL Auto-Detection on Focus / Page Load
         async function checkClipboardForOTP() {
             try {
                 if (document.getElementById('step-2-otp').classList.contains('step-active')) {
@@ -1298,9 +1601,7 @@
                         }
                     }
                 }
-            } catch (err) {
-                // Clipboard permission restricted by browser policy
-            }
+            } catch (err) {}
         }
 
         window.addEventListener('focus', checkClipboardForOTP);
@@ -1308,7 +1609,6 @@
             if (document.visibilityState === 'visible') checkClipboardForOTP();
         });
 
-        // Check if URL has 1-tap approval token or auto-fill OTP parameter
         async function checkURLApprovalToken() {
             const params = new URLSearchParams(window.location.search);
             const approveToken = params.get('approve_token');
@@ -1341,7 +1641,6 @@
             }
         }
 
-        // Start real-time background polling while waiting on OTP screen for remote 1-tap approval
         function startApprovalPolling(sessionId) {
             stopApprovalPolling();
             currentAuthSessionId = sessionId;
@@ -1358,9 +1657,7 @@
                         showTrackerToast("✅ 1-Tap Approval Confirmed remotely! Welcome!", "success");
                         enterAppDashboard();
                     }
-                } catch (err) {
-                    // Silent retry
-                }
+                } catch (err) {}
             }, 2500);
         }
 
@@ -1384,30 +1681,23 @@
                 return;
             }
 
-            let email = idInput;
-            if (!email.includes('@')) {
-                email = idInput + "@studybuddyos.com";
-            }
-
+            let email = idInput.includes('@') ? idInput : `${idInput}@studybuddyos.com`;
             errorEl.classList.add('hidden');
             const originalText = submitBtn.innerHTML;
             submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin mr-2"></i> <span>Authenticating...</span>`;
             submitBtn.disabled = true;
 
             try {
-                // Phase 1: Verify against Firebase Authentication
                 const userCredential = await signInWithEmailAndPassword(auth, email, passInput);
                 const user = userCredential.user;
                 const idToken = await user.getIdToken();
 
                 showTrackerToast("Credential verified! Sending code via Telegram & Gmail simultaneously...", "success");
 
-                // Generate a unique session ID for this login attempt
                 const sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
                 const deviceInfo = getClientDeviceInfo();
                 const appOrigin = "https://pulakchakma.info.mp";
 
-                // Phase 2: Securely request OTP via Sheets / Telegram / Gmail backend simultaneously
                 const res = await runRemoteAPI('requestOTP', {
                     uid: user.uid,
                     email: user.email,
@@ -1419,7 +1709,6 @@
                 });
 
                 if (res && res.status === 'success') {
-                    // Update Step 2 UI for dual broadcast
                     const indicator = document.getElementById('active-channel-indicator');
                     const iconContainer = document.getElementById('otp-icon-container');
                     const header = document.getElementById('otp-channel-header');
@@ -1428,43 +1717,28 @@
                     indicator.innerHTML = `<i class="fa-solid fa-satellite-dish text-[10px] animate-pulse"></i> Telegram &amp; Gmail Live`;
                     indicator.className = "text-[11px] text-brand-400 flex items-center gap-1 font-semibold";
                     iconContainer.innerHTML = `<i class="fa-brands fa-telegram text-brand-400"></i>`;
-                    iconContainer.className = "w-16 h-16 bg-brand-500/10 border border-brand-500/20 rounded-2xl flex items-center justify-center mx-auto mb-3 text-2xl shadow-inner";
                     header.textContent = "Check Telegram or Gmail";
                     desc.innerHTML = `We sent your 6-digit code and a <strong>1-Tap Approval Link</strong> to your Telegram Bot &amp; <strong>${user.email}</strong>.`;
 
-                    // Switch view to Step 2
                     document.getElementById('step-1-credentials').classList.remove('step-active');
                     document.getElementById('step-1-credentials').classList.add('step-hidden');
-                    
                     document.getElementById('step-2-otp').classList.remove('step-hidden');
                     document.getElementById('step-2-otp').classList.add('step-active');
                     
                     showTrackerToast("2FA code & 1-Tap link dispatched to Telegram & Gmail!", "success");
-                    
                     const otpInput = document.getElementById('login-otp');
                     otpInput.value = "";
                     otpInput.focus();
 
-                    // Start listening for 1-Tap remote approval
                     startApprovalPolling(sessionId);
                 } else {
                     throw new Error("Unable to contact 2FA service.");
                 }
             } catch (err) {
-                console.error("Login / OTP Request failed: ", err);
                 errorEl.classList.remove('hidden');
                 loginCard.classList.add('animate-shake');
                 setTimeout(() => { loginCard.classList.remove('animate-shake'); }, 400);
-                
-                let friendlyMsg = "Invalid username or password. Please verify your credentials.";
-                if (err && err.code === 'auth/invalid-credential' || (err.message && err.message.includes('auth/invalid-credential'))) {
-                    friendlyMsg = "Incorrect username or password. Please try again.";
-                } else if (err && err.code === 'auth/too-many-requests') {
-                    friendlyMsg = "Too many failed attempts. Please try again in a few moments.";
-                } else if (err.message) {
-                    friendlyMsg = err.message;
-                }
-                showTrackerToast(friendlyMsg, "error");
+                showTrackerToast(err.message || "Authentication failed. Check credentials.", "error");
             } finally {
                 submitBtn.innerHTML = originalText;
                 submitBtn.disabled = false;
@@ -1477,16 +1751,10 @@
             const icon = btn.querySelector('i');
             if (input.type === 'password') {
                 input.type = 'text';
-                if (icon) {
-                    icon.classList.remove('fa-eye');
-                    icon.classList.add('fa-eye-slash');
-                }
+                if (icon) { icon.classList.remove('fa-eye'); icon.classList.add('fa-eye-slash'); }
             } else {
                 input.type = 'password';
-                if (icon) {
-                    icon.classList.remove('fa-eye-slash');
-                    icon.classList.add('fa-eye');
-                }
+                if (icon) { icon.classList.remove('fa-eye-slash'); icon.classList.add('fa-eye'); }
             }
         }
 
@@ -1535,24 +1803,12 @@
             }
         }
 
-        // Auto-submit instantly when 6 digits are typed or pasted
         const otpInputElement = document.getElementById('login-otp');
         if (otpInputElement) {
             otpInputElement.addEventListener('input', (e) => {
                 const cleanVal = e.target.value.replace(/\D/g, '').slice(0, 6);
                 e.target.value = cleanVal;
-                if (cleanVal.length === 6) {
-                    verifyTrackerOTP(new Event('submit'));
-                }
-            });
-            otpInputElement.addEventListener('paste', (e) => {
-                setTimeout(() => {
-                    const cleanVal = (otpInputElement.value || '').replace(/\D/g, '').slice(0, 6);
-                    otpInputElement.value = cleanVal;
-                    if (cleanVal.length === 6) {
-                        verifyTrackerOTP(new Event('submit'));
-                    }
-                }, 50);
+                if (cleanVal.length === 6) verifyTrackerOTP(new Event('submit'));
             });
         }
 
@@ -1570,10 +1826,8 @@
             stopApprovalPolling();
             document.getElementById('step-2-otp').classList.remove('step-active');
             document.getElementById('step-2-otp').classList.add('step-hidden');
-            
             document.getElementById('step-1-credentials').classList.remove('step-hidden');
             document.getElementById('step-1-credentials').classList.add('step-active');
-            
             document.getElementById('login-otp').value = "";
         }
         
@@ -1601,7 +1855,6 @@
             });
         }
 
-        // Automatic authentication observer mapping with 7-day persistence
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 if (isSessionValid()) {
@@ -1618,20 +1871,160 @@
             }
         });
 
-        // ==========================================
-        // MAIN APP STATE & HANDLERS
-        // ==========================================
         let appState = { transactions: [], dps: [], balances: { cash: 0, bank: 0, dps: 0, bankAccounts: {} } };
         let bankAccounts = []; 
         let currentTrackerTab = 'home';
         let confirmingCallback = null;
         let analyticsPieChart = null;
+        let ledgerSortDescending = true;
+        let currentBestMatchSuggestion = null;
 
-        function initTrackerApp() {
+        let reasonKeywordDictionary = [
+            "Snacks", "Breakfast", "Lunch", "Dinner", "Tea & Coffee",
+            "Transport / Rickshaw", "Bus Fare", "Photocopy / Print", "Books & Study",
+            "Mobile Recharge", "Internet Bill", "House Rent", "Groceries & Market",
+            "Medical / Medicine", "return from Friend", "lend to Friend", "Tuition Fee",
+            "Bank ATM Withdrawal", "Salary Inflow", "Freelancing Income"
+        ];
+
+        function loadKeywordDictionary() {
+            const saved = localStorage.getItem('expense_tracker_keywords');
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    parsed.forEach(w => {
+                        if (!reasonKeywordDictionary.some(k => k.toLowerCase() === w.toLowerCase())) {
+                            reasonKeywordDictionary.push(w);
+                        }
+                    });
+                } catch(e){}
+            }
+        }
+
+        function autoLearnKeyword(word) {
+            if (!word || typeof word !== 'string') return;
+            const cleaned = word.trim();
+            if (cleaned.length < 2) return;
+            const exists = reasonKeywordDictionary.some(k => k.toLowerCase() === cleaned.toLowerCase());
+            if (!exists) {
+                reasonKeywordDictionary.unshift(cleaned);
+                try {
+                    localStorage.setItem('expense_tracker_keywords', JSON.stringify(reasonKeywordDictionary.slice(0, 200)));
+                } catch(e){}
+            }
+        }
+
+        function calculateStringSimilarity(str1, str2) {
+            const s1 = (str1 || '').toLowerCase().trim();
+            const s2 = (str2 || '').toLowerCase().trim();
+            if (!s1 || !s2) return 0;
+            if (s1 === s2) return 1.0;
+            if (s2.startsWith(s1) || s1.startsWith(s2)) return 0.92;
+            if (s2.includes(s1)) return 0.90;
+
+            function getBigrams(string) {
+                const s = string.replace(/\s+/g, '');
+                const bigrams = new Set();
+                for (let i = 0; i < s.length - 1; i++) {
+                    bigrams.add(s.substring(i, i + 2));
+                }
+                return bigrams;
+            }
+
+            const bg1 = getBigrams(s1);
+            const bg2 = getBigrams(s2);
+            if (bg1.size === 0 || bg2.size === 0) return 0;
+
+            let intersection = 0;
+            bg1.forEach(b => {
+                if (bg2.has(b)) intersection++;
+            });
+
+            return (2.0 * intersection) / (bg1.size + bg2.size);
+        }
+
+        function handleKeywordInput(inputEl, suggestionsContainerId, inputId) {
+            const query = inputEl.value.trim();
+            const container = document.getElementById(suggestionsContainerId);
+            if (!container) return;
+
+            if (!query || query.length < 1) {
+                container.innerHTML = '';
+                container.classList.add('hidden');
+                currentBestMatchSuggestion = null;
+                return;
+            }
+
+            const matches = [];
+            reasonKeywordDictionary.forEach(kw => {
+                const sim = calculateStringSimilarity(query, kw);
+                if (sim >= 0.35 || kw.toLowerCase().includes(query.toLowerCase())) {
+                    matches.push({ keyword: kw, similarity: Math.round(sim * 100) });
+                }
+            });
+
+            matches.sort((a, b) => b.similarity - a.similarity);
+            const topMatches = matches.slice(0, 6);
+
+            if (topMatches.length === 0) {
+                container.innerHTML = '';
+                container.classList.add('hidden');
+                currentBestMatchSuggestion = null;
+                return;
+            }
+
+            currentBestMatchSuggestion = topMatches[0].similarity >= 90 ? topMatches[0].keyword : null;
+
+            container.innerHTML = topMatches.map(m => {
+                const isHighMatch = m.similarity >= 90;
+                const matchBadge = isHighMatch ? 
+                    `<span class="bg-emerald-500/20 text-emerald-300 px-1 rounded text-[9px] font-bold">90%+ match [Press Enter]</span>` :
+                    `<span class="text-slate-400 text-[9px]">${m.similarity}%</span>`;
+
+                return `
+                    <button type="button" onclick="selectSuggestedKeyword('${m.keyword.replace(/'/g, "\\'")}', '${inputId}', '${suggestionsContainerId}')"
+                        class="suggestion-chip px-3 py-1.5 rounded-xl text-xs text-white font-medium flex items-center gap-1.5 ${isHighMatch ? 'border-brand-400 ring-1 ring-brand-400/40' : ''}">
+                        <span>${m.keyword}</span>
+                        ${matchBadge}
+                    </button>
+                `;
+            }).join('');
+
+            container.classList.remove('hidden');
+        }
+
+        function handleKeywordKeydown(event, inputId, suggestionsContainerId) {
+            if (event.key === 'Enter') {
+                if (currentBestMatchSuggestion) {
+                    event.preventDefault();
+                    selectSuggestedKeyword(currentBestMatchSuggestion, inputId, suggestionsContainerId);
+                }
+            }
+        }
+
+        function selectSuggestedKeyword(keyword, inputId, suggestionsContainerId) {
+            const input = document.getElementById(inputId);
+            if (input) {
+                input.value = keyword;
+                input.focus();
+            }
+            const container = document.getElementById(suggestionsContainerId);
+            if (container) {
+                container.innerHTML = '';
+                container.classList.add('hidden');
+            }
+            currentBestMatchSuggestion = null;
+            showTrackerToast(`Applied "${keyword}"`, "success");
+        }
+
+        async function initTrackerApp() {
             startClockService();
+            updateNetworkStatusIndicator();
+            loadKeywordDictionary();
             loadLocalBanks();
             setTodayDateInputs();
             loadVerifiedEmail();
+            await openIndexedDatabase();
             fetchInitialLedgerData();
         }
 
@@ -1639,6 +2032,8 @@
             let saved = localStorage.getItem('verified_report_email');
             if (!saved && auth.currentUser) saved = auth.currentUser.email;
             document.getElementById('current-verified-email').textContent = saved || "No email configured";
+            const previewEl = document.getElementById('report-target-email-preview');
+            if (previewEl) previewEl.textContent = saved || "Not configured";
         }
 
         function startEmailChange() {
@@ -1717,18 +2112,24 @@
 
         function populateBankSelectors() {
             const addDropdown = document.getElementById('tx_custom_bank');
-            const transDropdown = document.getElementById('transfer_source');
-            const editDropdown = document.getElementById('edit_tx_source_dropdown');
+            const transSourceDropdown = document.getElementById('transfer_source');
+            const transDestDropdown = document.getElementById('transfer_dest');
+            const editSourceDropdown = document.getElementById('edit_tx_source_dropdown');
+            const editDestDropdown = document.getElementById('edit_tx_target_dropdown');
             
             addDropdown.innerHTML = ''; 
-            transDropdown.innerHTML = '';
-            editDropdown.innerHTML = `<option value="Cash" class="bg-slate-900">💵 Pocket Cash</option>`;
+            transSourceDropdown.innerHTML = '';
+            transDestDropdown.innerHTML = '';
+            editSourceDropdown.innerHTML = `<option value="Cash" class="bg-slate-900">💵 Pocket Cash</option>`;
+            editDestDropdown.innerHTML = `<option value="Cash" class="bg-slate-900">💵 Pocket Cash</option>`;
 
             bankAccounts.forEach(b => {
                 const opt = `<option value="${b.name}" class="bg-slate-900">${b.name} (${b.number})</option>`;
                 addDropdown.insertAdjacentHTML('beforeend', opt);
-                transDropdown.insertAdjacentHTML('beforeend', opt);
-                editDropdown.insertAdjacentHTML('beforeend', `<option value="${b.name}" class="bg-slate-900">🏦 ${b.name}</option>`);
+                transSourceDropdown.insertAdjacentHTML('beforeend', opt);
+                transDestDropdown.insertAdjacentHTML('beforeend', opt);
+                editSourceDropdown.insertAdjacentHTML('beforeend', `<option value="${b.name}" class="bg-slate-900">🏦 ${b.name}</option>`);
+                editDestDropdown.insertAdjacentHTML('beforeend', `<option value="${b.name}" class="bg-slate-900">🏦 ${b.name}</option>`);
             });
         }
 
@@ -1758,6 +2159,11 @@
             const m = String(now.getMinutes()).padStart(2, '0');
             document.getElementById('custom-time').value = `${h}:${m}`;
             document.getElementById('transfer-time').value = `${h}:${m}`;
+
+            const fromEl = document.getElementById('auto-report-from');
+            const toEl = document.getElementById('auto-report-to');
+            if (fromEl && !fromEl.value) fromEl.value = `${currentYM}-01`;
+            if (toEl && !toEl.value) toEl.value = todayStr;
         }
 
         function toggleCustomTimeFields(checkbox, formType) {
@@ -1787,7 +2193,7 @@
             });
             document.getElementById('expense-tracker-system').scrollTo({ top: 0, behavior: 'smooth' });
 
-            if(tabId === 'reports') {
+            if (tabId === 'reports') {
                 generateAnalytics();
             }
         }
@@ -1857,60 +2263,134 @@
         }
 
         async function fetchInitialLedgerData() {
-            setLoadingState(true, "Loading Records...", "Fetching data from Supabase instantly...");
+            let txs = [];
+            let dpss = [];
+
+            // 1. Instantly load locally cached data from IndexedDB
             try {
-                const { data: txs, error: txErr } = await supabase.from('transactions').select('*').order('date', { ascending: false }).order('time', { ascending: false });
-                const { data: dpss, error: dpsErr } = await supabase.from('dps').select('*').order('date', { ascending: false });
-
-                if (txErr) throw txErr;
-                if (dpsErr) throw dpsErr;
-
-                let cashBal = 0, bankBal = 0, dpsBal = 0;
-                let bankAccs = {};
-
-                const formattedTxs = txs.map(item => {
-                    if (item.type === 'Expense') {
-                        if (item.source === 'Cash') cashBal -= item.amount;
-                        else { bankBal -= item.amount; bankAccs[item.source] = (bankAccs[item.source] || 0) - item.amount; }
-                    } else if (item.type === 'Deposit') {
-                        if (item.source === 'Cash') cashBal += item.amount;
-                        else { bankBal += item.amount; bankAccs[item.source] = (bankAccs[item.source] || 0) + item.amount; }
-                    } else if (item.type === 'Bank_to_Current') { 
-                        cashBal += item.amount; bankBal -= item.amount;
-                        if(item.source !== 'Cash') { bankAccs[item.source] = (bankAccs[item.source] || 0) - item.amount; }
-                    } else if (item.type === 'Cash_to_Bank') {
-                        cashBal -= item.amount; bankBal += item.amount;
-                        if(item.source !== 'Cash') { bankAccs[item.source] = (bankAccs[item.source] || 0) + item.amount; }
-                    }
-                    return { ...item, timestamp: item.created_at };
-                });
-
-                const formattedDps = dpss.map(item => {
-                    dpsBal += item.amount;
-                    return { id: item.id, amount: item.amount, installmentNo: item.installment_no, note: item.note, date: item.date, timestamp: item.created_at, bank: item.bank || '', acNo: item.ac_no || '', maturityDate: item.maturity_date || '' };
-                });
-
-                appState = {
-                    transactions: formattedTxs,
-                    dps: formattedDps,
-                    balances: { cash: cashBal, bank: bankBal, dps: dpsBal, bankAccounts: bankAccs }
-                };
-
-                detectAndAddMissingBanks(); 
-                updateUIWidgets();
-            } catch (err) {
-                console.error(err);
-                showTrackerToast("Could not retrieve ledger from Supabase.", "error");
-            } finally {
-                setLoadingState(false);
+                txs = await idbGetAll('transactions');
+                dpss = await idbGetAll('dps');
+                if (txs.length > 0 || dpss.length > 0) {
+                    processLedgerData(txs, dpss);
+                }
+            } catch (localErr) {
+                console.warn("Local IndexedDB read notice:", localErr);
             }
+
+            // 2. If online, fetch latest from Supabase and refresh local cache
+            if (navigator.onLine) {
+                setLoadingState(true, "Loading Records...", "Fetching live ledger records from Supabase...");
+                try {
+                    const { data: cloudTxs, error: txErr } = await supabase.from('transactions').select('*').order('date', { ascending: false }).order('time', { ascending: false });
+                    const { data: cloudDpss, error: dpsErr } = await supabase.from('dps').select('*').order('date', { ascending: false });
+
+                    if (txErr) throw txErr;
+                    if (dpsErr) throw dpsErr;
+
+                    // Sync cache
+                    for (const t of cloudTxs) { await idbPut('transactions', t); }
+                    for (const d of cloudDpss) { await idbPut('dps', d); }
+
+                    processLedgerData(cloudTxs, cloudDpss);
+                } catch (err) {
+                    console.error("Cloud fetch notice:", err);
+                    if (txs.length === 0 && dpss.length === 0) {
+                        showTrackerToast("Could not retrieve ledger from database.", "error");
+                    }
+                } finally {
+                    setLoadingState(false);
+                }
+            }
+        }
+
+        function processLedgerData(txs, dpss) {
+            let cashBal = 0, bankBal = 0, dpsBal = 0;
+            let bankAccs = {};
+
+            const formattedTxs = txs.map(item => {
+                const amt = Number(item.amount) || 0;
+                const fee = Number(item.fee) || 0;
+
+                if (item.description) autoLearnKeyword(item.description);
+
+                if (item.type === 'Expense') {
+                    if (item.source === 'Cash') {
+                        cashBal -= amt;
+                    } else {
+                        bankBal -= amt;
+                        bankAccs[item.source] = (bankAccs[item.source] || 0) - amt;
+                    }
+                } else if (item.type === 'Deposit') {
+                    if (item.source === 'Cash') {
+                        cashBal += amt;
+                    } else {
+                        bankBal += amt;
+                        bankAccs[item.source] = (bankAccs[item.source] || 0) + amt;
+                    }
+                } else if (item.type === 'Bank_to_Current') { 
+                    cashBal += amt;
+                    bankBal -= (amt + fee);
+                    if (item.source !== 'Cash') {
+                        bankAccs[item.source] = (bankAccs[item.source] || 0) - (amt + fee);
+                    }
+                } else if (item.type === 'Cash_to_Bank') {
+                    cashBal -= (amt + fee);
+                    bankBal += amt;
+                    if (item.source !== 'Cash') {
+                        bankAccs[item.source] = (bankAccs[item.source] || 0) + amt;
+                    }
+                } else if (item.type === 'Bank_to_Bank') {
+                    const targetBank = item.target_source || item.target || 'Bank';
+                    bankBal -= fee;
+                    bankAccs[item.source] = (bankAccs[item.source] || 0) - (amt + fee);
+                    bankAccs[targetBank] = (bankAccs[targetBank] || 0) + amt;
+                }
+
+                return { 
+                    ...item, 
+                    amount: amt, 
+                    fee: fee, 
+                    target_source: item.target_source || item.target || '',
+                    timestamp: item.created_at || item.timestamp || new Date().toISOString()
+                };
+            });
+
+            const formattedDps = dpss.map(item => {
+                const amt = Number(item.amount) || 0;
+                dpsBal += amt;
+                return { 
+                    id: item.id, 
+                    amount: amt, 
+                    installmentNo: item.installment_no || item.installmentNo || '', 
+                    note: item.note || '', 
+                    date: item.date, 
+                    timestamp: item.created_at || item.timestamp || new Date().toISOString(), 
+                    bank: item.bank || '', 
+                    acNo: item.ac_no || item.acNo || '', 
+                    maturityDate: item.maturity_date || item.maturityDate || '' 
+                };
+            });
+
+            appState = {
+                transactions: formattedTxs,
+                dps: formattedDps,
+                balances: { cash: cashBal, bank: bankBal, dps: dpsBal, bankAccounts: bankAccs }
+            };
+
+            detectAndAddMissingBanks(); 
+            updateUIWidgets();
         }
 
         function detectAndAddMissingBanks() {
             let changed = false;
             appState.transactions.forEach(t => {
                 if (t.source && t.source !== 'Cash' && t.source !== 'Bank' && !bankAccounts.some(b => b.name === t.source)) {
-                    bankAccounts.push({ name: t.source, number: "Discovered Account" }); changed = true;
+                    bankAccounts.push({ name: t.source, number: "Discovered Account" }); 
+                    changed = true;
+                }
+                if (t.target_source && t.target_source !== 'Cash' && t.target_source !== 'Bank' && !bankAccounts.some(b => b.name === t.target_source)) {
+                    bankAccounts.push({ name: t.target_source, number: "Discovered Account" }); 
+                    changed = true;
                 }
             });
             if (changed) saveBanks();
@@ -1939,7 +2419,9 @@
             }
             renderLedgerList(); 
             calculateStudentAllowanceStatistics();
-            if(currentTrackerTab === 'reports') generateAnalytics();
+            if (currentTrackerTab === 'reports') {
+                generateAnalytics();
+            }
         }
 
         function calculateStudentAllowanceStatistics() {
@@ -1950,7 +2432,6 @@
             txs.forEach(t => {
                 const descLower = (t.description || '').toLowerCase().trim();
                 const isLendRet = descLower.startsWith('lend') || descLower.startsWith('return from');
-                
                 if (!t.date || isLendRet) return; 
                 
                 const txM = String(t.date).substring(0, 7);
@@ -1974,12 +2455,642 @@
             document.getElementById('stat-comparison-text').innerHTML = `<i class="fa-solid fa-brain text-brand-400 mr-1.5 animate-pulse"></i><span>${text} (Excludes lend/return from)</span>`;
         }
 
+        function parseDateTimeToEpoch(dateStr, timeStr) {
+            if (!dateStr) return 0;
+            let d = String(dateStr).trim();
+            let t = String(timeStr || '12:00').trim();
+
+            if (t.length === 5) t = `${t}:00`;
+            const dateParts = d.split('-');
+            if (dateParts.length === 3) {
+                const year = parseInt(dateParts[0], 10);
+                const month = parseInt(dateParts[1], 10) - 1;
+                const day = parseInt(dateParts[2], 10);
+                const timeParts = t.split(':');
+                const hour = parseInt(timeParts[0] || '0', 10);
+                const min = parseInt(timeParts[1] || '0', 10);
+                const sec = parseInt(timeParts[2] || '0', 10);
+                return new Date(year, month, day, hour, min, sec).getTime();
+            }
+
+            const fallback = new Date(`${d}T${t}`).getTime();
+            return isNaN(fallback) ? 0 : fallback;
+        }
+
+        function getCombinedJournal() {
+            let j = appState.transactions.map(t => ({
+                masterId: t.id, 
+                dbType: 'transaction', 
+                date: t.date, 
+                time: t.time || '12:00', 
+                type: t.type, 
+                source: t.source, 
+                target_source: t.target_source || '',
+                amount: t.amount, 
+                fee: Number(t.fee) || 0,
+                description: t.description || '', 
+                timestamp: t.timestamp,
+                epoch: parseDateTimeToEpoch(t.date, t.time)
+            }));
+
+            appState.dps.forEach(d => {
+                j.push({
+                    masterId: d.id, 
+                    dbType: 'dps', 
+                    date: d.date, 
+                    time: '12:00', 
+                    type: 'DPS', 
+                    source: d.bank || 'Bank', 
+                    target_source: '',
+                    amount: d.amount, 
+                    fee: 0,
+                    description: `DPS Deposit: ${d.installmentNo} ${d.acNo ? `(A/C: ${d.acNo})` : ''}`, 
+                    timestamp: d.timestamp,
+                    epoch: parseDateTimeToEpoch(d.date, '12:00')
+                });
+            });
+
+            return j.sort((a, b) => {
+                if (ledgerSortDescending) {
+                    return b.epoch - a.epoch;
+                } else {
+                    return a.epoch - b.epoch;
+                }
+            });
+        }
+
+        function toggleLedgerSortOrder() {
+            ledgerSortDescending = !ledgerSortDescending;
+            const icon = document.getElementById('sort-order-icon');
+            const label = document.getElementById('sort-order-label');
+            if (ledgerSortDescending) {
+                icon.className = 'fa-solid fa-arrow-down-wide-short text-brand-400';
+                label.textContent = 'Newest';
+            } else {
+                icon.className = 'fa-solid fa-arrow-up-wide-short text-brand-400';
+                label.textContent = 'Oldest';
+            }
+            renderLedgerList();
+        }
+
+        function renderLedgerList() {
+            const rawSearch = document.getElementById('ledger-search').value.toLowerCase().trim();
+            const filter = document.getElementById('ledger-type-filter').value;
+            const mobile = document.getElementById('master-ledger-vertical-container');
+            const desk = document.getElementById('master-ledger-table-body');
+            const mini = document.getElementById('mini-ledger-list');
+            
+            mobile.innerHTML = ''; 
+            desk.innerHTML = ''; 
+            mini.innerHTML = '';
+
+            const journal = getCombinedJournal().filter(i => {
+                const desc = (i.description || '').toLowerCase();
+                const type = (i.type || '').toLowerCase();
+                const source = (i.source || '').toLowerCase();
+                const target = (i.target_source || '').toLowerCase();
+                const date = (i.date || '').toLowerCase();
+                const time = (i.time || '').toLowerCase();
+                const amt = String(i.amount);
+                const fee = String(i.fee);
+
+                const matchesSearch = !rawSearch || 
+                    desc.includes(rawSearch) || 
+                    type.includes(rawSearch) || 
+                    source.includes(rawSearch) || 
+                    target.includes(rawSearch) || 
+                    date.includes(rawSearch) || 
+                    time.includes(rawSearch) || 
+                    amt.includes(rawSearch) || 
+                    fee.includes(rawSearch);
+
+                let matchesFilter = true;
+                if (filter === 'Expense') matchesFilter = (i.type === 'Expense');
+                else if (filter === 'Deposit') matchesFilter = (i.type === 'Deposit');
+                else if (filter === 'Transfer') matchesFilter = (i.type === 'Bank_to_Current' || i.type === 'Cash_to_Bank' || i.type === 'Bank_to_Bank');
+                else if (filter === 'DPS') matchesFilter = (i.dbType === 'dps');
+
+                return matchesSearch && matchesFilter;
+            });
+
+            if (journal.length === 0) {
+                mobile.innerHTML = `<div class="p-8 text-center text-slate-500 glass-panel rounded-3xl"><p class="text-xs">No records matching query.</p></div>`;
+                desk.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-slate-500">No matching records found.</td></tr>`;
+            } else {
+                journal.forEach(item => {
+                    let c = 'text-slate-200', s = '', l = item.type;
+                    const desc = (item.description || '').toLowerCase().trim();
+                    const isLendRet = desc.startsWith('lend') || desc.startsWith('return from');
+
+                    let routeDisplay = item.source;
+
+                    if (item.type === 'Expense') { c = 'text-rose-400'; s = '-'; l = 'Expense'; } 
+                    else if (item.type === 'Deposit') { c = 'text-emerald-400'; s = '+'; l = 'Deposit'; } 
+                    else if (item.type === 'Bank_to_Current') { 
+                        c = 'text-brand-400'; 
+                        l = 'Transfer↓'; 
+                        routeDisplay = `${item.source} → Cash`;
+                    } 
+                    else if (item.type === 'Cash_to_Bank') { 
+                        c = 'text-teal-400'; 
+                        s = '+'; 
+                        l = 'Transfer↑'; 
+                        routeDisplay = `Cash → ${item.source}`;
+                    } 
+                    else if (item.type === 'Bank_to_Bank') {
+                        c = 'text-indigo-400';
+                        l = 'Bank ⇄ Bank';
+                        routeDisplay = `${item.source} → ${item.target_source || 'Bank'}`;
+                    }
+                    else if (item.type === 'DPS') { c = 'text-pink-400'; l = 'DPS'; }
+                    
+                    if (isLendRet) { c = 'text-amber-400'; l = 'Lend/Return'; }
+
+                    let dStr = item.date; 
+                    try { dStr = new Date(item.date).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'}); } catch(e){}
+
+                    const feeBadge = (item.fee && item.fee > 0) 
+                        ? `<span class="inline-flex items-center gap-1 bg-amber-500/10 text-amber-300 border border-amber-500/20 px-2 py-0.5 rounded-md text-[10px] font-bold ml-1.5"><i class="fa-solid fa-receipt text-[9px]"></i> Fee: ৳${item.fee.toLocaleString()}</span>` 
+                        : '';
+
+                    mobile.insertAdjacentHTML('beforeend', `
+                        <div class="glass-panel p-4 rounded-2xl flex justify-between items-center gap-2 hover:bg-white/[0.02] transition-all duration-200">
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-1.5 flex-wrap">
+                                    <span class="text-[10px] font-bold text-slate-400 uppercase">${dStr} ${item.time || ''}</span>
+                                    <span class="text-[9px] font-bold bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-slate-300 uppercase">${l}</span>
+                                    ${feeBadge}
+                                </div>
+                                <p class="text-xs font-semibold text-white mt-1.5 truncate">${item.description}</p>
+                                <p class="text-[10px] text-brand-300 font-semibold mt-0.5"><i class="fa-solid fa-route text-[9px] mr-1"></i>${routeDisplay}</p>
+                            </div>
+                            <div class="text-right flex flex-col items-end shrink-0">
+                                <span class="text-xs font-bold ${c}">${s} ৳${item.amount.toLocaleString()}</span>
+                                <div class="flex gap-2.5 mt-2">
+                                    <button onclick="openEditModal('${item.dbType}', '${item.masterId}')" class="text-[10px] text-brand-400 hover:text-brand-300 font-semibold transition">Edit</button>
+                                    <button onclick="triggerDeletionPrompt('${item.dbType}', '${item.masterId}')" class="text-[10px] text-rose-400 hover:text-rose-300 font-semibold transition">Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                    `);
+
+                    desk.insertAdjacentHTML('beforeend', `
+                        <tr class="hover:bg-white/[0.02] transition-colors">
+                            <td class="py-3 px-4 text-xs text-slate-400 whitespace-nowrap">
+                                <div class="font-semibold text-slate-200">${item.date}</div>
+                                <div class="text-[10px] text-slate-500">${item.time || ''}</div>
+                            </td>
+                            <td class="py-3 px-4 whitespace-nowrap">
+                                <span class="text-xs font-semibold px-2 py-0.5 rounded-md bg-white/5 text-slate-300 border border-white/10">${l}</span>
+                            </td>
+                            <td class="py-3 px-4 text-xs font-semibold text-brand-300 whitespace-nowrap">${routeDisplay}</td>
+                            <td class="py-3 px-4 text-xs font-medium text-slate-200 max-w-sm">
+                                <div class="flex items-center gap-1.5 flex-wrap">
+                                    <span class="truncate font-semibold">${item.description}</span>
+                                    ${feeBadge}
+                                </div>
+                            </td>
+                            <td class="py-3 px-4 text-right font-bold ${c} text-xs whitespace-nowrap">
+                                ${s} ৳${item.amount.toLocaleString()}
+                            </td>
+                            <td class="py-3 px-4 text-center whitespace-nowrap">
+                                <button onclick="openEditModal('${item.dbType}', '${item.masterId}')" class="text-xs text-brand-400 hover:text-brand-300 font-semibold mr-3 transition" title="Edit"><i class="fa-solid fa-pen"></i></button>
+                                <button onclick="triggerDeletionPrompt('${item.dbType}', '${item.masterId}')" class="text-xs text-rose-400 hover:text-rose-300 font-semibold transition" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                            </td>
+                        </tr>
+                    `);
+                });
+            }
+
+            const min = getCombinedJournal().slice(0, 4);
+            if (min.length === 0) {
+                mini.innerHTML = `<p class="p-6 text-center text-xs text-slate-500">No logs saved yet.</p>`;
+            } else {
+                min.forEach(i => {
+                    let c = 'text-slate-200', s = '';
+                    if (i.type === 'Expense') { c = 'text-rose-400'; s = '-'; } 
+                    else if (i.type === 'Deposit') { c = 'text-emerald-400'; s = '+'; } 
+                    else if (i.type === 'Bank_to_Current') c = 'text-brand-400'; 
+                    else if (i.type === 'Cash_to_Bank') c = 'text-teal-400'; 
+                    else if (i.type === 'Bank_to_Bank') c = 'text-indigo-400';
+                    else if (i.type === 'DPS') c = 'text-pink-400';
+
+                    const feeText = (i.fee && i.fee > 0) ? ` (Fee: ৳${i.fee})` : '';
+
+                    mini.insertAdjacentHTML('beforeend', `
+                        <div class="p-4 flex justify-between items-center text-xs md:text-sm hover:bg-white/[0.02] transition-colors">
+                            <div class="min-w-0 flex-1">
+                                <p class="font-semibold text-white truncate">${i.description}${feeText}</p>
+                                <p class="text-[10px] text-slate-500 mt-0.5">${i.date} ${i.time || ''} | ${i.source}</p>
+                            </div>
+                            <span class="font-bold shrink-0 ml-3 ${c}">${s} ৳${i.amount.toLocaleString()}</span>
+                        </div>
+                    `);
+                });
+            }
+            document.getElementById('table-total-indicator').textContent = `Total active logs: ${journal.length}`;
+        }
+
+        function filterLedgers() { renderLedgerList(); }
+        function refreshLedgerData() { fetchInitialLedgerData(); }
+
+        async function handleTransactionSubmit(event) {
+            event.preventDefault(); 
+            const fd = new FormData(event.target);
+            const isCust = document.getElementById('custom-time-toggle').checked, now = new Date();
+            const descriptionValue = fd.get('tx_description') || '';
+
+            autoLearnKeyword(descriptionValue);
+
+            const payload = { 
+                id: crypto.randomUUID(),
+                date: isCust ? document.getElementById('custom-date').value : now.toISOString().split('T')[0], 
+                time: isCust ? document.getElementById('custom-time').value : `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`, 
+                type: fd.get('tx_type'), 
+                amount: parseFloat(fd.get('tx_amount')), 
+                source: fd.get('tx_source') === 'Cash' ? 'Cash' : fd.get('tx_custom_bank'), 
+                description: descriptionValue,
+                fee: 0,
+                created_at: new Date().toISOString()
+            };
+
+            // 1. Instant Local Write
+            await idbPut('transactions', payload);
+            
+            // 2. Queue for Cloud Sync
+            queueMutation('insert', 'transaction', payload);
+
+            showTrackerToast(navigator.onLine ? "Transaction saved instantly!" : "Saved locally (Offline Vault)!", "success"); 
+            event.target.reset();
+            document.getElementById('custom-time-toggle').checked = false; 
+            document.getElementById('custom-time-fields').classList.add('hidden');
+            setTodayDateInputs(); 
+            await fetchInitialLedgerData(); 
+        }
+        
+        async function handleDPSSubmit(event) {
+            event.preventDefault(); 
+            const fd = new FormData(event.target);
+            const payload = { 
+                id: crypto.randomUUID(),
+                amount: parseFloat(fd.get('dps_amount')), 
+                installment_no: fd.get('dps_installment'), 
+                note: fd.get('dps_note') || "", 
+                date: fd.get('dps_date'),
+                bank: fd.get('dps_bank') || "",
+                ac_no: fd.get('dps_ac_no') || "",
+                maturity_date: fd.get('dps_maturity') || null,
+                created_at: new Date().toISOString()
+            };
+            
+            // 1. Instant Local Write
+            await idbPut('dps', payload);
+
+            // 2. Queue for Cloud Sync
+            const sheetsPayload = { ...payload, installmentNo: payload.installment_no, acNo: payload.ac_no, maturityDate: payload.maturity_date };
+            queueMutation('insert', 'dps', sheetsPayload);
+
+            showTrackerToast(navigator.onLine ? "DPS installment logged instantly!" : "DPS saved locally (Offline Vault)!", "success"); 
+            event.target.reset();
+            setTodayDateInputs(); 
+            await fetchInitialLedgerData(); 
+        }
+
+        let currentTransferDirection = 'Bank_to_Current';
+
+        function setTransferDirection(direction) {
+            currentTransferDirection = direction;
+            const b2c = document.getElementById('transfer-dir-b2c');
+            const c2b = document.getElementById('transfer-dir-c2b');
+            const b2b = document.getElementById('transfer-dir-b2b');
+            const heading = document.getElementById('transfer-heading');
+            const subheading = document.getElementById('transfer-subheading');
+            const sourceLabel = document.getElementById('transfer-source-label');
+            const destContainer = document.getElementById('transfer-destination-container');
+            const descInput = document.getElementById('transfer_desc');
+
+            [b2c, c2b, b2b].forEach(b => {
+                b.className = "py-2.5 text-center text-xs font-semibold rounded-xl text-slate-400 hover:text-white transition-all duration-200";
+            });
+
+            if (direction === 'Bank_to_Current') {
+                b2c.className = "py-2.5 text-center text-xs font-semibold rounded-xl bg-brand-500 text-slate-950 shadow-md transition-all duration-200";
+                heading.textContent = "Bank to Cash Withdrawal";
+                subheading.textContent = "Withdraw funds from any Bank Account into Pocket Cash Wallet";
+                sourceLabel.textContent = "Source Bank (From)";
+                destContainer.classList.add('hidden');
+                if (descInput) descInput.value = "Withdrawn pocket cash from bank account";
+            } else if (direction === 'Cash_to_Bank') {
+                c2b.className = "py-2.5 text-center text-xs font-semibold rounded-xl bg-brand-500 text-slate-950 shadow-md transition-all duration-200";
+                heading.textContent = "Cash to Bank Deposit";
+                subheading.textContent = "Deposit Pocket Cash into a Bank Account";
+                sourceLabel.textContent = "Target Bank (Deposit Into)";
+                destContainer.classList.add('hidden');
+                if (descInput) descInput.value = "Deposited pocket cash into bank account";
+            } else if (direction === 'Bank_to_Bank') {
+                b2b.className = "py-2.5 text-center text-xs font-semibold rounded-xl bg-brand-500 text-slate-950 shadow-md transition-all duration-200";
+                heading.textContent = "Bank to Bank Transfer";
+                subheading.textContent = "Transfer money directly from one Bank Account to another with editable fee";
+                sourceLabel.textContent = "Source Bank (Sender)";
+                destContainer.classList.remove('hidden');
+                if (descInput) descInput.value = "Inter-bank funds transfer";
+            }
+        }
+
+        async function handleTransferSubmit(event) {
+            event.preventDefault(); 
+            const fd = new FormData(event.target);
+            const isCust = document.getElementById('transfer-time-toggle').checked, now = new Date();
+            const sourceBank = fd.get('transfer_source');
+            const destBank = fd.get('transfer_dest');
+
+            if (currentTransferDirection === 'Bank_to_Bank') {
+                if (!sourceBank || !destBank) {
+                    return showTrackerToast("Please select both source and destination banks.", "error");
+                }
+                if (sourceBank === destBank) {
+                    return showTrackerToast("Source and destination banks must be different.", "error");
+                }
+            }
+
+            const transferFee = parseFloat(fd.get('transfer_fee') || 0);
+
+            const payload = { 
+                id: crypto.randomUUID(),
+                date: isCust ? document.getElementById('transfer-date').value : now.toISOString().split('T')[0], 
+                time: isCust ? document.getElementById('transfer-time').value : `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`, 
+                type: currentTransferDirection,
+                amount: parseFloat(fd.get('transfer_amount')), 
+                source: sourceBank, 
+                target_source: currentTransferDirection === 'Bank_to_Bank' ? destBank : (currentTransferDirection === 'Bank_to_Current' ? 'Cash' : sourceBank),
+                fee: isNaN(transferFee) ? 0 : transferFee,
+                description: fd.get('transfer_desc'),
+                created_at: new Date().toISOString()
+            };
+
+            autoLearnKeyword(payload.description);
+            
+            // 1. Instant Local Write
+            await idbPut('transactions', payload);
+
+            // 2. Queue for Cloud Sync
+            queueMutation('insert', 'transaction', payload);
+
+            showTrackerToast(navigator.onLine ? `Transfer logged! (Fee: ৳${payload.fee})` : `Transfer saved locally! (Fee: ৳${payload.fee})`, "success"); 
+            event.target.reset();
+            document.getElementById('transfer-time-toggle').checked = false; 
+            document.getElementById('transfer-time-fields').classList.add('hidden');
+            setTransferDirection('Bank_to_Current');
+            setTodayDateInputs(); 
+            await fetchInitialLedgerData(); 
+        }
+
+        function closeTxModal() { document.getElementById('edit-tx-modal').classList.add('hidden'); }
+        function closeDPSModal() { document.getElementById('edit-dps-modal').classList.add('hidden'); }
+        
+        function toggleEditTxSourceVisibility() { 
+            const type = document.getElementById('edit_tx_type').value;
+            const destContainer = document.getElementById('edit-tx-dest-container');
+            const sourceLabel = document.getElementById('edit-source-label');
+            
+            if (type === 'Bank_to_Bank') {
+                destContainer.classList.remove('hidden');
+                sourceLabel.textContent = "Source Bank";
+            } else {
+                destContainer.classList.add('hidden');
+                sourceLabel.textContent = "Source Account";
+            }
+        }
+
+        async function handleTxEditSubmit(e) {
+            e.preventDefault(); 
+            const f = e.target;
+            const type = f.edit_tx_type.value;
+            const payload = { 
+                id: f.edit_tx_id.value, 
+                type: type, 
+                source: f.edit_tx_source.value, 
+                target_source: type === 'Bank_to_Bank' ? f.edit_tx_target.value : '',
+                amount: parseFloat(f.edit_tx_amount.value), 
+                fee: parseFloat(f.edit_tx_fee.value || 0),
+                description: f.edit_tx_description.value, 
+                date: f.edit_tx_date.value, 
+                time: f.edit_tx_time.value 
+            };
+
+            autoLearnKeyword(payload.description);
+            closeTxModal();
+            
+            // 1. Update IndexedDB locally
+            await idbPut('transactions', payload);
+
+            // 2. Queue update
+            queueMutation('update', 'transaction', payload);
+
+            showTrackerToast("Updated transaction & fee instantly!", "success"); 
+            await fetchInitialLedgerData();
+        }
+
+        async function handleDPSEditSubmit(e) {
+            e.preventDefault(); 
+            const f = e.target;
+            const payload = { 
+                id: f.edit_dps_id.value, 
+                amount: parseFloat(f.edit_dps_amount.value), 
+                installment_no: f.edit_dps_installment.value, 
+                installmentNo: f.edit_dps_installment.value, 
+                note: f.edit_dps_note.value, 
+                date: f.edit_dps_date.value,
+                bank: f.edit_dps_bank.value,
+                ac_no: f.edit_dps_ac_no.value,
+                acNo: f.edit_dps_ac_no.value,
+                maturity_date: f.edit_dps_maturity.value || null,
+                maturityDate: f.edit_dps_maturity.value || null
+            };
+            closeDPSModal(); 
+            
+            await idbPut('dps', payload);
+            queueMutation('update', 'dps', payload);
+
+            showTrackerToast("DPS modified instantly!", "success"); 
+            await fetchInitialLedgerData();
+        }
+
+        function triggerDeletionPrompt(dbType, id) {
+            showConfirmModal("Delete record?", "Are you sure you want to permanently erase this?", async () => {
+                const store = dbType === 'transaction' ? 'transactions' : 'dps';
+                await idbDelete(store, id);
+                queueMutation('delete', dbType, { id });
+
+                showTrackerToast("Record wiped.", "success"); 
+                await fetchInitialLedgerData();
+            });
+        }
+
+        function openEditModal(dbType, id) {
+            const item = getCombinedJournal().find(i => i.masterId === id && i.dbType === dbType);
+            if (!item) return;
+
+            if (dbType === 'transaction') {
+                const f = document.getElementById('edit-tx-form');
+                f.edit_tx_id.value = item.masterId;
+                f.edit_tx_type.value = item.type;
+                toggleEditTxSourceVisibility();
+                f.edit_tx_source.value = item.source;
+                if (f.edit_tx_target) f.edit_tx_target.value = item.target_source || '';
+                f.edit_tx_amount.value = item.amount;
+                f.edit_tx_fee.value = item.fee || 0;
+                f.edit_tx_description.value = item.description;
+                f.edit_tx_date.value = item.date;
+                f.edit_tx_time.value = item.time;
+                document.getElementById('edit-tx-modal').classList.remove('hidden');
+            } else {
+                const f = document.getElementById('edit-dps-form');
+                const dpsItem = appState.dps.find(d => d.id === id);
+                f.edit_dps_id.value = item.masterId;
+                f.edit_dps_bank.value = dpsItem.bank || "";
+                f.edit_dps_ac_no.value = dpsItem.acNo || "";
+                f.edit_dps_amount.value = dpsItem.amount;
+                f.edit_dps_installment.value = dpsItem.installmentNo;
+                f.edit_dps_note.value = dpsItem.note || "";
+                f.edit_dps_date.value = dpsItem.date;
+                f.edit_dps_maturity.value = dpsItem.maturityDate || "";
+                document.getElementById('edit-dps-modal').classList.remove('hidden');
+            }
+        }
+
+        function onReportPeriodChange() {
+            const period = document.getElementById('auto-report-period').value;
+            const customRangeRow = document.getElementById('custom-range-row');
+            if (customRangeRow) {
+                if (period === 'custom') {
+                    customRangeRow.classList.remove('hidden');
+                    customRangeRow.classList.add('grid');
+                } else {
+                    customRangeRow.classList.add('hidden');
+                    customRangeRow.classList.remove('grid');
+                }
+            }
+        }
+
+        async function sendAutomatedReport() {
+            if (!navigator.onLine) {
+                return showTrackerToast("Internet connection required to dispatch reports.", "error");
+            }
+            const type = document.getElementById('auto-report-type').value;
+            const period = document.getElementById('auto-report-period').value;
+            const channel = document.getElementById('auto-report-channel').value;
+            const targetEmail = localStorage.getItem('verified_report_email') || (auth.currentUser ? auth.currentUser.email : '');
+
+            const now = new Date();
+            const currentYM = now.toISOString().substring(0, 7);
+            const lastMonthDate = new Date();
+            lastMonthDate.setMonth(now.getMonth() - 1);
+            const lastYM = lastMonthDate.toISOString().substring(0, 7);
+
+            let filterFn = () => true;
+            let periodTitle = "All Time Historical";
+
+            if (period === 'this_month') {
+                filterFn = (t) => t.date && t.date.startsWith(currentYM);
+                periodTitle = `This Month (${currentYM})`;
+            } else if (period === 'last_month') {
+                filterFn = (t) => t.date && t.date.startsWith(lastYM);
+                periodTitle = `Last Month (${lastYM})`;
+            } else if (period === 'custom') {
+                const from = document.getElementById('auto-report-from').value;
+                const to = document.getElementById('auto-report-to').value;
+                if (!from || !to) {
+                    return showTrackerToast("Please select both From and To dates for custom range.", "error");
+                }
+                filterFn = (t) => t.date && t.date >= from && t.date <= to;
+                periodTitle = `Custom Period (${from} to ${to})`;
+            }
+
+            const txs = appState.transactions.filter(filterFn);
+            const dpss = appState.dps.filter(filterFn);
+
+            let typeLabel = "Short Summary";
+            if (type === 'details') typeLabel = "Detailed Itemized Ledger";
+            else if (type === 'bank') typeLabel = "Bank Accounts Statement";
+            else if (type === 'cash') typeLabel = "Cash Wallet Activity";
+
+            let channelLabel = "Telegram & Email";
+            if (channel === 'telegram') channelLabel = "Telegram Bot";
+            else if (channel === 'email') channelLabel = `Email (${targetEmail})`;
+
+            showConfirmModal(
+                "Dispatch Report?",
+                `Send "${typeLabel}" for ${periodTitle} to ${channelLabel}?`,
+                async () => {
+                    const btn = document.getElementById('btn-dispatch-report');
+                    const btnText = document.getElementById('btn-dispatch-text');
+                    const originalText = btnText.textContent;
+
+                    btnText.textContent = "Compiling & Transmitting Report...";
+                    btn.disabled = true;
+
+                    let totalExp = 0, totalDep = 0, totalFees = 0;
+                    txs.forEach(t => {
+                        if (t.type === 'Expense') totalExp += Number(t.amount);
+                        else if (t.type === 'Deposit') totalDep += Number(t.amount);
+                        if (t.fee) totalFees += Number(t.fee);
+                    });
+
+                    const payload = {
+                        reportType: type,
+                        reportTypeLabel: typeLabel,
+                        period: period,
+                        periodTitle: periodTitle,
+                        channel: channel,
+                        email: targetEmail,
+                        summary: {
+                            totalIncome: totalDep,
+                            totalExpense: totalExp,
+                            totalFees: totalFees,
+                            netSavings: totalDep - totalExp - totalFees,
+                            cashBalance: appState.balances.cash,
+                            bankBalance: appState.balances.bank,
+                            dpsBalance: appState.balances.dps,
+                            totalRecordsCount: txs.length + dpss.length
+                        },
+                        bankBalances: appState.balances.bankAccounts,
+                        transactions: txs.slice(0, 100),
+                        dpsEntries: dpss
+                    };
+
+                    setLoadingState(true, "Dispatching Report...", `Transmitting ${typeLabel} via ${channel}...`);
+                    try {
+                        const res = await runRemoteAPI('dispatchCustomReport', payload);
+                        if (res && res.status === 'success') {
+                            showTrackerToast(`Report successfully dispatched via ${channelLabel}!`, "success");
+                        } else {
+                            const fallbackRes = await runRemoteAPI('generateReport', {
+                                month: period === 'last_month' ? lastYM : currentYM,
+                                email: targetEmail,
+                                reportType: type,
+                                channel: channel
+                            });
+                            if (fallbackRes) {
+                                showTrackerToast(`Report dispatched via ${channelLabel}!`, "success");
+                            }
+                        }
+                    } catch (err) {
+                        showTrackerToast(`Failed to send report: ${err.message}`, "error");
+                    } finally {
+                        btnText.textContent = originalText;
+                        btn.disabled = false;
+                        setLoadingState(false);
+                    }
+                }
+            );
+        }
+
         function generateAnalytics() {
             const monthVal = document.getElementById('analytics-month').value;
-            if(!monthVal) return;
+            if (!monthVal) return;
             
             const txs = appState.transactions.filter(t => t.date && t.date.startsWith(monthVal) && t.type === 'Expense');
-            
             const validTxs = txs.filter(t => {
                 const desc = (t.description || '').toLowerCase().trim();
                 return !(desc.startsWith('lend') || desc.startsWith('return from'));
@@ -1995,7 +3106,7 @@
             const data = Object.values(groups);
             const colors = ['#f43f5e', '#38bdf8', '#10b981', '#fbbf24', '#818cf8', '#f472b6', '#06b6d4', '#c084fc', '#f59e0b'];
 
-            if(analyticsPieChart) analyticsPieChart.destroy();
+            if (analyticsPieChart) analyticsPieChart.destroy();
             
             const ctx = document.getElementById('expense-pie-chart').getContext('2d');
             
@@ -2068,338 +3179,6 @@
             }
         }
 
-        function getCombinedJournal() {
-            let j = appState.transactions.map(t => ({ masterId: t.id, dbType: 'transaction', date: t.date, time: t.time, type: t.type, source: t.source, amount: t.amount, description: t.description, timestamp: t.timestamp }));
-            appState.dps.forEach(d => j.push({ masterId: d.id, dbType: 'dps', date: d.date, time: '12:00', type: 'DPS', source: d.bank || 'Bank', amount: d.amount, description: `DPS Deposit: ${d.installmentNo} ${d.acNo ? `(A/C: ${d.acNo})` : ''}`, timestamp: d.timestamp }));
-            return j.sort((a, b) => new Date(`${b.date}T${b.time || '00:00'}`) - new Date(`${a.date}T${a.time || '00:00'}`));
-        }
-
-        function renderLedgerList() {
-            const search = document.getElementById('ledger-search').value.toLowerCase();
-            const filter = document.getElementById('ledger-type-filter').value;
-            const mobile = document.getElementById('master-ledger-vertical-container');
-            const desk = document.getElementById('master-ledger-table-body');
-            const mini = document.getElementById('mini-ledger-list');
-            
-            mobile.innerHTML = ''; 
-            desk.innerHTML = ''; 
-            mini.innerHTML = '';
-
-            const journal = getCombinedJournal().filter(i => {
-                const desc = (i.description || '').toLowerCase().trim();
-                const type = (i.type || '').toLowerCase();
-                return (desc.includes(search) || type.includes(search)) && 
-                       (filter === 'All' || (filter === 'Transfer' ? i.type === 'Bank_to_Current' : filter === 'DPS' ? i.dbType === 'dps' : i.type === filter));
-            });
-
-            if (journal.length === 0) {
-                mobile.innerHTML = `<div class="p-8 text-center text-slate-500 glass-panel rounded-3xl"><p class="text-xs">No records found.</p></div>`;
-                desk.innerHTML = `<tr><td colspan="6" class="text-center p-8 text-slate-500">No matching records found.</td></tr>`;
-            } else {
-                journal.forEach(item => {
-                    let c = 'text-slate-200', s = '', l = item.type;
-                    const desc = (item.description || '').toLowerCase().trim();
-                    const isLendRet = desc.startsWith('lend') || desc.startsWith('return from');
-
-                    if (item.type === 'Expense') { c = 'text-rose-400'; s = '-'; l = 'Expense'; } 
-                    else if (item.type === 'Deposit') { c = 'text-emerald-400'; s = '+'; l = 'Deposit'; } 
-                    else if (item.type === 'Bank_to_Current') { c = 'text-brand-400'; l = 'Transfer↓'; } 
-                    else if (item.type === 'Cash_to_Bank') { c = 'text-teal-400'; s = '+'; l = 'Transfer↑'; } 
-                    else if (item.type === 'Lend_Log') { c = 'text-amber-400'; l = 'Lend/Return'; } 
-                    else if (item.type === 'DPS') { c = 'text-pink-400'; l = 'DPS'; }
-                    
-                    if (isLendRet) { c = 'text-amber-400'; l = 'Lend/Return'; }
-
-                    let dStr = item.date; 
-                    try { dStr = new Date(item.date).toLocaleDateString('en-US', {month: 'short', day: 'numeric'}); } catch(e){}
-
-                    mobile.insertAdjacentHTML('beforeend', `
-                        <div class="glass-panel p-4 rounded-2xl flex justify-between items-center gap-2 hover:bg-white/[0.02] transition-all duration-200">
-                            <div class="flex-1 min-w-0">
-                                <div class="flex items-center gap-1.5">
-                                    <span class="text-[10px] font-bold text-slate-500 uppercase">${dStr}</span>
-                                    <span class="text-[9px] font-bold bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-slate-300 uppercase">${l}</span>
-                                </div>
-                                <p class="text-xs font-semibold text-white mt-1.5 truncate">${item.description}</p>
-                                <p class="text-[10px] text-slate-500 mt-0.5">${item.source}</p>
-                            </div>
-                            <div class="text-right flex flex-col items-end shrink-0">
-                                <span class="text-xs font-bold ${c}">${s} ৳${item.amount.toLocaleString()}</span>
-                                <div class="flex gap-2.5 mt-2">
-                                    <button onclick="openEditModal('${item.dbType}', '${item.masterId}')" class="text-[10px] text-brand-400 hover:text-brand-300 font-semibold transition">Edit</button>
-                                    <button onclick="triggerDeletionPrompt('${item.dbType}', '${item.masterId}')" class="text-[10px] text-rose-400 hover:text-rose-300 font-semibold transition">Delete</button>
-                                </div>
-                            </div>
-                        </div>
-                    `);
-
-                    desk.insertAdjacentHTML('beforeend', `
-                        <tr class="hover:bg-white/[0.02] transition-colors">
-                            <td class="py-3 px-4 text-xs text-slate-400">${item.date} <span class="text-[10px] text-slate-500">${item.time || ''}</span></td>
-                            <td class="py-3 px-4"><span class="text-xs font-semibold px-2 py-0.5 rounded-md bg-white/5 text-slate-300 border border-white/10">${l}</span></td>
-                            <td class="py-3 px-4 text-xs font-medium text-slate-400">${item.source}</td>
-                            <td class="py-3 px-4 text-xs font-semibold text-white truncate max-w-xs">${item.description}</td>
-                            <td class="py-3 px-4 text-right font-bold ${c} text-xs">${s} ৳${item.amount.toLocaleString()}</td>
-                            <td class="py-3 px-4 text-center">
-                                <button onclick="openEditModal('${item.dbType}', '${item.masterId}')" class="text-xs text-brand-400 hover:text-brand-300 font-semibold mr-3 transition" title="Edit"><i class="fa-solid fa-pen"></i></button>
-                                <button onclick="triggerDeletionPrompt('${item.dbType}', '${item.masterId}')" class="text-xs text-rose-400 hover:text-rose-300 font-semibold transition" title="Delete"><i class="fa-solid fa-trash"></i></button>
-                            </td>
-                        </tr>
-                    `);
-                });
-            }
-
-            const min = getCombinedJournal().slice(0, 3);
-            if (min.length === 0) {
-                mini.innerHTML = `<p class="p-6 text-center text-xs text-slate-500">No logs saved yet.</p>`;
-            } else {
-                min.forEach(i => {
-                    let c = 'text-slate-200', s = '';
-                    const desc = (i.description || '').toLowerCase().trim();
-                    const isLendRet = desc.startsWith('lend') || desc.startsWith('return from');
-
-                    if (i.type === 'Expense') { c = 'text-rose-400'; s = '-'; } 
-                    else if (i.type === 'Deposit') { c = 'text-emerald-400'; s = '+'; } 
-                    else if (i.type === 'Bank_to_Current') c = 'text-brand-400'; 
-                    else if (i.type === 'Cash_to_Bank') c = 'text-teal-400'; 
-                    else if (i.type === 'Lend_Log') c = 'text-amber-400'; 
-                    else if (i.type === 'DPS') c = 'text-pink-400';
-                    
-                    if (isLendRet) { c = 'text-amber-400'; }
-
-                    mini.insertAdjacentHTML('beforeend', `
-                        <div class="p-4 flex justify-between items-center text-xs md:text-sm hover:bg-white/[0.02] transition-colors">
-                            <div class="min-w-0 flex-1">
-                                <p class="font-semibold text-white truncate">${i.description}</p>
-                                <p class="text-[10px] text-slate-500 mt-0.5">${i.date} | ${i.source}</p>
-                            </div>
-                            <span class="font-bold shrink-0 ml-3 ${c}">${s} ৳${i.amount.toLocaleString()}</span>
-                        </div>
-                    `);
-                });
-            }
-            document.getElementById('table-total-indicator').textContent = `Total active logs: ${journal.length}`;
-        }
-
-        function filterLedgers() { renderLedgerList(); }
-        function refreshLedgerData() { fetchInitialLedgerData(); }
-
-        async function handleTransactionSubmit(event) {
-            event.preventDefault(); 
-            const fd = new FormData(event.target);
-            const isCust = document.getElementById('custom-time-toggle').checked, now = new Date();
-            const descriptionValue = fd.get('tx_description') || '';
-
-            const descLower = descriptionValue.toLowerCase().trim();
-            const isLendOrReturn = descLower.startsWith('lend') || descLower.startsWith('return from');
-            
-            const payload = { 
-                date: isCust ? document.getElementById('custom-date').value : now.toISOString().split('T')[0], 
-                time: isCust ? document.getElementById('custom-time').value : `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`, 
-                type: fd.get('tx_type'), 
-                amount: parseFloat(fd.get('tx_amount')), 
-                source: fd.get('tx_source') === 'Cash' ? 'Cash' : fd.get('tx_custom_bank'), 
-                description: descriptionValue
-            };
-
-            setLoadingState(true, "Saving...", "Writing to Supabase.");
-            try {
-                const { data, error } = await supabase.from('transactions').insert([payload]).select();
-                if (error) throw error;
-                
-                payload.id = data[0].id;
-                runRemoteAPISilent('addTransaction', payload);
-
-                const msg = isLendOrReturn ? "Lend/Return logged!" : "Transaction saved instantly!";
-                showTrackerToast(msg, "success"); 
-                event.target.reset();
-                document.getElementById('custom-time-toggle').checked = false; 
-                document.getElementById('custom-time-fields').classList.add('hidden');
-                setTodayDateInputs(); 
-                await fetchInitialLedgerData(); 
-            } catch (err) {
-                showTrackerToast("Failed to save transaction.", "error");
-                setLoadingState(false);
-            }
-        }
-        
-        async function handleDPSSubmit(event) {
-            event.preventDefault(); 
-            const fd = new FormData(event.target);
-            const payload = { 
-                amount: parseFloat(fd.get('dps_amount')), 
-                installment_no: fd.get('dps_installment'), 
-                note: fd.get('dps_note') || "", 
-                date: fd.get('dps_date'),
-                bank: fd.get('dps_bank') || "",
-                ac_no: fd.get('dps_ac_no') || "",
-                maturity_date: fd.get('dps_maturity') || null
-            };
-            
-            setLoadingState(true, "Saving...", "Writing to Supabase.");
-            try {
-                const { data, error } = await supabase.from('dps').insert([payload]).select();
-                if (error) throw error;
-                
-                const sheetsPayload = { ...payload, id: data[0].id, installmentNo: payload.installment_no, acNo: payload.ac_no, maturityDate: payload.maturity_date };
-                runRemoteAPISilent('addDPS', sheetsPayload);
-
-                showTrackerToast("DPS installment logged instantly!", "success"); 
-                event.target.reset();
-                setTodayDateInputs(); 
-                await fetchInitialLedgerData(); 
-            } catch (err) {
-                showTrackerToast("Failed to save DPS.", "error");
-                setLoadingState(false);
-            }
-        }
-
-        let currentTransferDirection = 'Bank_to_Current';
-
-        function setTransferDirection(direction) {
-            currentTransferDirection = direction;
-            const b2c = document.getElementById('transfer-dir-b2c');
-            const c2b = document.getElementById('transfer-dir-c2b');
-            const heading = document.getElementById('transfer-heading');
-            const subheading = document.getElementById('transfer-subheading');
-            const bankLabel = document.getElementById('transfer-bank-label');
-            const descInput = document.querySelector('input[name="transfer_desc"]');
-
-            if (direction === 'Bank_to_Current') {
-                b2c.className = "flex-1 py-2.5 text-center text-xs sm:text-sm font-semibold rounded-xl bg-brand-500 text-slate-950 shadow-md transition-all duration-200";
-                c2b.className = "flex-1 py-2.5 text-center text-xs sm:text-sm font-semibold rounded-xl text-slate-400 hover:text-white transition-all duration-200";
-                heading.textContent = "Bank to Cash Transfer";
-                subheading.textContent = "Withdraw funds from any Bank Account into Pocket Cash Wallet";
-                bankLabel.textContent = "Transfer From Bank";
-                if (descInput) descInput.value = "Withdrawn pocket cash from bank account";
-            } else {
-                c2b.className = "flex-1 py-2.5 text-center text-xs sm:text-sm font-semibold rounded-xl bg-brand-500 text-slate-950 shadow-md transition-all duration-200";
-                b2c.className = "flex-1 py-2.5 text-center text-xs sm:text-sm font-semibold rounded-xl text-slate-400 hover:text-white transition-all duration-200";
-                heading.textContent = "Cash to Bank Deposit";
-                subheading.textContent = "Deposit Pocket Cash into a Bank Account";
-                bankLabel.textContent = "Deposit Into Bank";
-                if (descInput) descInput.value = "Deposited pocket cash into bank account";
-            }
-        }
-
-        async function handleTransferSubmit(event) {
-            event.preventDefault(); 
-            const fd = new FormData(event.target);
-            const isCust = document.getElementById('transfer-time-toggle').checked, now = new Date();
-            const payload = { 
-                date: isCust ? document.getElementById('transfer-date').value : now.toISOString().split('T')[0], 
-                time: isCust ? document.getElementById('transfer-time').value : `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`, 
-                type: currentTransferDirection,
-                amount: parseFloat(fd.get('transfer_amount')), 
-                source: fd.get('transfer_source'), 
-                description: fd.get('transfer_desc') 
-            };
-            
-            setLoadingState(true, "Transferring...", "Updating Supabase database.");
-            try {
-                const { data, error } = await supabase.from('transactions').insert([payload]).select();
-                if (error) throw error;
-
-                payload.id = data[0].id;
-                runRemoteAPISilent('addTransaction', payload);
-
-                showTrackerToast("Transfer logged instantly!", "success"); 
-                event.target.reset();
-                document.getElementById('transfer-time-toggle').checked = false; 
-                document.getElementById('transfer-time-fields').classList.add('hidden');
-                setTransferDirection('Bank_to_Current');
-                setTodayDateInputs(); 
-                await fetchInitialLedgerData(); 
-            } catch (err) {
-                showTrackerToast("Failed to complete transfer.", "error");
-                setLoadingState(false);
-            }
-        }
-
-        function closeTxModal() { document.getElementById('edit-tx-modal').classList.add('hidden'); }
-        function closeDPSModal() { document.getElementById('edit-dps-modal').classList.add('hidden'); }
-        
-        function toggleEditTxSourceVisibility() { 
-            const sourceContainer = document.getElementById('edit-tx-source-container');
-            if (sourceContainer) {
-                sourceContainer.classList[document.querySelector('select[name="edit_tx_type"]').value === 'Bank_to_Current' ? 'add' : 'remove']('hidden'); 
-            }
-        }
-
-        async function handleTxEditSubmit(e) {
-            e.preventDefault(); 
-            const f = e.target;
-            const payload = { id: f.edit_tx_id.value, type: f.edit_tx_type.value, source: f.edit_tx_source.value, amount: parseFloat(f.edit_tx_amount.value), description: f.edit_tx_description.value, date: f.edit_tx_date.value, time: f.edit_tx_time.value };
-            closeTxModal();
-            
-            setLoadingState(true, "Updating...", "Modifying record in Supabase.");
-            try {
-                const { error } = await supabase.from('transactions').update({
-                    type: payload.type, source: payload.source, amount: payload.amount, description: payload.description, date: payload.date, time: payload.time
-                }).eq('id', payload.id);
-                if (error) throw error;
-
-                runRemoteAPISilent('editTransaction', payload);
-                showTrackerToast("Updated instantly!", "success"); 
-                await fetchInitialLedgerData();
-            } catch (err) {
-                showTrackerToast("Update failed.", "error");
-                setLoadingState(false);
-            }
-        }
-
-        async function handleDPSEditSubmit(e) {
-            e.preventDefault(); 
-            const f = e.target;
-            const payload = { 
-                id: f.edit_dps_id.value, 
-                amount: parseFloat(f.edit_dps_amount.value), 
-                installmentNo: f.edit_dps_installment.value, 
-                note: f.edit_dps_note.value, 
-                date: f.edit_dps_date.value,
-                bank: f.edit_dps_bank.value,
-                acNo: f.edit_dps_ac_no.value,
-                maturityDate: f.edit_dps_maturity.value || null
-            };
-            closeDPSModal(); 
-            
-            setLoadingState(true, "Updating...", "Modifying DPS in Supabase.");
-            try {
-                const { error } = await supabase.from('dps').update({
-                    amount: payload.amount, installment_no: payload.installmentNo, note: payload.note, date: payload.date,
-                    bank: payload.bank, ac_no: payload.acNo, maturity_date: payload.maturityDate
-                }).eq('id', payload.id);
-                if (error) throw error;
-
-                runRemoteAPISilent('editDPS', payload);
-                showTrackerToast("DPS modified instantly!", "success"); 
-                await fetchInitialLedgerData();
-            } catch (err) {
-                showTrackerToast("DPS Update failed.", "error");
-                setLoadingState(false);
-            }
-        }
-
-        function triggerDeletionPrompt(dbType, id) {
-            showConfirmModal("Delete record?", "Are you sure you want to permanently erase this?", async () => {
-                setLoadingState(true, "Deleting...", "Removing from Supabase.");
-                try {
-                    const table = dbType === 'transaction' ? 'transactions' : 'dps';
-                    const { error } = await supabase.from(table).delete().eq('id', id);
-                    if (error) throw error;
-
-                    const action = dbType === 'transaction' ? 'deleteTransaction' : 'deleteDPS';
-                    runRemoteAPISilent(action, { id });
-
-                    showTrackerToast("Record wiped.", "success"); 
-                    await fetchInitialLedgerData();
-                } catch (err) {
-                    showTrackerToast("Deletion failed.", "error");
-                    setLoadingState(false);
-                }
-            });
-        }
-
         let editingBankIndex = -1;
 
         function handleBankCreate(e) {
@@ -2439,7 +3218,7 @@
             showConfirmModal("Delete Bank Card?", "Delete from selector?", () => { 
                 bankAccounts.splice(i, 1); 
                 saveBanks(); 
-                showTrackerToast("Bank hidden.", "success"); 
+                showTrackerToast("Bank removed.", "success"); 
             }); 
         }
         
@@ -2461,64 +3240,9 @@
             `)); 
         }
 
-        let bulkRowIndex = 0;
-        function addBulkRow() {
-            const tbody = document.getElementById('bulk-rows-container'), rowId = `bulk-row-${bulkRowIndex++}`;
-            let opts = ''; 
-            bankAccounts.forEach(b => opts += `<option value="${b.name}">${b.name}</option>`);
-            tbody.insertAdjacentHTML('beforeend', `
-                <tr id="${rowId}" class="border-b border-white/5">
-                    <td class="p-2"><input type="date" name="bulk_date" value="${new Date().toISOString().split('T')[0]}" required class="glass-input rounded-lg px-2 py-1 text-xs w-full"></td>
-                    <td class="p-2"><select name="bulk_type" class="glass-input rounded-lg px-2 py-1 text-xs w-full"><option value="Expense">Expense</option><option value="Deposit">Deposit</option></select></td>
-                    <td class="p-2"><select name="bulk_source" class="glass-input rounded-lg px-2 py-1 text-xs w-full"><option value="Cash">Cash Wallet</option>${opts}</select></td>
-                    <td class="p-2"><input type="number" step="0.01" name="bulk_amount" required placeholder="0.00" class="glass-input rounded-lg px-2 py-1 text-xs w-16"></td>
-                    <td class="p-2"><input type="text" name="bulk_description" required placeholder="Reason" class="glass-input rounded-lg px-2 py-1 text-xs w-full"></td>
-                    <td class="p-2 text-center"><button onclick="document.getElementById('${rowId}').remove(); toggleBulkSubmitVisibility();" class="text-rose-400"><i class="fa-solid fa-trash"></i></button></td>
-                </tr>
-            `);
-            toggleBulkSubmitVisibility();
-        }
-
-        function toggleBulkSubmitVisibility() { 
-            const container = document.getElementById('bulk-rows-container');
-            if (container) {
-                document.getElementById('bulk-submit-btn').classList[container.children.length > 0 ? 'remove' : 'add']('hidden'); 
-            }
-        }
-
-        async function submitBulkEntries() {
-            const rows = document.getElementById('bulk-rows-container').children; 
-            let txs = [];
-            for (let i = 0; i < rows.length; i++) {
-                const r = rows[i], date = r.querySelector('[name="bulk_date"]').value, amount = parseFloat(r.querySelector('[name="bulk_amount"]').value), desc = r.querySelector('[name="bulk_description"]').value.trim();
-                if (!date || isNaN(amount) || !desc) return showTrackerToast("Fill all bulk fields.", "error");
-                txs.push({ date, time: "12:00", type: r.querySelector('[name="bulk_type"]').value, amount, source: r.querySelector('[name="bulk_source"]').value, description: desc });
-            }
-            showConfirmModal("Upload Bulk?", `Push ${txs.length} past records to databases?`, async () => {
-                setLoadingState(true, "Uploading Bulk...", "Inserting rows into Supabase.");
-                try {
-                    const { data, error } = await supabase.from('transactions').insert(txs).select();
-                    if (error) throw error;
-
-                    const sheetsTxs = txs.map((t, index) => ({ ...t, id: data[index].id }));
-                    runRemoteAPISilent('addBulkTransactions', { transactions: sheetsTxs });
-
-                    showTrackerToast(`Uploaded ${txs.length} transactions instantly!`, "success"); 
-                    document.getElementById('bulk-rows-container').innerHTML = ''; 
-                    toggleBulkSubmitVisibility(); 
-                    await fetchInitialLedgerData(); 
-                } catch (err) {
-                    showTrackerToast("Bulk upload failed.", "error");
-                    setLoadingState(false);
-                }
-            });
-        }
-        
         async function triggerTelegramPDFReport() {
             const selectedMonth = document.getElementById('pdf-report-month').value;
-            
-            let reportEmail = localStorage.getItem('verified_report_email');
-            if (!reportEmail && auth.currentUser) reportEmail = auth.currentUser.email;
+            let reportEmail = localStorage.getItem('verified_report_email') || (auth.currentUser ? auth.currentUser.email : '');
 
             showConfirmModal("Send PDF Report?", `Generate and send the PDF Report for ${selectedMonth}?`, async () => {
                 if (await runRemoteAPI('generateReport', { month: selectedMonth, email: reportEmail })) {
@@ -2532,7 +3256,7 @@
         }
 
         async function syncLegacyDataFromSheets() {
-            showConfirmModal("Sync Legacy Data?", "Download all old records from Google Sheets and push them to Supabase? (Safe to run multiple times, avoids duplicates)", async () => {
+            showConfirmModal("Sync Legacy Data?", "Download all old records from Google Sheets and push them to Supabase?", async () => {
                 setLoadingState(true, "Downloading...", "Fetching legacy data from Google Sheets.");
                 try {
                     const result = await runRemoteAPI('getData', {});
@@ -2542,52 +3266,22 @@
                     const txs = sheetsData.transactions || [];
                     const dpss = sheetsData.dps || [];
                     
-                    if(txs.length === 0 && dpss.length === 0) {
+                    if (txs.length === 0 && dpss.length === 0) {
                          showTrackerToast("No legacy data found in Sheets.", "success");
                          return;
                     }
 
-                    setLoadingState(true, "Uploading...", `Migrating ${txs.length} transactions and ${dpss.length} DPS records to Supabase.`);
-                    
-                    const parseTimeSafe = (timeStr) => {
-                        if (!timeStr) return '12:00';
-                        const str = String(timeStr).trim();
-                        
-                        if (/^([01]\d|2[0-3]):?([0-5]\d)(:?[0-5]\d)?$/.test(str)) {
-                            return str.substring(0, 5);
-                        }
-
-                        if (str.includes('T')) {
-                             const timePart = str.split('T')[1];
-                             if (timePart && timePart.length >= 5) {
-                                  return timePart.substring(0,5);
-                             }
-                        }
-                        
-                        try {
-                            const parsedDate = new Date(str);
-                            if (!isNaN(parsedDate.getTime())) {
-                                const h = String(parsedDate.getHours()).padStart(2, '0');
-                                const m = String(parsedDate.getMinutes()).padStart(2, '0');
-                                return `${h}:${m}`;
-                            }
-                        } catch(e) {}
-                        
-                        return '12:00';
-                    };
-
-                    const parseDateSafe = (dateStr) => {
-                        if (!dateStr) return new Date().toISOString().split('T')[0];
-                        return String(dateStr).split('T')[0];
-                    };
+                    const parseDateSafe = (dateStr) => dateStr ? String(dateStr).split('T')[0] : new Date().toISOString().split('T')[0];
 
                     const formattedTxs = txs.map(t => ({
                         id: (t.id && String(t.id).length === 36) ? t.id : crypto.randomUUID(),
                         date: parseDateSafe(t.date),
-                        time: parseTimeSafe(t.time),
+                        time: t.time ? String(t.time).substring(0, 5) : '12:00',
                         type: t.type,
                         amount: parseFloat(t.amount) || 0,
+                        fee: parseFloat(t.fee) || 0,
                         source: t.source,
+                        target_source: t.target_source || '',
                         description: t.description || '',
                         created_at: t.timestamp ? new Date(t.timestamp).toISOString() : new Date().toISOString()
                     }));
@@ -2604,17 +3298,17 @@
                     if (formattedTxs.length > 0) {
                         const { error: txErr } = await supabase.from('transactions').upsert(formattedTxs, { onConflict: 'id' });
                         if (txErr) throw txErr;
+                        for (const item of formattedTxs) { await idbPut('transactions', item); }
                     }
-                    
                     if (formattedDps.length > 0) {
                         const { error: dpsErr } = await supabase.from('dps').upsert(formattedDps, { onConflict: 'id' });
                         if (dpsErr) throw dpsErr;
+                        for (const item of formattedDps) { await idbPut('dps', item); }
                     }
                     
-                    showTrackerToast("Legacy data successfully synced to Supabase!", "success");
+                    showTrackerToast("Legacy data successfully synced to Supabase & Local Cache!", "success");
                     await fetchInitialLedgerData();
                 } catch (err) {
-                    console.error(err);
                     showTrackerToast("Sync failed: " + err.message, "error");
                 } finally {
                     setLoadingState(false);
@@ -2622,37 +3316,6 @@
             });
         }
 
-        function openEditModal(dbType, id) {
-            const item = getCombinedJournal().find(i => i.masterId === id && i.dbType === dbType);
-            if (!item) return;
-
-            if (dbType === 'transaction') {
-                const f = document.getElementById('edit-tx-form');
-                f.edit_tx_id.value = item.masterId;
-                f.edit_tx_type.value = item.type;
-                toggleEditTxSourceVisibility();
-                f.edit_tx_source.value = item.source;
-                f.edit_tx_amount.value = item.amount;
-                f.edit_tx_description.value = item.description;
-                f.edit_tx_date.value = item.date;
-                f.edit_tx_time.value = item.time;
-                document.getElementById('edit-tx-modal').classList.remove('hidden');
-            } else {
-                const f = document.getElementById('edit-dps-form');
-                const dpsItem = appState.dps.find(d => d.id === id);
-                f.edit_dps_id.value = item.masterId;
-                f.edit_dps_bank.value = dpsItem.bank || "";
-                f.edit_dps_ac_no.value = dpsItem.acNo || "";
-                f.edit_dps_amount.value = dpsItem.amount;
-                f.edit_dps_installment.value = dpsItem.installmentNo;
-                f.edit_dps_note.value = dpsItem.note || "";
-                f.edit_dps_date.value = dpsItem.date;
-                f.edit_dps_maturity.value = dpsItem.maturityDate || "";
-                document.getElementById('edit-dps-modal').classList.remove('hidden');
-            }
-        }
-
-        // Global Bindings to support HTML event attributes
         window.handleTrackerLogin = handleTrackerLogin;
         window.togglePasswordVisibility = togglePasswordVisibility;
         window.verifyTrackerOTP = verifyTrackerOTP;
@@ -2676,19 +3339,23 @@
         window.handleBankCreate = handleBankCreate;
         window.editBank = editBank;
         window.deleteBank = deleteBank;
-        window.addBulkRow = addBulkRow;
-        window.submitBulkEntries = submitBulkEntries;
         window.triggerTelegramPDFReport = triggerTelegramPDFReport;
         window.triggerConnectionTest = triggerConnectionTest;
         window.syncLegacyDataFromSheets = syncLegacyDataFromSheets;
         window.openEditModal = openEditModal;
         window.filterLedgers = filterLedgers;
         window.refreshLedgerData = refreshLedgerData;
+        window.toggleLedgerSortOrder = toggleLedgerSortOrder;
         window.generateAnalytics = generateAnalytics;
         window.startEmailChange = startEmailChange;
         window.cancelEmailChange = cancelEmailChange;
         window.requestReportEmailOTP = requestReportEmailOTP;
         window.verifyReportEmailOTP = verifyReportEmailOTP;
+        window.handleKeywordInput = handleKeywordInput;
+        window.handleKeywordKeydown = handleKeywordKeydown;
+        window.selectSuggestedKeyword = selectSuggestedKeyword;
+        window.onReportPeriodChange = onReportPeriodChange;
+        window.sendAutomatedReport = sendAutomatedReport;
     </script>
 </body>
 </html>
