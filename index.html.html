@@ -56,18 +56,29 @@
                             '30%, 60%, 90%': { transform: 'translateX(6px)' }
                         },
                         pulseGlow: {
-                            '0%, 100%': { opacity: '0.25', transform: 'scale(1)' },
-                            '50%': { opacity: '0.55', transform: 'scale(1.08)' }
+                            '0%, 100%': { opacity: '0.22', transform: 'scale(1)' },
+                            '50%': { opacity: '0.48', transform: 'scale(1.06)' }
                         },
                         fadeInScale: {
-                            '0%': { opacity: '0', transform: 'scale(0.96) translateY(8px)' },
+                            '0%': { opacity: '0', transform: 'scale(0.97) translateY(8px)' },
                             '100%': { opacity: '1', transform: 'scale(1) translateY(0)' }
+                        },
+                        balancePulse: {
+                            '0%': { transform: 'scale(1)' },
+                            '40%': { transform: 'scale(1.05)' },
+                            '100%': { transform: 'scale(1)' }
+                        },
+                        shimmer: {
+                            '0%': { backgroundPosition: '-200% 0' },
+                            '100%': { backgroundPosition: '200% 0' }
                         }
                     },
                     animation: {
                         shake: 'shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both',
-                        pulseGlow: 'pulseGlow 6s ease-in-out infinite',
-                        fadeInScale: 'fadeInScale 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards'
+                        pulseGlow: 'pulseGlow 7s ease-in-out infinite',
+                        fadeInScale: 'fadeInScale 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        balancePulse: 'balancePulse 0.45s cubic-bezier(0.16, 1, 0.3, 1)',
+                        shimmer: 'shimmer 2.5s infinite linear'
                     }
                 }
             }
@@ -106,29 +117,31 @@
             font-style: normal !important;
         }
 
+        /* High-End Glassmorphism */
         .glass-panel {
-            background: rgba(13, 17, 27, 0.78);
-            backdrop-filter: blur(18px);
-            -webkit-backdrop-filter: blur(18px);
-            border: 1px solid rgba(255, 255, 255, 0.07);
+            background: rgba(13, 17, 27, 0.76);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: border-color 0.25s ease, box-shadow 0.25s ease;
         }
         .glass-panel-elevated {
-            background: rgba(14, 20, 33, 0.88);
-            backdrop-filter: blur(28px);
-            -webkit-backdrop-filter: blur(28px);
+            background: rgba(14, 20, 33, 0.90);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
             border: 1px solid rgba(255, 255, 255, 0.12);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.88), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
         }
         .glass-input {
-            background: rgba(8, 12, 20, 0.75);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(8, 12, 20, 0.82);
+            border: 1px solid rgba(255, 255, 255, 0.11);
             color: #f1f5f9;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .glass-input:focus {
-            background: rgba(12, 18, 30, 0.95);
+            background: rgba(12, 18, 30, 0.98);
             border-color: #38bdf8;
-            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.16), 0 0 15px rgba(56, 189, 248, 0.1);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.18), 0 0 20px rgba(56, 189, 248, 0.12);
         }
         
         .step-container { 
@@ -138,7 +151,7 @@
             opacity: 0; 
             pointer-events: none; 
             position: absolute; 
-            transform: translateY(14px) scale(0.96); 
+            transform: translateY(12px) scale(0.97); 
         }
         .step-active { 
             opacity: 1; 
@@ -154,15 +167,29 @@
                 linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
         }
 
+        /* Clean Executive Suggestion Chips */
         .suggestion-chip {
-            background: rgba(14, 165, 233, 0.15);
-            border: 1px solid rgba(56, 189, 248, 0.3);
-            transition: all 0.2s ease;
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #cbd5e1;
+            transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
         }
         .suggestion-chip:hover {
-            background: rgba(14, 165, 233, 0.35);
-            border-color: rgba(56, 189, 248, 0.7);
+            background: rgba(14, 165, 233, 0.18);
+            border-color: rgba(56, 189, 248, 0.45);
+            color: #ffffff;
             transform: translateY(-1px);
+        }
+        .suggestion-chip-active {
+            background: rgba(14, 165, 233, 0.22);
+            border-color: #38bdf8;
+            color: #f0f9ff;
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.22);
+        }
+
+        /* Metric card active states */
+        .balance-value-transition {
+            transition: color 0.3s ease, transform 0.3s ease;
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -344,7 +371,7 @@
                                     Expense Tracker
                                 </h1>
                                 <!-- Realtime Network Status Pill -->
-                                <span id="network-status-badge" class="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                                <span id="network-status-badge" class="px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5 transition-all">
                                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Online
                                 </span>
                             </div>
@@ -419,7 +446,7 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                         
                         <!-- Cash Card -->
-                        <div class="relative overflow-hidden rounded-3xl p-6 bg-gradient-to-br from-emerald-950/40 via-slate-900 to-slate-950 border border-emerald-500/20 shadow-xl transition-all duration-300 hover:border-emerald-500/40 hover:-translate-y-0.5 group">
+                        <div class="relative overflow-hidden rounded-3xl p-6 bg-gradient-to-br from-emerald-950/40 via-slate-900 to-slate-950 border border-emerald-500/20 shadow-xl transition-all duration-300 hover:border-emerald-500/40 hover:-translate-y-1 group">
                             <div class="absolute -right-6 -bottom-6 text-emerald-500/[0.07] text-8xl transition-transform duration-500 group-hover:scale-110 pointer-events-none">
                                 <i class="fa-solid fa-coins"></i>
                             </div>
@@ -432,14 +459,14 @@
                                 </div>
                                 <span class="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">Active Live</span>
                             </div>
-                            <h2 id="balance-cash" class="text-3xl lg:text-4xl font-extrabold text-white mt-5 tracking-tight">৳ 0.00</h2>
+                            <h2 id="balance-cash" class="text-3xl lg:text-4xl font-extrabold text-white mt-5 tracking-tight balance-value-transition">৳ 0.00</h2>
                             <p class="text-xs text-slate-400 mt-3 flex items-center gap-1.5">
                                 <i class="fa-solid fa-circle-check text-emerald-400 text-[10px]"></i> Available physical cash on hand
                             </p>
                         </div>
 
                         <!-- Bank Card -->
-                        <div class="relative overflow-hidden rounded-3xl p-6 bg-gradient-to-br from-brand-950/40 via-slate-900 to-slate-950 border border-brand-500/20 shadow-xl transition-all duration-300 hover:border-brand-500/40 hover:-translate-y-0.5 group">
+                        <div class="relative overflow-hidden rounded-3xl p-6 bg-gradient-to-br from-brand-950/40 via-slate-900 to-slate-950 border border-brand-500/20 shadow-xl transition-all duration-300 hover:border-brand-500/40 hover:-translate-y-1 group">
                             <div class="absolute -right-6 -bottom-6 text-brand-500/[0.07] text-8xl transition-transform duration-500 group-hover:scale-110 pointer-events-none">
                                 <i class="fa-solid fa-building-columns"></i>
                             </div>
@@ -452,14 +479,14 @@
                                 </div>
                                 <span class="bg-brand-500/10 border border-brand-500/20 text-brand-400 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">Vault</span>
                             </div>
-                            <h2 id="balance-bank" class="text-3xl lg:text-4xl font-extrabold text-white mt-5 tracking-tight">৳ 0.00</h2>
+                            <h2 id="balance-bank" class="text-3xl lg:text-4xl font-extrabold text-white mt-5 tracking-tight balance-value-transition">৳ 0.00</h2>
                             <p class="text-xs text-slate-400 mt-3 flex items-center gap-1.5">
                                 <i class="fa-solid fa-shield text-brand-400 text-[10px]"></i> Sum of all bank accounts
                             </p>
                         </div>
 
                         <!-- DPS Card -->
-                        <div class="relative overflow-hidden rounded-3xl p-6 bg-gradient-to-br from-pink-950/40 via-slate-900 to-slate-950 border border-pink-500/20 shadow-xl sm:col-span-2 lg:col-span-1 transition-all duration-300 hover:border-pink-500/40 hover:-translate-y-0.5 group">
+                        <div class="relative overflow-hidden rounded-3xl p-6 bg-gradient-to-br from-pink-950/40 via-slate-900 to-slate-950 border border-pink-500/20 shadow-xl sm:col-span-2 lg:col-span-1 transition-all duration-300 hover:border-pink-500/40 hover:-translate-y-1 group">
                             <div class="absolute -right-6 -bottom-6 text-pink-500/[0.07] text-8xl transition-transform duration-500 group-hover:scale-110 pointer-events-none">
                                 <i class="fa-solid fa-piggy-bank"></i>
                             </div>
@@ -472,7 +499,7 @@
                                 </div>
                                 <span class="bg-pink-500/10 border border-pink-500/20 text-pink-400 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider">Savings</span>
                             </div>
-                            <h2 id="balance-dps" class="text-3xl lg:text-4xl font-extrabold text-white mt-5 tracking-tight">৳ 0.00</h2>
+                            <h2 id="balance-dps" class="text-3xl lg:text-4xl font-extrabold text-white mt-5 tracking-tight balance-value-transition">৳ 0.00</h2>
                             <p class="text-xs text-slate-400 mt-3 flex items-center gap-1.5">
                                 <i class="fa-solid fa-circle-nodes text-pink-400 text-[10px]"></i> Long-term investments
                             </p>
@@ -485,8 +512,8 @@
                             <h3 class="font-bold text-sm md:text-base text-white flex items-center gap-2">
                                 <i class="fa-solid fa-building-columns text-brand-400"></i> My Saved Bank Accounts Balances
                             </h3>
-                            <button onclick="switchTrackerTab('reports')" class="text-xs font-semibold text-brand-400 hover:text-brand-300 transition">
-                                Manage Banks <i class="fa-solid fa-arrow-right ml-1"></i>
+                            <button onclick="switchTrackerTab('reports')" class="text-xs font-semibold text-brand-400 hover:text-brand-300 transition flex items-center gap-1">
+                                Manage Banks <i class="fa-solid fa-arrow-right text-[10px]"></i>
                             </button>
                         </div>
                         <div id="bank-accounts-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -538,7 +565,7 @@
                             </h3>
                             <div class="grid grid-cols-1 gap-3">
                                 <button onclick="switchTrackerTab('add'); selectFormType('Cash', 'Expense')" 
-                                    class="flex items-center gap-3.5 bg-slate-900/50 border border-white/5 hover:border-rose-500/30 p-3.5 rounded-2xl text-left transition-all duration-200 hover:bg-rose-500/5 group">
+                                    class="flex items-center gap-3.5 bg-slate-900/50 border border-white/5 hover:border-rose-500/30 p-3.5 rounded-2xl text-left transition-all duration-200 hover:bg-rose-500/5 group active:scale-[0.98]">
                                     <div class="w-10 h-10 bg-rose-500/10 text-rose-400 rounded-xl flex items-center justify-center text-sm font-bold shrink-0 border border-rose-500/20 group-hover:scale-105 transition">
                                         <i class="fa-solid fa-coins"></i>
                                     </div>
@@ -549,7 +576,7 @@
                                 </button>
                                 
                                 <button onclick="switchTrackerTab('add'); selectFormType('Bank', 'Expense')" 
-                                    class="flex items-center gap-3.5 bg-slate-900/50 border border-white/5 hover:border-brand-500/30 p-3.5 rounded-2xl text-left transition-all duration-200 hover:bg-brand-500/5 group">
+                                    class="flex items-center gap-3.5 bg-slate-900/50 border border-white/5 hover:border-brand-500/30 p-3.5 rounded-2xl text-left transition-all duration-200 hover:bg-brand-500/5 group active:scale-[0.98]">
                                     <div class="w-10 h-10 bg-brand-500/10 text-brand-400 rounded-xl flex items-center justify-center text-sm font-bold shrink-0 border border-brand-500/20 group-hover:scale-105 transition">
                                         <i class="fa-solid fa-building-columns"></i>
                                     </div>
@@ -560,7 +587,7 @@
                                 </button>
 
                                 <button onclick="switchTrackerTab('transfer')" 
-                                    class="flex items-center gap-3.5 bg-slate-900/50 border border-white/5 hover:border-emerald-500/30 p-3.5 rounded-2xl text-left transition-all duration-200 hover:bg-emerald-500/5 group">
+                                    class="flex items-center gap-3.5 bg-slate-900/50 border border-white/5 hover:border-emerald-500/30 p-3.5 rounded-2xl text-left transition-all duration-200 hover:bg-emerald-500/5 group active:scale-[0.98]">
                                     <div class="w-10 h-10 bg-emerald-500/10 text-emerald-400 rounded-xl flex items-center justify-center text-sm font-bold shrink-0 border border-emerald-500/20 group-hover:scale-105 transition">
                                         <i class="fa-solid fa-money-bill-transfer"></i>
                                     </div>
@@ -596,15 +623,15 @@
                 <div id="view-add" class="view-panel hidden animate-fadeInScale">
                     <div class="max-w-2xl mx-auto glass-panel p-6 sm:p-8 rounded-3xl">
                         <div class="text-center mb-6">
-                            <div class="w-12 h-12 rounded-2xl bg-brand-500/10 border border-brand-500/20 text-brand-400 flex items-center justify-center mx-auto mb-3 text-xl">
+                            <div class="w-12 h-12 rounded-2xl bg-brand-500/10 border border-brand-500/20 text-brand-400 flex items-center justify-center mx-auto mb-3 text-xl shadow-inner">
                                 <i class="fa-solid fa-circle-plus"></i>
                             </div>
                             <h2 class="text-xl font-bold text-white">Add Account Transaction</h2>
-                            <p class="text-xs text-slate-400 mt-1">Archive deposits or expenses into specific accounts with intelligent auto-suggestion</p>
+                            <p class="text-xs text-slate-400 mt-1">Archive deposits or expenses with instantaneous balance updates</p>
                         </div>
 
                         <!-- Source Toggle Buttons -->
-                        <div class="flex bg-slate-950/60 p-1 rounded-2xl mb-6 border border-white/5">
+                        <div class="flex bg-slate-950/60 p-1.5 rounded-2xl mb-6 border border-white/5">
                             <button type="button" id="acc-tab-cash" onclick="toggleAccountSection('Cash')" 
                                 class="flex-1 py-2.5 text-center text-xs sm:text-sm font-semibold rounded-xl bg-brand-500 text-slate-950 shadow-md transition-all duration-200">
                                 💵 Pocket Cash Wallet
@@ -627,7 +654,7 @@
                             <div>
                                 <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Transaction Action Type</label>
                                 <div class="grid grid-cols-2 gap-3">
-                                    <label id="label-type-expense" class="cursor-pointer border-2 border-rose-500 rounded-2xl p-3.5 text-center block bg-rose-500/10 transition-all duration-200">
+                                    <label id="label-type-expense" class="cursor-pointer border-2 border-rose-500 rounded-2xl p-3.5 text-center block bg-rose-500/10 transition-all duration-200 shadow-sm">
                                         <input type="radio" name="tx_type" value="Expense" checked class="sr-only" onchange="onTxTypeChanged()">
                                         <span class="block text-xs sm:text-sm font-bold text-rose-400 flex items-center justify-center gap-2">
                                             <i class="fa-solid fa-circle-minus"></i> Expense
@@ -651,12 +678,12 @@
                                 </div>
                             </div>
 
-                            <!-- Reason Input with Auto-Save and 90% Keyword Auto-Match -->
+                            <!-- Reason Input with Sleek Auto-Suggest (No ugly percent indicators) -->
                             <div class="relative">
                                 <div class="flex items-center justify-between mb-2">
                                     <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">Reason / Description Details</label>
-                                    <span class="text-[11px] text-brand-400 flex items-center gap-1 font-semibold">
-                                        <i class="fa-solid fa-wand-magic-sparkles text-[10px]"></i> 90%+ Match Auto-Fill
+                                    <span class="text-[11px] text-brand-400/90 flex items-center gap-1.5 font-medium">
+                                        <i class="fa-solid fa-wand-magic-sparkles text-[10px]"></i> Smart Suggestions
                                     </span>
                                 </div>
                                 <div class="relative">
@@ -667,10 +694,11 @@
                                         class="w-full glass-input rounded-2xl px-4 py-3 text-xs sm:text-sm text-white outline-none placeholder:text-slate-500">
                                 </div>
 
-                                <!-- Keyword Suggestions Chip List -->
-                                <div id="add-keyword-suggestions" class="hidden mt-2 flex-wrap gap-1.5 p-2.5 bg-slate-900/90 rounded-2xl border border-brand-500/20 shadow-lg"></div>
-                                <p class="text-[10px] text-slate-500 mt-1.5 flex items-center gap-1">
-                                    <i class="fa-solid fa-info-circle text-brand-400"></i> New reasons auto-save to memory. Tap suggestion or press <strong>Enter</strong> when &ge;90% matched to auto-complete.
+                                <!-- Keyword Suggestions Chip List (Minimalist, Professional) -->
+                                <div id="add-keyword-suggestions" class="hidden mt-2.5 flex-wrap gap-1.5 p-3 bg-slate-900/95 rounded-2xl border border-white/10 shadow-2xl backdrop-blur-xl"></div>
+                                <p class="text-[11px] text-slate-400 mt-1.5 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-circle-check text-brand-400 text-xs"></i> 
+                                    <span>Tap any suggestion or press <strong class="text-slate-200">Enter</strong> to auto-fill description.</span>
                                 </p>
                             </div>
 
@@ -695,7 +723,7 @@
                             </div>
 
                             <button type="submit" 
-                                class="w-full bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-400 hover:to-brand-500 text-slate-950 font-bold py-3.5 rounded-2xl shadow-lg shadow-brand-500/20 transition-all duration-200 flex items-center justify-center gap-2 text-xs sm:text-sm active:scale-[0.98]">
+                                class="w-full bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-400 hover:to-brand-500 text-slate-950 font-bold py-3.5 rounded-2xl shadow-lg shadow-brand-500/20 hover:shadow-brand-500/35 transition-all duration-200 flex items-center justify-center gap-2 text-xs sm:text-sm active:scale-[0.98]">
                                 <i class="fa-solid fa-floppy-disk"></i>
                                 <span id="tx-btn-text">Save Cash Transaction</span>
                             </button>
@@ -707,7 +735,7 @@
                 <div id="view-transfer" class="view-panel hidden animate-fadeInScale">
                     <div class="max-w-2xl mx-auto glass-panel p-6 sm:p-8 rounded-3xl">
                         <div class="text-center mb-6">
-                            <div class="w-12 h-12 rounded-2xl bg-brand-500/10 border border-brand-500/20 text-brand-400 flex items-center justify-center mx-auto mb-3 text-xl">
+                            <div class="w-12 h-12 rounded-2xl bg-brand-500/10 border border-brand-500/20 text-brand-400 flex items-center justify-center mx-auto mb-3 text-xl shadow-inner">
                                 <i class="fa-solid fa-money-bill-transfer"></i>
                             </div>
                             <h2 class="text-xl font-bold text-white" id="transfer-heading">Bank Transfers &amp; Fees</h2>
@@ -805,7 +833,7 @@
                 <div id="view-dps" class="view-panel hidden animate-fadeInScale">
                     <div class="max-w-2xl mx-auto glass-panel p-6 sm:p-8 rounded-3xl border border-pink-500/20">
                         <div class="text-center mb-6">
-                            <div class="w-12 h-12 rounded-2xl bg-pink-500/10 border border-pink-500/20 text-pink-400 flex items-center justify-center mx-auto mb-3 text-xl">
+                            <div class="w-12 h-12 rounded-2xl bg-pink-500/10 border border-pink-500/20 text-pink-400 flex items-center justify-center mx-auto mb-3 text-xl shadow-inner">
                                 <i class="fa-solid fa-piggy-bank"></i>
                             </div>
                             <h2 class="text-xl font-bold text-white">DPS Savings Installment</h2>
@@ -1410,26 +1438,15 @@
             });
         }
 
-        async function idbClear(storeName) {
-            if (!idb) await openIndexedDatabase();
-            return new Promise((resolve, reject) => {
-                const tx = idb.transaction(storeName, 'readwrite');
-                const store = tx.objectStore(storeName);
-                const req = store.clear();
-                req.onsuccess = () => resolve();
-                req.onerror = () => reject(req.error);
-            });
-        }
-
         function updateNetworkStatusIndicator() {
             const pill = document.getElementById('network-status-badge');
             if (!pill) return;
             if (navigator.onLine) {
-                pill.className = "px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1";
+                pill.className = "px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5 transition-all";
                 pill.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Online`;
                 processSyncQueue();
             } else {
-                pill.className = "px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1";
+                pill.className = "px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1.5 transition-all";
                 pill.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span> Offline Vault`;
             }
         }
@@ -1531,7 +1548,7 @@
             sessionStorage.removeItem('otp_verified_studybuddy');
         }
 
-        const API_URL = "https://script.google.com/macros/s/AKfycby9qmVnSKniBfGnyoALGphh_ytshQuWkJKiObGn6gGjBC3nmiJJgQ5n2RGZFJQaQfs/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbzYwEKiKlVBSeCsfFSvkjg_yp4dFaL9b6KXKAdHRehBZUzELM1wgTma7MNb0LwjiMXZ/exec";
         
         async function runRemoteAPI(action, payload) {
             if (!navigator.onLine) {
@@ -1654,7 +1671,7 @@
                     if (res && res.sessionStatus === 'approved') {
                         stopApprovalPolling();
                         setSessionActive();
-                        showTrackerToast("✅ 1-Tap Approval Confirmed remotely! Welcome!", "success");
+                        showTrackerToast("1-Tap Approval Confirmed remotely! Welcome!", "success");
                         enterAppDashboard();
                     }
                 } catch (err) {}
@@ -1943,6 +1960,7 @@
             return (2.0 * intersection) / (bg1.size + bg2.size);
         }
 
+        // Clean, elegant suggestions (Removed 90% text)
         function handleKeywordInput(inputEl, suggestionsContainerId, inputId) {
             const query = inputEl.value.trim();
             const container = document.getElementById(suggestionsContainerId);
@@ -1959,7 +1977,7 @@
             reasonKeywordDictionary.forEach(kw => {
                 const sim = calculateStringSimilarity(query, kw);
                 if (sim >= 0.35 || kw.toLowerCase().includes(query.toLowerCase())) {
-                    matches.push({ keyword: kw, similarity: Math.round(sim * 100) });
+                    matches.push({ keyword: kw, similarity: sim });
                 }
             });
 
@@ -1973,19 +1991,19 @@
                 return;
             }
 
-            currentBestMatchSuggestion = topMatches[0].similarity >= 90 ? topMatches[0].keyword : null;
+            // High similarity match (> 0.88) can auto-complete on Enter
+            currentBestMatchSuggestion = topMatches[0].similarity >= 0.88 ? topMatches[0].keyword : null;
 
-            container.innerHTML = topMatches.map(m => {
-                const isHighMatch = m.similarity >= 90;
-                const matchBadge = isHighMatch ? 
-                    `<span class="bg-emerald-500/20 text-emerald-300 px-1 rounded text-[9px] font-bold">90%+ match [Press Enter]</span>` :
-                    `<span class="text-slate-400 text-[9px]">${m.similarity}%</span>`;
+            container.innerHTML = topMatches.map((m, idx) => {
+                const isTopMatch = (idx === 0 && m.similarity >= 0.88);
+                const returnKeyBadge = isTopMatch ? 
+                    `<span class="ml-1 px-1.5 py-0.5 rounded text-[10px] bg-brand-500/20 text-brand-300 font-mono flex items-center gap-0.5"><i class="fa-solid fa-arrow-turn-down text-[8px] rotate-90"></i> Enter</span>` : '';
 
                 return `
                     <button type="button" onclick="selectSuggestedKeyword('${m.keyword.replace(/'/g, "\\'")}', '${inputId}', '${suggestionsContainerId}')"
-                        class="suggestion-chip px-3 py-1.5 rounded-xl text-xs text-white font-medium flex items-center gap-1.5 ${isHighMatch ? 'border-brand-400 ring-1 ring-brand-400/40' : ''}">
+                        class="suggestion-chip px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 active:scale-95 ${isTopMatch ? 'suggestion-chip-active' : ''}">
                         <span>${m.keyword}</span>
-                        ${matchBadge}
+                        ${returnKeyBadge}
                     </button>
                 `;
             }).join('');
@@ -2014,7 +2032,7 @@
                 container.classList.add('hidden');
             }
             currentBestMatchSuggestion = null;
-            showTrackerToast(`Applied "${keyword}"`, "success");
+            showTrackerToast(`Selected "${keyword}"`, "success");
         }
 
         async function initTrackerApp() {
@@ -2225,10 +2243,10 @@
             const selectedType = document.querySelector('input[name="tx_type"]:checked').value;
             const labelExpense = document.getElementById('label-type-expense'), labelDeposit = document.getElementById('label-type-deposit');
             labelExpense.className = selectedType === 'Expense' 
-                ? "cursor-pointer border-2 border-rose-500 rounded-2xl p-3.5 text-center block bg-rose-500/10 transition-all duration-200" 
+                ? "cursor-pointer border-2 border-rose-500 rounded-2xl p-3.5 text-center block bg-rose-500/10 transition-all duration-200 shadow-sm" 
                 : "cursor-pointer border-2 border-white/5 rounded-2xl p-3.5 text-center block bg-slate-900/50 hover:bg-slate-900 transition-all duration-200";
             labelDeposit.className = selectedType === 'Deposit' 
-                ? "cursor-pointer border-2 border-emerald-500 rounded-2xl p-3.5 text-center block bg-emerald-500/10 transition-all duration-200" 
+                ? "cursor-pointer border-2 border-emerald-500 rounded-2xl p-3.5 text-center block bg-emerald-500/10 transition-all duration-200 shadow-sm" 
                 : "cursor-pointer border-2 border-white/5 rounded-2xl p-3.5 text-center block bg-slate-900/50 hover:bg-slate-900 transition-all duration-200";
         }
 
@@ -2241,7 +2259,7 @@
             toast.innerHTML = `<i class="${iconClass} text-base shrink-0"></i><div class="flex-1 text-xs md:text-sm font-semibold">${message}</div><button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-white text-xs shrink-0"><i class="fa-solid fa-xmark"></i></button>`;
             container.appendChild(toast);
             setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
-            setTimeout(() => { toast.classList.add('opacity-0', 'translate-y-2'); setTimeout(() => toast.remove(), 300); }, 4500);
+            setTimeout(() => { toast.classList.add('opacity-0', 'translate-y-2'); setTimeout(() => toast.remove(), 300); }, 4200);
         }
 
         function setLoadingState(show, title = 'Syncing Records...', desc = 'Updating Google Sheet data.') {
@@ -2303,11 +2321,12 @@
             }
         }
 
+        // Synchronously recompute running balances from transaction & DPS arrays
         function processLedgerData(txs, dpss) {
             let cashBal = 0, bankBal = 0, dpsBal = 0;
             let bankAccs = {};
 
-            const formattedTxs = txs.map(item => {
+            const formattedTxs = (txs || []).map(item => {
                 const amt = Number(item.amount) || 0;
                 const fee = Number(item.fee) || 0;
 
@@ -2355,7 +2374,7 @@
                 };
             });
 
-            const formattedDps = dpss.map(item => {
+            const formattedDps = (dpss || []).map(item => {
                 const amt = Number(item.amount) || 0;
                 dpsBal += amt;
                 return { 
@@ -2396,10 +2415,20 @@
             if (changed) saveBanks();
         }
 
+        // Smooth Counter Animation for KPI Balances
+        function animateBalanceText(elementId, targetValue) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            el.textContent = `৳ ${targetValue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            el.classList.remove('animate-balancePulse');
+            void el.offsetWidth; // Force reflow to re-trigger pulse
+            el.classList.add('animate-balancePulse');
+        }
+
         function updateUIWidgets() {
-            document.getElementById('balance-cash').textContent = `৳ ${appState.balances.cash.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-            document.getElementById('balance-bank').textContent = `৳ ${appState.balances.bank.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-            document.getElementById('balance-dps').textContent = `৳ ${appState.balances.dps.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            animateBalanceText('balance-cash', appState.balances.cash);
+            animateBalanceText('balance-bank', appState.balances.bank);
+            animateBalanceText('balance-dps', appState.balances.dps);
 
             const bankGrid = document.getElementById('bank-accounts-grid'); 
             bankGrid.innerHTML = '';
@@ -2409,7 +2438,7 @@
                 bankAccounts.forEach(b => {
                     const balance = appState.balances.bankAccounts[b.name] || 0;
                     bankGrid.insertAdjacentHTML('beforeend', `
-                        <div class="bg-slate-900/60 border border-white/5 hover:border-brand-500/20 p-4 rounded-2xl transition-all duration-200">
+                        <div class="bg-slate-900/60 border border-white/5 hover:border-brand-500/20 p-4 rounded-2xl transition-all duration-200 hover:-translate-y-0.5">
                             <span class="text-[10px] font-bold text-slate-400 uppercase block truncate">${b.name}</span>
                             <span class="text-[9px] text-slate-500 block truncate mt-0.5">${b.number}</span>
                             <p class="text-sm md:text-base font-bold text-brand-400 mt-2">৳ ${balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</p>
@@ -2450,8 +2479,8 @@
             let text = lastExp === 0 
                 ? `You spent <strong class="text-white">৳${curExp.toLocaleString()}</strong> this month.` 
                 : diff > 0 
-                    ? `⚠️ Spent <strong class="text-white">৳${curExp.toLocaleString()}</strong> (<strong class="text-rose-400">৳${diff.toLocaleString()} more</strong> than last month).` 
-                    : `🎉 Spent <strong class="text-white">৳${curExp.toLocaleString()}</strong> (<strong class="text-emerald-400">৳${Math.abs(diff).toLocaleString()} less</strong> than last month).`;
+                    ? `Spent <strong class="text-white">৳${curExp.toLocaleString()}</strong> (<strong class="text-rose-400">৳${diff.toLocaleString()} more</strong> than last month).` 
+                    : `Spent <strong class="text-white">৳${curExp.toLocaleString()}</strong> (<strong class="text-emerald-400">৳${Math.abs(diff).toLocaleString()} less</strong> than last month).`;
             document.getElementById('stat-comparison-text').innerHTML = `<i class="fa-solid fa-brain text-brand-400 mr-1.5 animate-pulse"></i><span>${text} (Excludes lend/return from)</span>`;
         }
 
@@ -2714,10 +2743,14 @@
                 created_at: new Date().toISOString()
             };
 
-            // 1. Instant Local Write
+            // 1. Optimistic Instant UI Update (Zero Delay)
+            appState.transactions.unshift(payload);
+            processLedgerData(appState.transactions, appState.dps);
+
+            // 2. Instant Local Storage Save
             await idbPut('transactions', payload);
             
-            // 2. Queue for Cloud Sync
+            // 3. Queue Background Sync to Cloud & Sheets
             queueMutation('insert', 'transaction', payload);
 
             showTrackerToast(navigator.onLine ? "Transaction saved instantly!" : "Saved locally (Offline Vault)!", "success"); 
@@ -2725,7 +2758,6 @@
             document.getElementById('custom-time-toggle').checked = false; 
             document.getElementById('custom-time-fields').classList.add('hidden');
             setTodayDateInputs(); 
-            await fetchInitialLedgerData(); 
         }
         
         async function handleDPSSubmit(event) {
@@ -2743,17 +2775,20 @@
                 created_at: new Date().toISOString()
             };
             
-            // 1. Instant Local Write
+            // 1. Optimistic Instant UI Update
+            appState.dps.unshift(payload);
+            processLedgerData(appState.transactions, appState.dps);
+
+            // 2. Instant Local Storage Save
             await idbPut('dps', payload);
 
-            // 2. Queue for Cloud Sync
+            // 3. Queue Background Sync
             const sheetsPayload = { ...payload, installmentNo: payload.installment_no, acNo: payload.ac_no, maturityDate: payload.maturity_date };
             queueMutation('insert', 'dps', sheetsPayload);
 
             showTrackerToast(navigator.onLine ? "DPS installment logged instantly!" : "DPS saved locally (Offline Vault)!", "success"); 
             event.target.reset();
             setTodayDateInputs(); 
-            await fetchInitialLedgerData(); 
         }
 
         let currentTransferDirection = 'Bank_to_Current';
@@ -2830,10 +2865,14 @@
 
             autoLearnKeyword(payload.description);
             
-            // 1. Instant Local Write
+            // 1. Optimistic Instant UI Update
+            appState.transactions.unshift(payload);
+            processLedgerData(appState.transactions, appState.dps);
+
+            // 2. Instant Local Storage Save
             await idbPut('transactions', payload);
 
-            // 2. Queue for Cloud Sync
+            // 3. Queue Background Sync
             queueMutation('insert', 'transaction', payload);
 
             showTrackerToast(navigator.onLine ? `Transfer logged! (Fee: ৳${payload.fee})` : `Transfer saved locally! (Fee: ৳${payload.fee})`, "success"); 
@@ -2842,7 +2881,6 @@
             document.getElementById('transfer-time-fields').classList.add('hidden');
             setTransferDirection('Bank_to_Current');
             setTodayDateInputs(); 
-            await fetchInitialLedgerData(); 
         }
 
         function closeTxModal() { document.getElementById('edit-tx-modal').classList.add('hidden'); }
@@ -2881,14 +2919,20 @@
             autoLearnKeyword(payload.description);
             closeTxModal();
             
-            // 1. Update IndexedDB locally
+            // 1. Optimistic Instant UI Update
+            const idx = appState.transactions.findIndex(t => t.id === payload.id);
+            if (idx !== -1) {
+                appState.transactions[idx] = { ...appState.transactions[idx], ...payload };
+                processLedgerData(appState.transactions, appState.dps);
+            }
+
+            // 2. Update IndexedDB locally
             await idbPut('transactions', payload);
 
-            // 2. Queue update
+            // 3. Queue update
             queueMutation('update', 'transaction', payload);
 
             showTrackerToast("Updated transaction & fee instantly!", "success"); 
-            await fetchInitialLedgerData();
         }
 
         async function handleDPSEditSubmit(e) {
@@ -2909,21 +2953,40 @@
             };
             closeDPSModal(); 
             
+            // 1. Optimistic Instant UI Update
+            const idx = appState.dps.findIndex(d => d.id === payload.id);
+            if (idx !== -1) {
+                appState.dps[idx] = { ...appState.dps[idx], ...payload };
+                processLedgerData(appState.transactions, appState.dps);
+            }
+
+            // 2. Update IndexedDB locally
             await idbPut('dps', payload);
+
+            // 3. Queue update
             queueMutation('update', 'dps', payload);
 
             showTrackerToast("DPS modified instantly!", "success"); 
-            await fetchInitialLedgerData();
         }
 
         function triggerDeletionPrompt(dbType, id) {
             showConfirmModal("Delete record?", "Are you sure you want to permanently erase this?", async () => {
+                // 1. Optimistic Instant UI Update
+                if (dbType === 'transaction') {
+                    appState.transactions = appState.transactions.filter(t => t.id !== id);
+                } else {
+                    appState.dps = appState.dps.filter(d => d.id !== id);
+                }
+                processLedgerData(appState.transactions, appState.dps);
+
+                // 2. Delete from Local DB
                 const store = dbType === 'transaction' ? 'transactions' : 'dps';
                 await idbDelete(store, id);
+
+                // 3. Queue Deletion
                 queueMutation('delete', dbType, { id });
 
                 showTrackerToast("Record wiped.", "success"); 
-                await fetchInitialLedgerData();
             });
         }
 
