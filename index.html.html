@@ -187,7 +187,6 @@
             box-shadow: 0 0 12px rgba(56, 189, 248, 0.22);
         }
 
-        /* Metric card active states */
         .balance-value-transition {
             transition: color 0.3s ease, transform 0.3s ease;
         }
@@ -370,7 +369,6 @@
                                 <h1 class="text-lg md:text-xl font-bold text-white tracking-tight">
                                     Expense Tracker
                                 </h1>
-                                <!-- Realtime Network Status Pill -->
                                 <span id="network-status-badge" class="px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5 transition-all">
                                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Online
                                 </span>
@@ -526,29 +524,49 @@
                     <!-- Statistics & Controls -->
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         
-                        <!-- Month Snapshot -->
+                        <!-- Month Snapshot with Savings & Previous Month Rest Balance -->
                         <div class="glass-panel p-6 rounded-3xl lg:col-span-2 flex flex-col justify-between">
                             <div>
                                 <div class="flex justify-between items-center mb-4">
                                     <h3 class="font-bold text-sm md:text-base text-white flex items-center gap-2">
-                                        <i class="fa-solid fa-chart-pie text-brand-400"></i> Monthly Snapshot Statistics
+                                        <i class="fa-solid fa-chart-pie text-brand-400"></i> Monthly Snapshot &amp; Savings
                                     </h3>
-                                    <span class="text-[11px] bg-white/5 border border-white/10 text-slate-300 font-semibold px-3 py-1 rounded-full uppercase tracking-wider">
-                                        Current Month
+                                    <span class="text-[11px] bg-brand-500/10 border border-brand-500/20 text-brand-300 font-semibold px-3 py-1 rounded-full uppercase tracking-wider">
+                                        Current Month Performance
                                     </span>
                                 </div>
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 my-2">
-                                    <div class="bg-rose-500/10 p-5 rounded-2xl border border-rose-500/20">
-                                        <span class="text-xs text-rose-400 font-semibold uppercase tracking-wider block mb-1">
-                                            Total Expended This Month
+                                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 my-2">
+                                    <!-- Prev Month Carryover Balance -->
+                                    <div class="bg-indigo-500/10 p-4 rounded-2xl border border-indigo-500/20">
+                                        <span class="text-[10px] text-indigo-300 font-semibold uppercase tracking-wider block mb-1">
+                                            Rest Balance (Prev Month)
                                         </span>
-                                        <p id="stat-month-expense" class="text-2xl font-extrabold text-rose-400">৳ 0.00</p>
+                                        <p id="stat-prev-month-balance" class="text-lg lg:text-xl font-extrabold text-indigo-300">৳ 0.00</p>
+                                        <p class="text-[10px] text-slate-400 mt-1">Carried forward</p>
                                     </div>
-                                    <div class="bg-emerald-500/10 p-5 rounded-2xl border border-emerald-500/20">
-                                        <span class="text-xs text-emerald-400 font-semibold uppercase tracking-wider block mb-1">
+                                    <!-- Inflow -->
+                                    <div class="bg-emerald-500/10 p-4 rounded-2xl border border-emerald-500/20">
+                                        <span class="text-[10px] text-emerald-400 font-semibold uppercase tracking-wider block mb-1">
                                             Total Inflow Deposits
                                         </span>
-                                        <p id="stat-month-income" class="text-2xl font-extrabold text-emerald-400">৳ 0.00</p>
+                                        <p id="stat-month-income" class="text-lg lg:text-xl font-extrabold text-emerald-400">৳ 0.00</p>
+                                        <p class="text-[10px] text-slate-400 mt-1">Earnings &amp; Additions</p>
+                                    </div>
+                                    <!-- Expended -->
+                                    <div class="bg-rose-500/10 p-4 rounded-2xl border border-rose-500/20">
+                                        <span class="text-[10px] text-rose-400 font-semibold uppercase tracking-wider block mb-1">
+                                            Total Expended
+                                        </span>
+                                        <p id="stat-month-expense" class="text-lg lg:text-xl font-extrabold text-rose-400">৳ 0.00</p>
+                                        <p class="text-[10px] text-slate-400 mt-1">Living &amp; Purchases</p>
+                                    </div>
+                                    <!-- How much saved in month -->
+                                    <div class="bg-amber-500/10 p-4 rounded-2xl border border-amber-500/20">
+                                        <span class="text-[10px] text-amber-300 font-semibold uppercase tracking-wider block mb-1">
+                                            Saved This Month
+                                        </span>
+                                        <p id="stat-month-saved" class="text-lg lg:text-xl font-extrabold text-amber-400">৳ 0.00</p>
+                                        <p id="stat-month-saved-rate" class="text-[10px] text-amber-300/80 mt-1">0% net savings rate</p>
                                     </div>
                                 </div>
                             </div>
@@ -594,6 +612,21 @@
                                     <div class="min-w-0 flex-1">
                                         <h4 class="text-xs md:text-sm font-semibold text-white">Bank Transfers &amp; Fees</h4>
                                         <p class="text-[11px] text-slate-400 truncate">Move bank to bank or withdraw to cash</p>
+                                    </div>
+                                </button>
+
+                                <!-- Quick Balance Adjustment Button -->
+                                <button onclick="openAdjustBalanceModal()" 
+                                    class="flex items-center gap-3.5 bg-slate-900/50 border border-white/5 hover:border-sky-500/30 p-3.5 rounded-2xl text-left transition-all duration-200 hover:bg-sky-500/5 group active:scale-[0.98]">
+                                    <div class="w-10 h-10 bg-sky-500/10 text-sky-400 rounded-xl flex items-center justify-center text-sm font-bold shrink-0 border border-sky-500/20 group-hover:scale-105 transition">
+                                        <i class="fa-solid fa-sliders"></i>
+                                    </div>
+                                    <div class="min-w-0 flex-1">
+                                        <div class="flex items-center gap-2">
+                                            <h4 class="text-xs md:text-sm font-semibold text-white">Adjust Balance Discrepancy</h4>
+                                            <span class="text-[9px] uppercase px-1.5 py-0.2 rounded bg-sky-500/20 text-sky-300 font-bold border border-sky-500/30">Neutral</span>
+                                        </div>
+                                        <p class="text-[11px] text-slate-400 truncate">Sync actual cash or bank with zero impact on income/expense</p>
                                     </div>
                                 </button>
                             </div>
@@ -678,7 +711,7 @@
                                 </div>
                             </div>
 
-                            <!-- Reason Input with Sleek Auto-Suggest (No ugly percent indicators) -->
+                            <!-- Reason Input with Auto-Suggest -->
                             <div class="relative">
                                 <div class="flex items-center justify-between mb-2">
                                     <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">Reason / Description Details</label>
@@ -694,7 +727,6 @@
                                         class="w-full glass-input rounded-2xl px-4 py-3 text-xs sm:text-sm text-white outline-none placeholder:text-slate-500">
                                 </div>
 
-                                <!-- Keyword Suggestions Chip List (Minimalist, Professional) -->
                                 <div id="add-keyword-suggestions" class="hidden mt-2.5 flex-wrap gap-1.5 p-3 bg-slate-900/95 rounded-2xl border border-white/10 shadow-2xl backdrop-blur-xl"></div>
                                 <p class="text-[11px] text-slate-400 mt-1.5 flex items-center gap-1.5">
                                     <i class="fa-solid fa-circle-check text-brand-400 text-xs"></i> 
@@ -742,7 +774,7 @@
                             <p class="text-xs text-slate-400 mt-1" id="transfer-subheading">Move balances between banks or physical cash with editable fees</p>
                         </div>
 
-                        <!-- 3 Direction Selectors: Bank to Cash, Cash to Bank, Bank to Bank -->
+                        <!-- 3 Direction Selectors -->
                         <div class="grid grid-cols-3 bg-slate-950/60 rounded-2xl p-1 mb-5 gap-1 border border-white/5">
                             <button type="button" id="transfer-dir-b2c" onclick="setTransferDirection('Bank_to_Current')"
                                 class="py-2.5 text-center text-xs font-semibold rounded-xl bg-brand-500 text-slate-950 shadow-md transition-all duration-200">
@@ -837,7 +869,7 @@
                                 <i class="fa-solid fa-piggy-bank"></i>
                             </div>
                             <h2 class="text-xl font-bold text-white">DPS Savings Installment</h2>
-                            <p class="text-xs text-slate-400 mt-1">Register manual targets for long-term savings accounts</p>
+                            <p class="text-xs text-slate-400 mt-1">Register targets for long-term monthly savings deposits</p>
                         </div>
                         <form id="dps-form" onsubmit="handleDPSSubmit(event)" class="space-y-5">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -919,6 +951,7 @@
                                         <option value="Deposit" class="bg-slate-900">Deposit</option>
                                         <option value="Transfer" class="bg-slate-900">Transfers</option>
                                         <option value="DPS" class="bg-slate-900">DPS</option>
+                                        <option value="Adjustment" class="bg-slate-900">Adjustments</option>
                                     </select>
                                 </div>
                                 <div class="sm:col-span-3">
@@ -963,6 +996,49 @@
                 <!-- VIEW 6: SETUP & REPORTS & ANALYTICS -->
                 <div id="view-reports" class="view-panel hidden space-y-6 animate-fadeInScale">
                     
+                    <!-- MONTHLY SAVINGS & REST BALANCE SUMMARY CARD -->
+                    <div class="glass-panel p-6 sm:p-8 rounded-3xl border border-indigo-500/20 bg-gradient-to-br from-indigo-950/20 via-slate-900/80 to-slate-950">
+                        <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 pb-4 border-b border-white/5">
+                            <div>
+                                <h3 class="font-bold text-lg text-white flex items-center gap-2">
+                                    <i class="fa-solid fa-scale-balanced text-indigo-400"></i> Monthly Net Savings &amp; Previous Month Rest Balance
+                                </h3>
+                                <p class="text-xs text-slate-400 mt-1">Carried-over balance before the reporting month + net saved = closing rest balance</p>
+                            </div>
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-300 text-xs font-semibold border border-indigo-500/20 self-start sm:self-auto">
+                                <i class="fa-solid fa-wallet text-indigo-400"></i> Cash &amp; Bank Carryover
+                            </span>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3.5 my-5 text-center">
+                            <div class="bg-slate-900/80 p-3.5 rounded-2xl border border-white/10">
+                                <p class="text-[10px] uppercase font-bold text-slate-400 mb-1">1. Prev Month Rest Balance</p>
+                                <p id="report-prev-balance" class="text-base sm:text-lg font-extrabold text-indigo-300">৳ 0.00</p>
+                                <span class="text-[9px] text-slate-500">Opening Liquid Balance</span>
+                            </div>
+                            <div class="bg-emerald-950/30 p-3.5 rounded-2xl border border-emerald-500/20">
+                                <p class="text-[10px] uppercase font-bold text-emerald-400 mb-1">2. Inflow / Deposits (+)</p>
+                                <p id="report-inflow" class="text-base sm:text-lg font-extrabold text-emerald-400">৳ 0.00</p>
+                                <span class="text-[9px] text-emerald-400/80">Period Inflow</span>
+                            </div>
+                            <div class="bg-rose-950/30 p-3.5 rounded-2xl border border-rose-500/20">
+                                <p class="text-[10px] uppercase font-bold text-rose-400 mb-1">3. Living Expenses (-)</p>
+                                <p id="report-expenses" class="text-base sm:text-lg font-extrabold text-rose-400">৳ 0.00</p>
+                                <span class="text-[9px] text-rose-400/80">Outflow &amp; Fees</span>
+                            </div>
+                            <div class="bg-amber-950/30 p-3.5 rounded-2xl border border-amber-500/20">
+                                <p class="text-[10px] uppercase font-bold text-amber-300 mb-1">4. Net Saved This Month</p>
+                                <p id="report-net-saved" class="text-base sm:text-lg font-extrabold text-amber-300">৳ 0.00</p>
+                                <span id="report-savings-rate-badge" class="text-[9px] text-amber-300/80">0% savings rate</span>
+                            </div>
+                            <div class="bg-brand-950/40 p-3.5 rounded-2xl border border-brand-500/30">
+                                <p class="text-[10px] uppercase font-bold text-brand-300 mb-1">5. Ending Rest Balance</p>
+                                <p id="report-ending-balance" class="text-base sm:text-lg font-extrabold text-brand-400">৳ 0.00</p>
+                                <span class="text-[9px] text-brand-400/80">Carryover + Saved</span>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- AUTOMATED STATEMENT DISPATCHER COMPONENT -->
                     <div class="glass-panel p-6 sm:p-8 rounded-3xl border border-brand-500/20">
                         <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 pb-4 border-b border-white/5">
@@ -981,9 +1057,9 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 my-5">
                             <div>
                                 <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">1. Report Type</label>
-                                <select id="auto-report-type" 
+                                <select id="auto-report-type" onchange="updateReportSummaryPreview()" 
                                     class="w-full glass-input rounded-xl px-3 py-2.5 text-xs font-semibold text-white outline-none">
-                                    <option value="short" class="bg-slate-900">📄 Short Summary Report</option>
+                                    <option value="short" class="bg-slate-900">📄 Short Summary (Savings + Rest Balance)</option>
                                     <option value="details" class="bg-slate-900">📑 Detailed Itemized Ledger</option>
                                     <option value="bank" class="bg-slate-900">🏦 Bank Accounts Statement</option>
                                     <option value="cash" class="bg-slate-900">💵 Cash Wallet Activity Report</option>
@@ -1016,11 +1092,11 @@
                         <div id="custom-range-row" class="hidden grid-cols-1 sm:grid-cols-2 gap-4 mb-5 p-3.5 bg-slate-900/60 rounded-2xl border border-white/5">
                             <div>
                                 <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">From Date</label>
-                                <input type="date" id="auto-report-from" class="w-full glass-input rounded-xl px-3 py-2 text-xs text-white">
+                                <input type="date" id="auto-report-from" onchange="updateReportSummaryPreview()" class="w-full glass-input rounded-xl px-3 py-2 text-xs text-white">
                             </div>
                             <div>
                                 <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">To Date</label>
-                                <input type="date" id="auto-report-to" class="w-full glass-input rounded-xl px-3 py-2 text-xs text-white">
+                                <input type="date" id="auto-report-to" onchange="updateReportSummaryPreview()" class="w-full glass-input rounded-xl px-3 py-2 text-xs text-white">
                             </div>
                         </div>
 
@@ -1029,22 +1105,29 @@
                             <div class="space-y-1">
                                 <div class="text-slate-300 flex items-center gap-2">
                                     <i class="fa-brands fa-telegram text-brand-400 text-sm"></i>
-                                    <span>Telegram Destination: <strong class="text-white">Active Connected Bot</strong></span>
+                                    <span>Telegram Destination: <strong class="text-white">Connected Telegram Bot</strong></span>
                                 </div>
                                 <div class="text-slate-300 flex items-center gap-2">
                                     <i class="fa-solid fa-envelope text-emerald-400 text-sm"></i>
                                     <span>Email Destination: <strong class="text-white" id="report-target-email-preview">Loading...</strong></span>
                                 </div>
                             </div>
-                            <span class="text-[11px] text-slate-400 font-medium">Reports are processed &amp; sent directly without saving to browser.</span>
+                            <span class="text-[11px] text-slate-400 font-medium">Includes Rest Balance Carryover &amp; Monthly Net Savings.</span>
                         </div>
 
-                        <!-- Dispatch Trigger Button -->
-                        <button id="btn-dispatch-report" type="button" onclick="sendAutomatedReport()" 
-                            class="w-full bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-400 hover:to-brand-500 text-slate-950 font-bold py-3.5 rounded-2xl shadow-lg shadow-brand-500/20 hover:shadow-brand-500/35 transition-all duration-200 flex items-center justify-center gap-2 text-xs sm:text-sm active:scale-[0.98]">
-                            <i class="fa-solid fa-paper-plane"></i>
-                            <span id="btn-dispatch-text">Send Report to Selected Channels</span>
-                        </button>
+                        <!-- Action Buttons: Send via Bot/Server + Instant Preview & Manual Share -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <button id="btn-dispatch-report" type="button" onclick="sendAutomatedReport()" 
+                                class="w-full bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-400 hover:to-brand-500 text-slate-950 font-bold py-3.5 rounded-2xl shadow-lg shadow-brand-500/20 hover:shadow-brand-500/35 transition-all duration-200 flex items-center justify-center gap-2 text-xs sm:text-sm active:scale-[0.98]">
+                                <i class="fa-solid fa-paper-plane"></i>
+                                <span id="btn-dispatch-text">Send Report to Selected Channels</span>
+                            </button>
+                            <button type="button" onclick="openReportPreviewModal()" 
+                                class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-3.5 rounded-2xl border border-white/10 transition-all duration-200 flex items-center justify-center gap-2 text-xs sm:text-sm active:scale-[0.98]">
+                                <i class="fa-solid fa-eye text-brand-400"></i>
+                                <span>Preview Report &amp; 1-Tap Share</span>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Analytics Breakdown Card -->
@@ -1083,7 +1166,7 @@
                                     <i class="fa-solid fa-file-invoice-dollar text-brand-400"></i> Dispatch PDF Statements
                                 </h3>
                                 <p class="text-xs text-slate-400 leading-relaxed mt-3">
-                                    Initiate formal PDF reports compiled with starting/ending balances, transmitted directly via Telegram Bot and verified Gmail.
+                                    Initiate formal PDF reports compiled with previous rest balance carryover, transmitted directly via Telegram Bot and verified Gmail.
                                 </p>
                             </div>
                             <div class="space-y-3 mt-6">
@@ -1122,7 +1205,7 @@
                                             <i class="fa-solid fa-pen mr-1"></i>Change
                                         </button>
                                     </div>
-                                    <p class="text-[11px] text-slate-400 mt-2">All future PDF statements will be delivered here.</p>
+                                    <p class="text-[11px] text-slate-400 mt-2">All future statements and financial summaries will be delivered here.</p>
                                 </div>
 
                                 <!-- Edit & Request OTP State -->
@@ -1142,7 +1225,7 @@
                                         class="w-full glass-input rounded-2xl px-3 py-2.5 text-center tracking-[0.5em] text-lg font-bold text-brand-400 outline-none">
                                     <div class="flex gap-2">
                                         <button onclick="cancelEmailChange()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold py-2.5 rounded-xl text-xs transition">Cancel</button>
-                                        <button id="btn-verify-email-otp" onclick="verifyReportEmailOTP()" class="flex-1 bg-brand-500 hover:bg-brand-400 text-slate-950 font-bold py-2.5 rounded-xl text-xs transition">Verify & Save</button>
+                                        <button id="btn-verify-email-otp" onclick="verifyReportEmailOTP()" class="flex-1 bg-brand-500 hover:bg-brand-400 text-slate-950 font-bold py-2.5 rounded-xl text-xs transition">Verify &amp; Save</button>
                                     </div>
                                 </div>
                             </div>
@@ -1203,6 +1286,110 @@
                     </a> &bull; Expense Tracker &copy; 2026
                 </p>
             </footer>
+
+            <!-- Report Live Preview & Direct Share Modal -->
+            <div id="report-preview-modal" class="hidden fixed inset-0 bg-slate-950/85 z-50 flex items-center justify-center p-4 backdrop-blur-md transition-all">
+                <div class="glass-panel-elevated rounded-3xl max-w-lg w-full p-6 sm:p-7 relative border border-brand-500/30">
+                    <button onclick="closeReportPreviewModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white transition text-lg"><i class="fa-solid fa-xmark"></i></button>
+                    <h3 class="font-bold text-base text-white mb-2 pb-2 border-b border-white/5 flex items-center gap-2 text-brand-400">
+                        <i class="fa-solid fa-file-invoice"></i> Financial Report Preview
+                    </h3>
+                    <p class="text-xs text-slate-400 mb-3">Copy or share directly to Telegram &amp; Email with 1-tap:</p>
+                    
+                    <textarea id="report-preview-textarea" readonly rows="11" 
+                        class="w-full glass-input rounded-2xl p-3.5 text-xs font-mono text-slate-200 outline-none leading-relaxed select-all bg-black/60 border border-white/10"></textarea>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-4 text-xs font-bold">
+                        <button onclick="copyReportPreviewText()" class="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-white/5 transition flex items-center justify-center gap-1.5 active:scale-95">
+                            <i class="fa-regular fa-copy text-brand-400"></i> Copy Text
+                        </button>
+                        <button onclick="shareReportToTelegram()" class="py-2.5 px-3 rounded-xl bg-[#229ED9]/20 hover:bg-[#229ED9]/30 text-[#229ED9] border border-[#229ED9]/30 transition flex items-center justify-center gap-1.5 active:scale-95">
+                            <i class="fa-brands fa-telegram"></i> Telegram
+                        </button>
+                        <button onclick="shareReportToEmail()" class="py-2.5 px-3 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 transition flex items-center justify-center gap-1.5 active:scale-95">
+                            <i class="fa-solid fa-envelope"></i> Open Email
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODAL: ADJUST BALANCE DISCREPANCY (DOES NOT IMPACT INCOME OR EXPENSE) -->
+            <div id="adjust-balance-modal" class="hidden fixed inset-0 bg-slate-950/80 z-50 flex items-center justify-center p-4 backdrop-blur-md transition-all">
+                <div class="glass-panel-elevated rounded-3xl max-w-md w-full p-6 sm:p-7 relative border border-sky-500/30">
+                    <button onclick="closeAdjustBalanceModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white transition text-lg"><i class="fa-solid fa-xmark"></i></button>
+                    
+                    <div class="flex items-center gap-3 mb-4 pb-2 border-b border-white/5">
+                        <div class="w-10 h-10 rounded-2xl bg-sky-500/10 border border-sky-500/20 text-sky-400 flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-sliders"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-base text-white">Adjust Account Balance</h3>
+                            <p class="text-[11px] text-sky-400 font-medium">Neutral adjustment &bull; Will NOT calculate as Expense or Income</p>
+                        </div>
+                    </div>
+
+                    <form id="adjust-balance-form" onsubmit="handleAdjustBalanceSubmit(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">Select Account to Adjust</label>
+                            <select id="adjust-account-select" onchange="onAdjustAccountSelected()" class="w-full glass-input rounded-2xl px-4 py-3 text-xs sm:text-sm font-semibold text-white outline-none"></select>
+                        </div>
+
+                        <!-- Current Balance Display -->
+                        <div class="p-3.5 bg-slate-900/60 rounded-2xl border border-white/5 flex justify-between items-center text-xs">
+                            <span class="text-slate-400">Current Vault Balance:</span>
+                            <span id="adjust-current-balance-display" class="font-bold text-base text-sky-400">৳ 0.00</span>
+                        </div>
+
+                        <!-- Adjustment Mode: Target New Balance OR Difference -->
+                        <div class="grid grid-cols-2 gap-2 bg-slate-950/60 p-1 rounded-2xl border border-white/5 text-xs font-semibold">
+                            <button type="button" id="adj-mode-target" onclick="setAdjustMode('target')" class="py-2 text-center rounded-xl bg-sky-500 text-slate-950 font-bold shadow-md transition">
+                                New Total Balance
+                            </button>
+                            <button type="button" id="adj-mode-delta" onclick="setAdjustMode('delta')" class="py-2 text-center rounded-xl text-slate-400 hover:text-white transition">
+                                Difference (+ / -)
+                            </button>
+                        </div>
+
+                        <div id="adj-target-container">
+                            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">What is your actual balance right now? (৳)</label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-3 text-slate-400 font-bold text-base">৳</span>
+                                <input type="number" step="0.01" id="adjust-target-amount" oninput="calculateAdjustDelta()" placeholder="0.00" 
+                                    class="w-full glass-input rounded-2xl pl-9 pr-4 py-3 text-sm sm:text-base font-bold text-white outline-none">
+                            </div>
+                        </div>
+
+                        <div id="adj-delta-container" class="hidden">
+                            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">Difference Amount (+ / - ৳)</label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-3 text-slate-400 font-bold text-base">৳</span>
+                                <input type="number" step="0.01" id="adjust-delta-amount" oninput="calculateAdjustTarget()" placeholder="+50 or -50" 
+                                    class="w-full glass-input rounded-2xl pl-9 pr-4 py-3 text-sm sm:text-base font-bold text-white outline-none">
+                            </div>
+                        </div>
+
+                        <div id="adjust-delta-preview-box" class="p-3 bg-sky-950/20 border border-sky-500/20 rounded-2xl text-xs flex justify-between items-center text-slate-300">
+                            <span>Adjustment Difference:</span>
+                            <span id="adjust-delta-preview" class="font-bold text-sky-300">৳ 0.00</span>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">Reason Note</label>
+                            <input type="text" id="adjust-reason" value="Balance reconciliation / physical cash adjustment" required
+                                class="w-full glass-input rounded-2xl px-4 py-3 text-xs sm:text-sm text-white outline-none">
+                        </div>
+
+                        <div class="flex gap-2.5 pt-2 text-xs font-semibold">
+                            <button type="button" onclick="closeAdjustBalanceModal()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 py-3 rounded-2xl transition border border-white/5">
+                                Cancel
+                            </button>
+                            <button type="submit" class="flex-1 bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-400 hover:to-sky-500 text-slate-950 font-bold py-3 rounded-2xl transition shadow-lg shadow-sky-500/20">
+                                Apply Adjustment
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
 
             <!-- Edit Transaction Modal -->
             <div id="edit-tx-modal" class="hidden fixed inset-0 bg-slate-950/80 z-50 flex items-center justify-center p-4 backdrop-blur-md transition-all">
@@ -1463,8 +1650,8 @@
         let isSyncingQueue = false;
         async function queueMutation(type, target, payload) {
             const queueItem = {
-                type: type, // 'insert', 'update', 'delete'
-                target: target, // 'transaction', 'dps'
+                type: type,
+                target: target,
                 payload: payload,
                 timestamp: Date.now()
             };
@@ -1960,7 +2147,6 @@
             return (2.0 * intersection) / (bg1.size + bg2.size);
         }
 
-        // Clean, elegant suggestions (Removed 90% text)
         function handleKeywordInput(inputEl, suggestionsContainerId, inputId) {
             const query = inputEl.value.trim();
             const container = document.getElementById(suggestionsContainerId);
@@ -1991,7 +2177,6 @@
                 return;
             }
 
-            // High similarity match (> 0.88) can auto-complete on Enter
             currentBestMatchSuggestion = topMatches[0].similarity >= 0.88 ? topMatches[0].keyword : null;
 
             container.innerHTML = topMatches.map((m, idx) => {
@@ -2068,7 +2253,7 @@
         }
 
         async function requestReportEmailOTP() {
-            const email = document.getElementById('new-report-email').value.trim();
+            const email = document.getElementById('new-report-email').value.trim().toLowerCase();
             if(!email || !email.includes('@')) return showTrackerToast("Please enter a valid email address.", "error");
             
             const btn = document.getElementById('btn-send-email-otp');
@@ -2081,14 +2266,21 @@
             btn.disabled = false;
 
             if(res && res.status === 'success') {
-                showTrackerToast("Verification code sent to your email!", "success");
+                showTrackerToast(res.message || "Verification code sent to your email & Telegram Bot!", "success");
                 document.getElementById('email-edit-container').classList.add('hidden');
                 document.getElementById('email-otp-container').classList.remove('hidden');
+                const otpInput = document.getElementById('email-verification-otp');
+                if (otpInput) {
+                    otpInput.value = '';
+                    otpInput.focus();
+                }
+            } else {
+                showTrackerToast("Unable to send code right now. Check internet or bot status.", "error");
             }
         }
 
         async function verifyReportEmailOTP() {
-            const email = document.getElementById('new-report-email').value.trim();
+            const email = document.getElementById('new-report-email').value.trim().toLowerCase();
             const otp = document.getElementById('email-verification-otp').value.trim();
             if(!otp || otp.length < 5) return showTrackerToast("Please enter the full code.", "error");
 
@@ -2106,6 +2298,8 @@
                 showTrackerToast("Report Delivery Email updated successfully!", "success");
                 loadVerifiedEmail();
                 cancelEmailChange();
+            } else {
+                showTrackerToast(res ? res.message : "Incorrect verification code. Please check email or Telegram.", "error");
             }
         }
 
@@ -2212,6 +2406,7 @@
             document.getElementById('expense-tracker-system').scrollTo({ top: 0, behavior: 'smooth' });
 
             if (tabId === 'reports') {
+                updateReportSummaryPreview();
                 generateAnalytics();
             }
         }
@@ -2281,20 +2476,6 @@
         }
 
         async function fetchInitialLedgerData() {
-            let txs = [];
-            let dpss = [];
-
-            // 1. Instantly load locally cached data from IndexedDB
-            try {
-                txs = await idbGetAll('transactions');
-                dpss = await idbGetAll('dps');
-                if (txs.length > 0 || dpss.length > 0) {
-                    processLedgerData(txs, dpss);
-                }
-            } catch (localErr) {
-                console.warn("Local IndexedDB read notice:", localErr);
-            }
-
             // 2. If online, fetch latest from Supabase and refresh local cache
             if (navigator.onLine) {
                 setLoadingState(true, "Loading Records...", "Fetching live ledger records from Supabase...");
@@ -2305,7 +2486,6 @@
                     if (txErr) throw txErr;
                     if (dpsErr) throw dpsErr;
 
-                    // Sync cache
                     for (const t of cloudTxs) { await idbPut('transactions', t); }
                     for (const d of cloudDpss) { await idbPut('dps', d); }
 
@@ -2345,6 +2525,17 @@
                     } else {
                         bankBal += amt;
                         bankAccs[item.source] = (bankAccs[item.source] || 0) + amt;
+                    }
+                } else if (item.type === 'Adjustment') {
+                    // Balance Adjustment directly reconciles the target account balance
+                    // CRITICAL: Does NOT count as Expense or Income anywhere!
+                    const direction = item.adjustment_direction || (item.description && item.description.startsWith('[-]') ? 'decrease' : 'increase');
+                    const delta = direction === 'decrease' ? -Math.abs(amt) : Math.abs(amt);
+                    if (item.source === 'Cash') {
+                        cashBal += delta;
+                    } else {
+                        bankBal += delta;
+                        bankAccs[item.source] = (bankAccs[item.source] || 0) + delta;
                     }
                 } else if (item.type === 'Bank_to_Current') { 
                     cashBal += amt;
@@ -2415,13 +2606,12 @@
             if (changed) saveBanks();
         }
 
-        // Smooth Counter Animation for KPI Balances
         function animateBalanceText(elementId, targetValue) {
             const el = document.getElementById(elementId);
             if (!el) return;
             el.textContent = `৳ ${targetValue.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
             el.classList.remove('animate-balancePulse');
-            void el.offsetWidth; // Force reflow to re-trigger pulse
+            void el.offsetWidth;
             el.classList.add('animate-balancePulse');
         }
 
@@ -2448,40 +2638,213 @@
             }
             renderLedgerList(); 
             calculateStudentAllowanceStatistics();
+            updateReportSummaryPreview();
             if (currentTrackerTab === 'reports') {
                 generateAnalytics();
             }
         }
 
+        // Calculates:
+        // 1. Previous Month Rest Balance (Carryover balance from prior month)
+        // 2. This Month Inflow
+        // 3. This Month Expense
+        // 4. How much saved in the month (Inflow - Expense - Fees) + Savings Rate %
+        // NOTE: 'Adjustment' is strictly omitted from living expenses and income!
         function calculateStudentAllowanceStatistics() {
-            const txs = appState.transactions, now = new Date(), currentYM = now.toISOString().substring(0, 7);
-            const lastMonth = new Date(); lastMonth.setMonth(now.getMonth() - 1); const lastYM = lastMonth.toISOString().substring(0, 7);
-            let curExp = 0, curInc = 0, lastExp = 0;
-            
+            const txs = appState.transactions;
+            const now = new Date();
+            const currentYM = now.toISOString().substring(0, 7);
+            const currentMonthStartDate = `${currentYM}-01`;
+
+            const lastMonth = new Date(); 
+            lastMonth.setMonth(now.getMonth() - 1); 
+            const lastYM = lastMonth.toISOString().substring(0, 7);
+
+            let curExp = 0, curInc = 0, curFees = 0, lastExp = 0;
+            let prevMonthRestBalance = 0;
+
             txs.forEach(t => {
-                const descLower = (t.description || '').toLowerCase().trim();
-                const isLendRet = descLower.startsWith('lend') || descLower.startsWith('return from');
-                if (!t.date || isLendRet) return; 
-                
-                const txM = String(t.date).substring(0, 7);
-                if (txM === currentYM) { 
-                    if (t.type === 'Expense') curExp += Number(t.amount); 
-                    else if (t.type === 'Deposit') curInc += Number(t.amount); 
-                } else if (txM === lastYM && t.type === 'Expense') {
-                    lastExp += Number(t.amount);
+                const amt = Number(t.amount) || 0;
+                const fee = Number(t.fee) || 0;
+                const txDate = String(t.date || '');
+
+                // Prior to this month: compute cumulative rest/carryover balance
+                if (txDate < currentMonthStartDate) {
+                    if (t.type === 'Deposit') {
+                        prevMonthRestBalance += amt;
+                    } else if (t.type === 'Expense') {
+                        prevMonthRestBalance -= amt;
+                    } else if (t.type === 'Adjustment') {
+                        const direction = t.adjustment_direction || (t.description && t.description.startsWith('[-]') ? 'decrease' : 'increase');
+                        prevMonthRestBalance += (direction === 'decrease' ? -Math.abs(amt) : Math.abs(amt));
+                    } else if (t.type === 'Bank_to_Current' || t.type === 'Cash_to_Bank' || t.type === 'Bank_to_Bank') {
+                        prevMonthRestBalance -= fee;
+                    }
+                } else if (txDate.startsWith(currentYM)) {
+                    // Inside current month — Exclude Adjustment from Income & Expense!
+                    const descLower = (t.description || '').toLowerCase().trim();
+                    const isLendRet = descLower.startsWith('lend') || descLower.startsWith('return from');
+
+                    if (t.type === 'Expense') {
+                        curExp += amt;
+                    } else if (t.type === 'Deposit') {
+                        curInc += amt;
+                    }
+                    if (fee > 0) curFees += fee;
+                } else if (txDate.startsWith(lastYM) && t.type === 'Expense') {
+                    lastExp += amt;
                 }
             });
-            
+
+            const netSavedThisMonth = curInc - curExp - curFees;
+            const savingsRate = curInc > 0 ? ((netSavedThisMonth / curInc) * 100).toFixed(1) : 0;
+
+            const prevBalEl = document.getElementById('stat-prev-month-balance');
+            if (prevBalEl) prevBalEl.textContent = `৳ ${prevMonthRestBalance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+
             document.getElementById('stat-month-expense').textContent = `৳ ${curExp.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
             document.getElementById('stat-month-income').textContent = `৳ ${curInc.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-            
+
+            const savedEl = document.getElementById('stat-month-saved');
+            const savedRateEl = document.getElementById('stat-month-saved-rate');
+            if (savedEl) {
+                savedEl.textContent = `৳ ${netSavedThisMonth.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                if (netSavedThisMonth >= 0) {
+                    savedEl.className = "text-lg lg:text-xl font-extrabold text-emerald-400";
+                    if (savedRateEl) savedRateEl.textContent = `${savingsRate}% saved of inflow`;
+                } else {
+                    savedEl.className = "text-lg lg:text-xl font-extrabold text-rose-400";
+                    if (savedRateEl) savedRateEl.textContent = `Deficit of ৳${Math.abs(netSavedThisMonth).toLocaleString()}`;
+                }
+            }
+
             const diff = curExp - lastExp;
             let text = lastExp === 0 
-                ? `You spent <strong class="text-white">৳${curExp.toLocaleString()}</strong> this month.` 
+                ? `You saved <strong class="text-amber-300">৳${netSavedThisMonth.toLocaleString()}</strong> and expended <strong class="text-white">৳${curExp.toLocaleString()}</strong> this month.` 
                 : diff > 0 
-                    ? `Spent <strong class="text-white">৳${curExp.toLocaleString()}</strong> (<strong class="text-rose-400">৳${diff.toLocaleString()} more</strong> than last month).` 
-                    : `Spent <strong class="text-white">৳${curExp.toLocaleString()}</strong> (<strong class="text-emerald-400">৳${Math.abs(diff).toLocaleString()} less</strong> than last month).`;
-            document.getElementById('stat-comparison-text').innerHTML = `<i class="fa-solid fa-brain text-brand-400 mr-1.5 animate-pulse"></i><span>${text} (Excludes lend/return from)</span>`;
+                    ? `Saved <strong class="text-amber-300">৳${netSavedThisMonth.toLocaleString()}</strong> (Spent ৳${diff.toLocaleString()} more than last month).` 
+                    : `Saved <strong class="text-amber-300">৳${netSavedThisMonth.toLocaleString()}</strong> (Spent ৳${Math.abs(diff).toLocaleString()} less than last month).`;
+            document.getElementById('stat-comparison-text').innerHTML = `<i class="fa-solid fa-brain text-brand-400 mr-1.5 animate-pulse"></i><span>${text}</span>`;
+        }
+
+        // Computes period-level metrics including previous month rest balance for reporting
+        function getPeriodFinancialSnapshot(period, customFrom, customTo) {
+            const now = new Date();
+            const currentYM = now.toISOString().substring(0, 7);
+            const lastMonthDate = new Date();
+            lastMonthDate.setMonth(now.getMonth() - 1);
+            const lastYM = lastMonthDate.toISOString().substring(0, 7);
+
+            let startDate = `${currentYM}-01`;
+            let endDate = now.toISOString().split('T')[0];
+            let periodTitle = `This Month (${currentYM})`;
+
+            if (period === 'last_month') {
+                startDate = `${lastYM}-01`;
+                const year = lastMonthDate.getFullYear();
+                const month = lastMonthDate.getMonth() + 1;
+                const lastDay = new Date(year, month, 0).getDate();
+                endDate = `${lastYM}-${String(lastDay).padStart(2, '0')}`;
+                periodTitle = `Last Month (${lastYM})`;
+            } else if (period === 'all_time') {
+                startDate = '1970-01-01';
+                endDate = '2099-12-31';
+                periodTitle = "All Time Historical";
+            } else if (period === 'custom') {
+                startDate = customFrom || `${currentYM}-01`;
+                endDate = customTo || now.toISOString().split('T')[0];
+                periodTitle = `Custom Period (${startDate} to ${endDate})`;
+            }
+
+            let prevRestBalance = 0;
+            let periodInflow = 0;
+            let periodExpense = 0;
+            let periodFees = 0;
+            let periodDps = 0;
+
+            const periodTxs = [];
+            const periodDpsList = [];
+
+            appState.transactions.forEach(t => {
+                const amt = Number(t.amount) || 0;
+                const fee = Number(t.fee) || 0;
+                const d = String(t.date || '');
+
+                if (period !== 'all_time' && d < startDate) {
+                    if (t.type === 'Deposit') prevRestBalance += amt;
+                    else if (t.type === 'Expense') prevRestBalance -= amt;
+                    else if (t.type === 'Adjustment') {
+                        const direction = t.adjustment_direction || (t.description && t.description.startsWith('[-]') ? 'decrease' : 'increase');
+                        prevRestBalance += (direction === 'decrease' ? -Math.abs(amt) : Math.abs(amt));
+                    }
+                    else if (t.type === 'Bank_to_Current' || t.type === 'Cash_to_Bank' || t.type === 'Bank_to_Bank') prevRestBalance -= fee;
+                }
+
+                if (d >= startDate && d <= endDate) {
+                    periodTxs.push(t);
+                    // Adjustments are purely balance reconciliations, not Inflow or Expense
+                    if (t.type === 'Deposit') periodInflow += amt;
+                    else if (t.type === 'Expense') periodExpense += amt;
+                    if (fee > 0) periodFees += fee;
+                }
+            });
+
+            appState.dps.forEach(d => {
+                const amt = Number(d.amount) || 0;
+                const dateStr = String(d.date || '');
+                if (dateStr >= startDate && dateStr <= endDate) {
+                    periodDpsList.push(d);
+                    periodDps += amt;
+                }
+            });
+
+            const netSaved = periodInflow - periodExpense - periodFees;
+            const endingRestBalance = prevRestBalance + netSaved;
+            const savingsRate = periodInflow > 0 ? ((netSaved / periodInflow) * 100).toFixed(1) : 0;
+
+            return {
+                period,
+                periodTitle,
+                startDate,
+                endDate,
+                prevRestBalance,
+                periodInflow,
+                periodExpense,
+                periodFees,
+                periodDps,
+                netSaved,
+                endingRestBalance,
+                savingsRate,
+                transactions: periodTxs,
+                dpsList: periodDpsList
+            };
+        }
+
+        function updateReportSummaryPreview() {
+            const period = document.getElementById('auto-report-period') ? document.getElementById('auto-report-period').value : 'this_month';
+            const from = document.getElementById('auto-report-from') ? document.getElementById('auto-report-from').value : '';
+            const to = document.getElementById('auto-report-to') ? document.getElementById('auto-report-to').value : '';
+
+            const snap = getPeriodFinancialSnapshot(period, from, to);
+
+            const prevEl = document.getElementById('report-prev-balance');
+            const inEl = document.getElementById('report-inflow');
+            const expEl = document.getElementById('report-expenses');
+            const netEl = document.getElementById('report-net-saved');
+            const endEl = document.getElementById('report-ending-balance');
+            const rateBadge = document.getElementById('report-savings-rate-badge');
+
+            if (prevEl) prevEl.textContent = `৳ ${snap.prevRestBalance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            if (inEl) inEl.textContent = `৳ ${snap.periodInflow.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            if (expEl) expEl.textContent = `৳ ${snap.periodExpense.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            if (netEl) {
+                netEl.textContent = `৳ ${snap.netSaved.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                netEl.className = snap.netSaved >= 0 ? "text-base sm:text-lg font-extrabold text-emerald-400" : "text-base sm:text-lg font-extrabold text-rose-400";
+            }
+            if (endEl) endEl.textContent = `৳ ${snap.endingRestBalance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            if (rateBadge) {
+                rateBadge.textContent = `${snap.savingsRate}% net savings rate`;
+            }
         }
 
         function parseDateTimeToEpoch(dateStr, timeStr) {
@@ -2598,6 +2961,7 @@
                 else if (filter === 'Deposit') matchesFilter = (i.type === 'Deposit');
                 else if (filter === 'Transfer') matchesFilter = (i.type === 'Bank_to_Current' || i.type === 'Cash_to_Bank' || i.type === 'Bank_to_Bank');
                 else if (filter === 'DPS') matchesFilter = (i.dbType === 'dps');
+                else if (filter === 'Adjustment') matchesFilter = (i.type === 'Adjustment');
 
                 return matchesSearch && matchesFilter;
             });
@@ -2615,6 +2979,12 @@
 
                     if (item.type === 'Expense') { c = 'text-rose-400'; s = '-'; l = 'Expense'; } 
                     else if (item.type === 'Deposit') { c = 'text-emerald-400'; s = '+'; l = 'Deposit'; } 
+                    else if (item.type === 'Adjustment') {
+                        c = 'text-sky-400'; 
+                        l = 'Adjustment';
+                        const isMinus = desc.startsWith('[-]');
+                        s = isMinus ? '−' : '+';
+                    }
                     else if (item.type === 'Bank_to_Current') { 
                         c = 'text-brand-400'; 
                         l = 'Transfer↓'; 
@@ -2699,6 +3069,7 @@
                     let c = 'text-slate-200', s = '';
                     if (i.type === 'Expense') { c = 'text-rose-400'; s = '-'; } 
                     else if (i.type === 'Deposit') { c = 'text-emerald-400'; s = '+'; } 
+                    else if (i.type === 'Adjustment') { c = 'text-sky-400'; s = (i.description && i.description.startsWith('[-]')) ? '−' : '+'; }
                     else if (i.type === 'Bank_to_Current') c = 'text-brand-400'; 
                     else if (i.type === 'Cash_to_Bank') c = 'text-teal-400'; 
                     else if (i.type === 'Bank_to_Bank') c = 'text-indigo-400';
@@ -2759,7 +3130,7 @@
             document.getElementById('custom-time-fields').classList.add('hidden');
             setTodayDateInputs(); 
         }
-        
+
         async function handleDPSSubmit(event) {
             event.preventDefault(); 
             const fd = new FormData(event.target);
@@ -2883,6 +3254,142 @@
             setTodayDateInputs(); 
         }
 
+        // ================= BALANCE ADJUSTMENT CONTROLLER =================
+        let currentAdjustMode = 'target'; // 'target' or 'delta'
+        let currentAdjustAccount = 'Cash';
+
+        function openAdjustBalanceModal() {
+            populateAdjustAccountSelect();
+            setAdjustMode('target');
+            document.getElementById('adjust-reason').value = "Balance reconciliation / physical cash adjustment";
+            document.getElementById('adjust-balance-modal').classList.remove('hidden');
+            onAdjustAccountSelected();
+        }
+
+        function closeAdjustBalanceModal() {
+            document.getElementById('adjust-balance-modal').classList.add('hidden');
+        }
+
+        function populateAdjustAccountSelect() {
+            const select = document.getElementById('adjust-account-select');
+            select.innerHTML = `<option value="Cash" class="bg-slate-900">💵 Pocket Cash Wallet</option>`;
+            bankAccounts.forEach(b => {
+                select.insertAdjacentHTML('beforeend', `<option value="${b.name}" class="bg-slate-900">🏦 ${b.name} (${b.number || 'Account'})</option>`);
+            });
+        }
+
+        function getAccountCurrentBalance(accountName) {
+            if (accountName === 'Cash') return appState.balances.cash;
+            return appState.balances.bankAccounts[accountName] || 0;
+        }
+
+        function onAdjustAccountSelected() {
+            const select = document.getElementById('adjust-account-select');
+            currentAdjustAccount = select.value;
+            const currentBal = getAccountCurrentBalance(currentAdjustAccount);
+            
+            document.getElementById('adjust-current-balance-display').textContent = `৳ ${currentBal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            
+            const targetInput = document.getElementById('adjust-target-amount');
+            targetInput.value = currentBal.toFixed(2);
+            calculateAdjustDelta();
+        }
+
+        function setAdjustMode(mode) {
+            currentAdjustMode = mode;
+            const targetBtn = document.getElementById('adj-mode-target');
+            const deltaBtn = document.getElementById('adj-mode-delta');
+            const targetContainer = document.getElementById('adj-target-container');
+            const deltaContainer = document.getElementById('adj-delta-container');
+
+            if (mode === 'target') {
+                targetBtn.className = "py-2 text-center rounded-xl bg-sky-500 text-slate-950 font-bold shadow-md transition";
+                deltaBtn.className = "py-2 text-center rounded-xl text-slate-400 hover:text-white transition";
+                targetContainer.classList.remove('hidden');
+                deltaContainer.classList.add('hidden');
+                calculateAdjustDelta();
+            } else {
+                deltaBtn.className = "py-2 text-center rounded-xl bg-sky-500 text-slate-950 font-bold shadow-md transition";
+                targetBtn.className = "py-2 text-center rounded-xl text-slate-400 hover:text-white transition";
+                deltaContainer.classList.remove('hidden');
+                targetContainer.classList.add('hidden');
+                calculateAdjustTarget();
+            }
+        }
+
+        function calculateAdjustDelta() {
+            const currentBal = getAccountCurrentBalance(currentAdjustAccount);
+            const targetVal = parseFloat(document.getElementById('adjust-target-amount').value || 0);
+            const delta = targetVal - currentBal;
+            
+            const previewEl = document.getElementById('adjust-delta-preview');
+            const sign = delta >= 0 ? '+' : '−';
+            previewEl.textContent = `${sign} ৳ ${Math.abs(delta).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            previewEl.className = delta >= 0 ? "font-bold text-emerald-400" : "font-bold text-amber-400";
+        }
+
+        function calculateAdjustTarget() {
+            const currentBal = getAccountCurrentBalance(currentAdjustAccount);
+            const deltaVal = parseFloat(document.getElementById('adjust-delta-amount').value || 0);
+            const target = currentBal + deltaVal;
+
+            const previewEl = document.getElementById('adjust-delta-preview');
+            const sign = deltaVal >= 0 ? '+' : '−';
+            previewEl.textContent = `${sign} ৳ ${Math.abs(deltaVal).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} (Target: ৳${target.toFixed(2)})`;
+            previewEl.className = deltaVal >= 0 ? "font-bold text-emerald-400" : "font-bold text-amber-400";
+        }
+
+        async function handleAdjustBalanceSubmit(event) {
+            event.preventDefault();
+            const currentBal = getAccountCurrentBalance(currentAdjustAccount);
+            let delta = 0;
+
+            if (currentAdjustMode === 'target') {
+                const targetVal = parseFloat(document.getElementById('adjust-target-amount').value || 0);
+                delta = targetVal - currentBal;
+            } else {
+                delta = parseFloat(document.getElementById('adjust-delta-amount').value || 0);
+            }
+
+            if (Math.abs(delta) < 0.001) {
+                return showTrackerToast("Target balance is already equal to current vault balance.", "error");
+            }
+
+            const now = new Date();
+            const isIncrease = delta >= 0;
+            const signPrefix = isIncrease ? '[+] ' : '[-] ';
+            const userReason = document.getElementById('adjust-reason').value.trim();
+            const fullDescription = `${signPrefix}Adjust: ${userReason} (Discrepancy: ${isIncrease ? '+' : ''}${delta.toFixed(2)})`;
+
+            const payload = {
+                id: crypto.randomUUID(),
+                date: now.toISOString().split('T')[0],
+                time: `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`,
+                type: 'Adjustment',
+                amount: Math.abs(delta),
+                adjustment_direction: isIncrease ? 'increase' : 'decrease',
+                source: currentAdjustAccount,
+                target_source: '',
+                fee: 0,
+                description: fullDescription,
+                created_at: new Date().toISOString()
+            };
+
+            closeAdjustBalanceModal();
+
+            // 1. Instant Optimistic UI Update
+            appState.transactions.unshift(payload);
+            processLedgerData(appState.transactions, appState.dps);
+
+            // 2. Cache Locally
+            await idbPut('transactions', payload);
+
+            // 3. Queue Background Sync to Cloud & Google Sheets
+            queueMutation('insert', 'transaction', payload);
+
+            showTrackerToast(`Balance adjusted by ${isIncrease ? '+' : '−'}৳${Math.abs(delta).toFixed(2)} (Neutral: not counted in Income/Expense)`, "success");
+        }
+
         function closeTxModal() { document.getElementById('edit-tx-modal').classList.add('hidden'); }
         function closeDPSModal() { document.getElementById('edit-dps-modal').classList.add('hidden'); }
         
@@ -2919,17 +3426,13 @@
             autoLearnKeyword(payload.description);
             closeTxModal();
             
-            // 1. Optimistic Instant UI Update
             const idx = appState.transactions.findIndex(t => t.id === payload.id);
             if (idx !== -1) {
                 appState.transactions[idx] = { ...appState.transactions[idx], ...payload };
                 processLedgerData(appState.transactions, appState.dps);
             }
 
-            // 2. Update IndexedDB locally
             await idbPut('transactions', payload);
-
-            // 3. Queue update
             queueMutation('update', 'transaction', payload);
 
             showTrackerToast("Updated transaction & fee instantly!", "success"); 
@@ -2953,17 +3456,13 @@
             };
             closeDPSModal(); 
             
-            // 1. Optimistic Instant UI Update
             const idx = appState.dps.findIndex(d => d.id === payload.id);
             if (idx !== -1) {
                 appState.dps[idx] = { ...appState.dps[idx], ...payload };
                 processLedgerData(appState.transactions, appState.dps);
             }
 
-            // 2. Update IndexedDB locally
             await idbPut('dps', payload);
-
-            // 3. Queue update
             queueMutation('update', 'dps', payload);
 
             showTrackerToast("DPS modified instantly!", "success"); 
@@ -2971,7 +3470,6 @@
 
         function triggerDeletionPrompt(dbType, id) {
             showConfirmModal("Delete record?", "Are you sure you want to permanently erase this?", async () => {
-                // 1. Optimistic Instant UI Update
                 if (dbType === 'transaction') {
                     appState.transactions = appState.transactions.filter(t => t.id !== id);
                 } else {
@@ -2979,11 +3477,8 @@
                 }
                 processLedgerData(appState.transactions, appState.dps);
 
-                // 2. Delete from Local DB
                 const store = dbType === 'transaction' ? 'transactions' : 'dps';
                 await idbDelete(store, id);
-
-                // 3. Queue Deletion
                 queueMutation('delete', dbType, { id });
 
                 showTrackerToast("Record wiped.", "success"); 
@@ -3034,8 +3529,110 @@
                     customRangeRow.classList.remove('grid');
                 }
             }
+            updateReportSummaryPreview();
         }
 
+        // Generates formatted text report for Telegram and Email
+        function buildFormattedReportText(type, snap, targetEmail) {
+            const datePrinted = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            let t = `🏛️ EXPENSE TRACKER FINANCIAL REPORT\n`;
+            t += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+            t += `📅 Period: ${snap.periodTitle}\n`;
+            t += `🕒 Generated: ${datePrinted}\n`;
+            t += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+
+            t += `📊 BALANCE & SAVINGS SUMMARY:\n`;
+            t += `• Rest Balance (Prev Month): ৳${snap.prevRestBalance.toLocaleString('en-US', {minimumFractionDigits: 2})}\n`;
+            t += `• Inflow Deposits (+): ৳${snap.periodInflow.toLocaleString('en-US', {minimumFractionDigits: 2})}\n`;
+            t += `• Total Expenses (-): ৳${snap.periodExpense.toLocaleString('en-US', {minimumFractionDigits: 2})}\n`;
+            if (snap.periodFees > 0) {
+                t += `• Transfer Fees (-): ৳${snap.periodFees.toLocaleString('en-US', {minimumFractionDigits: 2})}\n`;
+            }
+            if (snap.periodDps > 0) {
+                t += `• DPS Savings Deposit: ৳${snap.periodDps.toLocaleString('en-US', {minimumFractionDigits: 2})}\n`;
+            }
+            t += `────────────────────────────\n`;
+            t += `💰 NET SAVED THIS MONTH: ৳${snap.netSaved.toLocaleString('en-US', {minimumFractionDigits: 2})} (${snap.savingsRate}% of inflow)\n`;
+            t += `💼 ENDING REST BALANCE: ৳${snap.endingRestBalance.toLocaleString('en-US', {minimumFractionDigits: 2})}\n\n`;
+
+            t += `🏦 CURRENT ASSET BALANCES:\n`;
+            t += `• Cash Wallet: ৳${appState.balances.cash.toLocaleString('en-US', {minimumFractionDigits: 2})}\n`;
+            t += `• Bank Total: ৳${appState.balances.bank.toLocaleString('en-US', {minimumFractionDigits: 2})}\n`;
+            t += `• DPS Total: ৳${appState.balances.dps.toLocaleString('en-US', {minimumFractionDigits: 2})}\n`;
+
+            const bKeys = Object.keys(appState.balances.bankAccounts);
+            if (bKeys.length > 0) {
+                t += `\nAccounts Breakdown:\n`;
+                bKeys.forEach(k => {
+                    t += `  - ${k}: ৳${(appState.balances.bankAccounts[k] || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}\n`;
+                });
+            }
+
+            if (type === 'details') {
+                t += `\n📑 RECENT ENTRIES (${snap.transactions.length} records):\n`;
+                snap.transactions.slice(0, 25).forEach((item, i) => {
+                    t += `${i+1}. [${item.date}] ${item.type.toUpperCase()}: ৳${item.amount} (${item.source}) - ${item.description}\n`;
+                });
+                if (snap.transactions.length > 25) {
+                    t += `... and ${snap.transactions.length - 25} more records.\n`;
+                }
+            }
+
+            t += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+            t += `Delivered to: ${targetEmail || 'Connected Bot'}\n`;
+            t += `Expense Tracker — Smart Financial Management`;
+
+            return t;
+        }
+
+        function openReportPreviewModal() {
+            const type = document.getElementById('auto-report-type').value;
+            const period = document.getElementById('auto-report-period').value;
+            const from = document.getElementById('auto-report-from').value;
+            const to = document.getElementById('auto-report-to').value;
+            const targetEmail = localStorage.getItem('verified_report_email') || (auth.currentUser ? auth.currentUser.email : '');
+
+            const snap = getPeriodFinancialSnapshot(period, from, to);
+            const reportText = buildFormattedReportText(type, snap, targetEmail);
+
+            const area = document.getElementById('report-preview-textarea');
+            if (area) area.value = reportText;
+            document.getElementById('report-preview-modal').classList.remove('hidden');
+        }
+
+        function closeReportPreviewModal() {
+            document.getElementById('report-preview-modal').classList.add('hidden');
+        }
+
+        function copyReportPreviewText() {
+            const area = document.getElementById('report-preview-textarea');
+            if (!area) return;
+            navigator.clipboard.writeText(area.value).then(() => {
+                showTrackerToast("Report text copied to clipboard!", "success");
+            }).catch(() => {
+                area.select();
+                document.execCommand('copy');
+                showTrackerToast("Report text copied!", "success");
+            });
+        }
+
+        function shareReportToTelegram() {
+            const area = document.getElementById('report-preview-textarea');
+            if (!area) return;
+            const encoded = encodeURIComponent(area.value);
+            window.open(`https://t.me/share/url?text=${encoded}`, '_blank');
+        }
+
+        function shareReportToEmail() {
+            const area = document.getElementById('report-preview-textarea');
+            if (!area) return;
+            const targetEmail = localStorage.getItem('verified_report_email') || (auth.currentUser ? auth.currentUser.email : '');
+            const subject = encodeURIComponent("Monthly Financial Summary Report");
+            const body = encodeURIComponent(area.value);
+            window.open(`mailto:${targetEmail}?subject=${subject}&body=${body}`, '_blank');
+        }
+
+        // Fixes dispatch bug and transmits report to Telegram & Email with previous rest balance carryover
         async function sendAutomatedReport() {
             if (!navigator.onLine) {
                 return showTrackerToast("Internet connection required to dispatch reports.", "error");
@@ -3043,35 +3640,12 @@
             const type = document.getElementById('auto-report-type').value;
             const period = document.getElementById('auto-report-period').value;
             const channel = document.getElementById('auto-report-channel').value;
+            const from = document.getElementById('auto-report-from').value;
+            const to = document.getElementById('auto-report-to').value;
             const targetEmail = localStorage.getItem('verified_report_email') || (auth.currentUser ? auth.currentUser.email : '');
 
-            const now = new Date();
-            const currentYM = now.toISOString().substring(0, 7);
-            const lastMonthDate = new Date();
-            lastMonthDate.setMonth(now.getMonth() - 1);
-            const lastYM = lastMonthDate.toISOString().substring(0, 7);
-
-            let filterFn = () => true;
-            let periodTitle = "All Time Historical";
-
-            if (period === 'this_month') {
-                filterFn = (t) => t.date && t.date.startsWith(currentYM);
-                periodTitle = `This Month (${currentYM})`;
-            } else if (period === 'last_month') {
-                filterFn = (t) => t.date && t.date.startsWith(lastYM);
-                periodTitle = `Last Month (${lastYM})`;
-            } else if (period === 'custom') {
-                const from = document.getElementById('auto-report-from').value;
-                const to = document.getElementById('auto-report-to').value;
-                if (!from || !to) {
-                    return showTrackerToast("Please select both From and To dates for custom range.", "error");
-                }
-                filterFn = (t) => t.date && t.date >= from && t.date <= to;
-                periodTitle = `Custom Period (${from} to ${to})`;
-            }
-
-            const txs = appState.transactions.filter(filterFn);
-            const dpss = appState.dps.filter(filterFn);
+            const snap = getPeriodFinancialSnapshot(period, from, to);
+            const reportText = buildFormattedReportText(type, snap, targetEmail);
 
             let typeLabel = "Short Summary";
             if (type === 'details') typeLabel = "Detailed Itemized Ledger";
@@ -3084,7 +3658,7 @@
 
             showConfirmModal(
                 "Dispatch Report?",
-                `Send "${typeLabel}" for ${periodTitle} to ${channelLabel}?`,
+                `Send "${typeLabel}" for ${snap.periodTitle} to ${channelLabel}?`,
                 async () => {
                     const btn = document.getElementById('btn-dispatch-report');
                     const btnText = document.getElementById('btn-dispatch-text');
@@ -3093,53 +3667,67 @@
                     btnText.textContent = "Compiling & Transmitting Report...";
                     btn.disabled = true;
 
-                    let totalExp = 0, totalDep = 0, totalFees = 0;
-                    txs.forEach(t => {
-                        if (t.type === 'Expense') totalExp += Number(t.amount);
-                        else if (t.type === 'Deposit') totalDep += Number(t.amount);
-                        if (t.fee) totalFees += Number(t.fee);
-                    });
+                    const now = new Date();
+                    const monthArg = period === 'last_month' 
+                        ? new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().substring(0, 7)
+                        : now.toISOString().substring(0, 7);
 
                     const payload = {
+                        action: 'generateReport',
+                        month: monthArg,
+                        email: targetEmail,
+                        channel: channel,
                         reportType: type,
                         reportTypeLabel: typeLabel,
                         period: period,
-                        periodTitle: periodTitle,
-                        channel: channel,
-                        email: targetEmail,
+                        periodTitle: snap.periodTitle,
+                        reportText: reportText,
+                        summaryText: reportText,
+                        message: reportText,
+                        openingBalance: snap.prevRestBalance,
+                        previousMonthRestBalance: snap.prevRestBalance,
+                        monthlySavings: snap.netSaved,
+                        totalIncome: snap.periodInflow,
+                        totalExpense: snap.periodExpense,
+                        totalFees: snap.periodFees,
+                        endingRestBalance: snap.endingRestBalance,
                         summary: {
-                            totalIncome: totalDep,
-                            totalExpense: totalExp,
-                            totalFees: totalFees,
-                            netSavings: totalDep - totalExp - totalFees,
+                            previousMonthRestBalance: snap.prevRestBalance,
+                            totalIncome: snap.periodInflow,
+                            totalExpense: snap.periodExpense,
+                            totalFees: snap.periodFees,
+                            netSavings: snap.netSaved,
+                            endingRestBalance: snap.endingRestBalance,
+                            savingsRate: snap.savingsRate,
                             cashBalance: appState.balances.cash,
                             bankBalance: appState.balances.bank,
                             dpsBalance: appState.balances.dps,
-                            totalRecordsCount: txs.length + dpss.length
+                            totalRecordsCount: snap.transactions.length + snap.dpsList.length
                         },
                         bankBalances: appState.balances.bankAccounts,
-                        transactions: txs.slice(0, 100),
-                        dpsEntries: dpss
+                        transactions: snap.transactions.slice(0, 50),
+                        dpsEntries: snap.dpsList
                     };
 
-                    setLoadingState(true, "Dispatching Report...", `Transmitting ${typeLabel} via ${channel}...`);
+                    setLoadingState(true, "Dispatching Report...", `Transmitting report via ${channelLabel}...`);
+
                     try {
-                        const res = await runRemoteAPI('dispatchCustomReport', payload);
+                        let res = await runRemoteAPI('generateReport', payload);
+                        
+                        if (!res || res.status !== 'success') {
+                            res = await runRemoteAPI('dispatchCustomReport', payload);
+                        }
+
                         if (res && res.status === 'success') {
-                            showTrackerToast(`Report successfully dispatched via ${channelLabel}!`, "success");
+                            showTrackerToast(`Report successfully dispatched to ${channelLabel}!`, "success");
                         } else {
-                            const fallbackRes = await runRemoteAPI('generateReport', {
-                                month: period === 'last_month' ? lastYM : currentYM,
-                                email: targetEmail,
-                                reportType: type,
-                                channel: channel
-                            });
-                            if (fallbackRes) {
-                                showTrackerToast(`Report dispatched via ${channelLabel}!`, "success");
-                            }
+                            showTrackerToast("Report ready! Opening preview for 1-tap direct share.", "success");
+                            openReportPreviewModal();
                         }
                     } catch (err) {
-                        showTrackerToast(`Failed to send report: ${err.message}`, "error");
+                        console.warn("Backend report transmission note:", err);
+                        showTrackerToast("Opening preview for 1-tap direct Telegram/Email delivery.", "success");
+                        openReportPreviewModal();
                     } finally {
                         btnText.textContent = originalText;
                         btn.disabled = false;
@@ -3418,7 +4006,25 @@
         window.handleKeywordKeydown = handleKeywordKeydown;
         window.selectSuggestedKeyword = selectSuggestedKeyword;
         window.onReportPeriodChange = onReportPeriodChange;
+        window.updateReportSummaryPreview = updateReportSummaryPreview;
         window.sendAutomatedReport = sendAutomatedReport;
+        window.openReportPreviewModal = openReportPreviewModal;
+        window.closeReportPreviewModal = closeReportPreviewModal;
+        window.copyReportPreviewText = copyReportPreviewText;
+        window.shareReportToTelegram = shareReportToTelegram;
+        window.shareReportToEmail = shareReportToEmail;
+        window.openAdjustBalanceModal = openAdjustBalanceModal;
+        window.closeAdjustBalanceModal = closeAdjustBalanceModal;
+        window.onAdjustAccountSelected = onAdjustAccountSelected;
+        window.setAdjustMode = setAdjustMode;
+        window.calculateAdjustDelta = calculateAdjustDelta;
+        window.calculateAdjustTarget = calculateAdjustTarget;
+        window.handleAdjustBalanceSubmit = handleAdjustBalanceSubmit;
     </script>
 </body>
 </html>
+
+
+
+
+
