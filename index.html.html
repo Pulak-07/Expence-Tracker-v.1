@@ -1549,14 +1549,14 @@
 
         // Firebase configuration
         const firebaseConfig = {
-    apiKey: "AIzaSyCkLksu1JcBUoTU5M_N5TQfHnPJKLWS7y8",
-    authDomain: "expence-tracker-64440.firebaseapp.com",
-    projectId: "expence-tracker-64440",
-    storageBucket: "expence-tracker-64440.firebasestorage.app",
-    messagingSenderId: "638836488723",
-    appId: "1:638836488723:web:bbf27257d382acc5a4dde6",
-    measurementId: "G-K5KJJQZEDG"
-  };
+            apiKey: "AIzaSyCkLksu1JcBUoTU5M_N5TQfHnPJKLWS7y8",
+            authDomain: "expence-tracker-64440.firebaseapp.com",
+            projectId: "expence-tracker-64440",
+            storageBucket: "expence-tracker-64440.firebasestorage.app",
+            messagingSenderId: "638836488723",
+            appId: "1:638836488723:web:bbf27257d382acc5a4dde6",
+            measurementId: "G-K5KJJQZEDG"
+        };
 
         const firebaseApp = initializeApp(firebaseConfig);
         const auth = getAuth(firebaseApp);
@@ -1674,37 +1674,61 @@
                 for (const item of queue) {
                     try {
                         const table = item.target === 'transaction' ? 'transactions' : 'dps';
-                        
+                        let dbPayload = { ...item.payload };
+
+                        // Normalize columns strictly for Supabase PostgreSQL schema
+                        if (item.target === 'dps') {
+                            const matDate = item.payload.maturity_date || item.payload.maturityDate;
+                            dbPayload = {
+                                id: String(item.payload.id),
+                                amount: Number(item.payload.amount) || 0,
+                                installment_no: String(item.payload.installment_no || item.payload.installmentNo || ''),
+                                note: String(item.payload.note || ''),
+                                date: item.payload.date,
+                                bank: String(item.payload.bank || ''),
+                                ac_no: String(item.payload.ac_no || item.payload.acNo || ''),
+                                maturity_date: (matDate && String(matDate).trim() !== '') ? matDate : null,
+                                created_at: item.payload.created_at || item.payload.timestamp || new Date().toISOString()
+                            };
+                            delete dbPayload.installmentNo;
+                            delete dbPayload.acNo;
+                            delete dbPayload.maturityDate;
+                        }
+
                         if (item.type === 'insert') {
-                            const { error } = await supabase.from(table).upsert([item.payload], { onConflict: 'id' });
-                            if (!error) {
-                                if (item.target === 'transaction') {
-                                    runRemoteAPISilent('addTransaction', item.payload);
-                                } else {
-                                    runRemoteAPISilent('addDPS', item.payload);
-                                }
-                                await idbDelete('syncQueue', item.queueId);
+                            const { error } = await supabase.from(table).upsert([dbPayload], { onConflict: 'id' });
+                            if (error) {
+                                console.error("Supabase insert error for " + table, error);
+                                throw error;
                             }
+                            if (item.target === 'transaction') {
+                                runRemoteAPISilent('addTransaction', item.payload);
+                            } else {
+                                runRemoteAPISilent('addDPS', item.payload);
+                            }
+                            await idbDelete('syncQueue', item.queueId);
                         } else if (item.type === 'update') {
-                            const { error } = await supabase.from(table).update(item.payload).eq('id', item.payload.id);
-                            if (!error) {
-                                if (item.target === 'transaction') {
-                                    runRemoteAPISilent('editTransaction', item.payload);
-                                } else {
-                                    runRemoteAPISilent('editDPS', item.payload);
-                                }
-                                await idbDelete('syncQueue', item.queueId);
+                            const { error } = await supabase.from(table).update(dbPayload).eq('id', dbPayload.id);
+                            if (error) {
+                                console.error("Supabase update error for " + table, error);
+                                throw error;
                             }
+                            if (item.target === 'transaction') {
+                                runRemoteAPISilent('editTransaction', item.payload);
+                            } else {
+                                runRemoteAPISilent('editDPS', item.payload);
+                            }
+                            await idbDelete('syncQueue', item.queueId);
                         } else if (item.type === 'delete') {
                             const { error } = await supabase.from(table).delete().eq('id', item.payload.id);
-                            if (!error) {
-                                const action = item.target === 'transaction' ? 'deleteTransaction' : 'deleteDPS';
-                                runRemoteAPISilent(action, { id: item.payload.id });
-                                await idbDelete('syncQueue', item.queueId);
-                            }
+                            if (error) throw error;
+                            const action = item.target === 'transaction' ? 'deleteTransaction' : 'deleteDPS';
+                            runRemoteAPISilent(action, { id: item.payload.id });
+                            await idbDelete('syncQueue', item.queueId);
                         }
                     } catch (e) {
                         console.warn("Queue item sync deferred:", e);
+                        break;
                     }
                 }
             } catch (err) {
@@ -1735,7 +1759,7 @@
             sessionStorage.removeItem('otp_verified_studybuddy');
         }
 
-        const API_URL = "https://script.google.com/macros/s/AKfycbzKDpxBObwL_AJhXb4tbQedlopCQjKP3CEXQo26El9n39Ofb3j-z2r2OwOHyqC_UXED/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbwq5FgUlQeGocf5qkRM1UAhiNV7YZnBdmw4YQgm1_pEf4JQr39hGShklHyYa5D0I8w/exec";
         
         async function runRemoteAPI(action, payload) {
             if (!navigator.onLine) {
@@ -2077,6 +2101,7 @@
 
         let appState = { transactions: [], dps: [], balances: { cash: 0, bank: 0, dps: 0, bankAccounts: {} } };
         let bankAccounts = []; 
+        let deletedBankNames = new Set();
         let currentTrackerTab = 'home';
         let confirmingCallback = null;
         let analyticsPieChart = null;
@@ -2224,11 +2249,27 @@
             startClockService();
             updateNetworkStatusIndicator();
             loadKeywordDictionary();
+            loadDeletedBanks();
             loadLocalBanks();
             setTodayDateInputs();
             loadVerifiedEmail();
             await openIndexedDatabase();
             fetchInitialLedgerData();
+        }
+
+        function loadDeletedBanks() {
+            const saved = localStorage.getItem('pocket_deleted_banks');
+            if (saved) {
+                try {
+                    deletedBankNames = new Set(JSON.parse(saved).map(s => String(s).toLowerCase().trim()));
+                } catch(e) {
+                    deletedBankNames = new Set();
+                }
+            }
+        }
+
+        function saveDeletedBanks() {
+            localStorage.setItem('pocket_deleted_banks', JSON.stringify(Array.from(deletedBankNames)));
         }
 
         function loadVerifiedEmail() {
@@ -2306,16 +2347,41 @@
         function loadLocalBanks() {
             const saved = localStorage.getItem('pocket_banks');
             if (saved) {
-                bankAccounts = JSON.parse(saved);
+                try {
+                    const raw = JSON.parse(saved);
+                    const seen = new Set();
+                    bankAccounts = [];
+                    raw.forEach(b => {
+                        if (!b || !b.name) return;
+                        const norm = b.name.trim().toLowerCase();
+                        if (!seen.has(norm)) {
+                            seen.add(norm);
+                            bankAccounts.push({ name: b.name.trim(), number: b.number || "Account" });
+                        }
+                    });
+                } catch(e) {
+                    bankAccounts = [];
+                }
             } else {
                 bankAccounts = [];
-                localStorage.setItem('pocket_banks', JSON.stringify(bankAccounts));
             }
+            localStorage.setItem('pocket_banks', JSON.stringify(bankAccounts));
             populateBankSelectors();
             renderSetupBanks();
         }
 
         function saveBanks() {
+            const seen = new Set();
+            const unique = [];
+            bankAccounts.forEach(b => {
+                if (!b || !b.name) return;
+                const norm = b.name.trim().toLowerCase();
+                if (!seen.has(norm)) {
+                    seen.add(norm);
+                    unique.push({ name: b.name.trim(), number: b.number || "Account" });
+                }
+            });
+            bankAccounts = unique;
             localStorage.setItem('pocket_banks', JSON.stringify(bankAccounts));
             populateBankSelectors(); 
             renderSetupBanks(); 
@@ -2329,19 +2395,19 @@
             const editSourceDropdown = document.getElementById('edit_tx_source_dropdown');
             const editDestDropdown = document.getElementById('edit_tx_target_dropdown');
             
-            addDropdown.innerHTML = ''; 
-            transSourceDropdown.innerHTML = '';
-            transDestDropdown.innerHTML = '';
-            editSourceDropdown.innerHTML = `<option value="Cash" class="bg-slate-900">💵 Pocket Cash</option>`;
-            editDestDropdown.innerHTML = `<option value="Cash" class="bg-slate-900">💵 Pocket Cash</option>`;
+            if (addDropdown) addDropdown.innerHTML = ''; 
+            if (transSourceDropdown) transSourceDropdown.innerHTML = '';
+            if (transDestDropdown) transDestDropdown.innerHTML = '';
+            if (editSourceDropdown) editSourceDropdown.innerHTML = `<option value="Cash" class="bg-slate-900">💵 Pocket Cash</option>`;
+            if (editDestDropdown) editDestDropdown.innerHTML = `<option value="Cash" class="bg-slate-900">💵 Pocket Cash</option>`;
 
             bankAccounts.forEach(b => {
                 const opt = `<option value="${b.name}" class="bg-slate-900">${b.name} (${b.number})</option>`;
-                addDropdown.insertAdjacentHTML('beforeend', opt);
-                transSourceDropdown.insertAdjacentHTML('beforeend', opt);
-                transDestDropdown.insertAdjacentHTML('beforeend', opt);
-                editSourceDropdown.insertAdjacentHTML('beforeend', `<option value="${b.name}" class="bg-slate-900">🏦 ${b.name}</option>`);
-                editDestDropdown.insertAdjacentHTML('beforeend', `<option value="${b.name}" class="bg-slate-900">🏦 ${b.name}</option>`);
+                if (addDropdown) addDropdown.insertAdjacentHTML('beforeend', opt);
+                if (transSourceDropdown) transSourceDropdown.insertAdjacentHTML('beforeend', opt);
+                if (transDestDropdown) transDestDropdown.insertAdjacentHTML('beforeend', opt);
+                if (editSourceDropdown) editSourceDropdown.insertAdjacentHTML('beforeend', `<option value="${b.name}" class="bg-slate-900">🏦 ${b.name}</option>`);
+                if (editDestDropdown) editDestDropdown.insertAdjacentHTML('beforeend', `<option value="${b.name}" class="bg-slate-900">🏦 ${b.name}</option>`);
             });
         }
 
@@ -2476,7 +2542,6 @@
         }
 
         async function fetchInitialLedgerData() {
-            // 2. If online, fetch latest from Supabase and refresh local cache
             if (navigator.onLine) {
                 setLoadingState(true, "Loading Records...", "Fetching live ledger records from Supabase...");
                 try {
@@ -2492,19 +2557,40 @@
                     processLedgerData(cloudTxs, cloudDpss);
                 } catch (err) {
                     console.error("Cloud fetch notice:", err);
-                    if (txs.length === 0 && dpss.length === 0) {
+                    const localTxs = await idbGetAll('transactions');
+                    const localDpss = await idbGetAll('dps');
+                    if (localTxs.length > 0 || localDpss.length > 0) {
+                        processLedgerData(localTxs, localDpss);
+                    } else {
                         showTrackerToast("Could not retrieve ledger from database.", "error");
                     }
                 } finally {
                     setLoadingState(false);
                 }
+            } else {
+                const localTxs = await idbGetAll('transactions');
+                const localDpss = await idbGetAll('dps');
+                processLedgerData(localTxs, localDpss);
             }
         }
 
         // Synchronously recompute running balances from transaction & DPS arrays
         function processLedgerData(txs, dpss) {
-            let cashBal = 0, bankBal = 0, dpsBal = 0;
+            let cashBal = 0, dpsBal = 0;
             let bankAccs = {};
+
+            // Initialize all known active bank cards to 0.00
+            bankAccounts.forEach(b => {
+                bankAccs[b.name] = 0;
+            });
+
+            // Helper to get or create normalized bank account entry
+            const getBankKey = (rawSource) => {
+                if (!rawSource) return 'Bank';
+                const trimmed = rawSource.trim();
+                const matched = bankAccounts.find(b => b.name.toLowerCase() === trimmed.toLowerCase());
+                return matched ? matched.name : trimmed;
+            };
 
             const formattedTxs = (txs || []).map(item => {
                 const amt = Number(item.amount) || 0;
@@ -2512,79 +2598,83 @@
 
                 if (item.description) autoLearnKeyword(item.description);
 
+                const srcKey = item.source === 'Cash' ? 'Cash' : getBankKey(item.source);
+                const tgtKey = item.target_source ? (item.target_source === 'Cash' ? 'Cash' : getBankKey(item.target_source)) : '';
+
                 if (item.type === 'Expense') {
-                    if (item.source === 'Cash') {
+                    if (srcKey === 'Cash') {
                         cashBal -= amt;
                     } else {
-                        bankBal -= amt;
-                        bankAccs[item.source] = (bankAccs[item.source] || 0) - amt;
+                        bankAccs[srcKey] = (bankAccs[srcKey] || 0) - amt;
                     }
                 } else if (item.type === 'Deposit') {
-                    if (item.source === 'Cash') {
+                    if (srcKey === 'Cash') {
                         cashBal += amt;
                     } else {
-                        bankBal += amt;
-                        bankAccs[item.source] = (bankAccs[item.source] || 0) + amt;
+                        bankAccs[srcKey] = (bankAccs[srcKey] || 0) + amt;
                     }
                 } else if (item.type === 'Adjustment') {
-                    // Balance Adjustment directly reconciles the target account balance
-                    // CRITICAL: Does NOT count as Expense or Income anywhere!
                     const direction = item.adjustment_direction || (item.description && item.description.startsWith('[-]') ? 'decrease' : 'increase');
                     const delta = direction === 'decrease' ? -Math.abs(amt) : Math.abs(amt);
-                    if (item.source === 'Cash') {
+                    if (srcKey === 'Cash') {
                         cashBal += delta;
                     } else {
-                        bankBal += delta;
-                        bankAccs[item.source] = (bankAccs[item.source] || 0) + delta;
+                        bankAccs[srcKey] = (bankAccs[srcKey] || 0) + delta;
                     }
                 } else if (item.type === 'Bank_to_Current') { 
                     cashBal += amt;
-                    bankBal -= (amt + fee);
-                    if (item.source !== 'Cash') {
-                        bankAccs[item.source] = (bankAccs[item.source] || 0) - (amt + fee);
+                    if (srcKey !== 'Cash') {
+                        bankAccs[srcKey] = (bankAccs[srcKey] || 0) - (amt + fee);
                     }
                 } else if (item.type === 'Cash_to_Bank') {
                     cashBal -= (amt + fee);
-                    bankBal += amt;
-                    if (item.source !== 'Cash') {
-                        bankAccs[item.source] = (bankAccs[item.source] || 0) + amt;
+                    if (srcKey !== 'Cash') {
+                        bankAccs[srcKey] = (bankAccs[srcKey] || 0) + amt;
                     }
                 } else if (item.type === 'Bank_to_Bank') {
-                    const targetBank = item.target_source || item.target || 'Bank';
-                    bankBal -= fee;
-                    bankAccs[item.source] = (bankAccs[item.source] || 0) - (amt + fee);
-                    bankAccs[targetBank] = (bankAccs[targetBank] || 0) + amt;
+                    bankAccs[srcKey] = (bankAccs[srcKey] || 0) - (amt + fee);
+                    bankAccs[tgtKey || 'Bank'] = (bankAccs[tgtKey || 'Bank'] || 0) + amt;
                 }
 
                 return { 
                     ...item, 
                     amount: amt, 
                     fee: fee, 
-                    target_source: item.target_source || item.target || '',
+                    source: srcKey,
+                    target_source: tgtKey,
                     timestamp: item.created_at || item.timestamp || new Date().toISOString()
                 };
+            });
+
+            // Ensure bank balance strictly matches the exact sum of all active bank account cards
+            let computedTotalBank = 0;
+            bankAccounts.forEach(b => {
+                computedTotalBank += (bankAccs[b.name] || 0);
             });
 
             const formattedDps = (dpss || []).map(item => {
                 const amt = Number(item.amount) || 0;
                 dpsBal += amt;
                 return { 
-                    id: item.id, 
+                    id: String(item.id), 
                     amount: amt, 
                     installmentNo: item.installment_no || item.installmentNo || '', 
+                    installment_no: item.installment_no || item.installmentNo || '', 
                     note: item.note || '', 
                     date: item.date, 
                     timestamp: item.created_at || item.timestamp || new Date().toISOString(), 
                     bank: item.bank || '', 
                     acNo: item.ac_no || item.acNo || '', 
-                    maturityDate: item.maturity_date || item.maturityDate || '' 
+                    ac_no: item.ac_no || item.acNo || '', 
+                    maturityDate: item.maturity_date || item.maturityDate || '',
+                    maturity_date: item.maturity_date || item.maturityDate || ''
                 };
             });
 
             appState = {
                 transactions: formattedTxs,
                 dps: formattedDps,
-                balances: { cash: cashBal, bank: bankBal, dps: dpsBal, bankAccounts: bankAccs }
+                balances: { cash: cashBal, bank: computedTotalBank, dps: dpsBal, bankAccounts: bankAccs }
             };
 
             detectAndAddMissingBanks(); 
@@ -2593,13 +2683,20 @@
 
         function detectAndAddMissingBanks() {
             let changed = false;
+            const isKnown = (name) => {
+                if (!name || name.trim() === '' || name.toLowerCase() === 'cash' || name.toLowerCase() === 'bank') return true;
+                const lower = name.trim().toLowerCase();
+                if (deletedBankNames.has(lower)) return true; // Don't resurrect deleted banks!
+                return bankAccounts.some(b => b.name.trim().toLowerCase() === lower);
+            };
+
             appState.transactions.forEach(t => {
-                if (t.source && t.source !== 'Cash' && t.source !== 'Bank' && !bankAccounts.some(b => b.name === t.source)) {
-                    bankAccounts.push({ name: t.source, number: "Discovered Account" }); 
+                if (t.source && !isKnown(t.source)) {
+                    bankAccounts.push({ name: t.source.trim(), number: "Discovered Account" }); 
                     changed = true;
                 }
-                if (t.target_source && t.target_source !== 'Cash' && t.target_source !== 'Bank' && !bankAccounts.some(b => b.name === t.target_source)) {
-                    bankAccounts.push({ name: t.target_source, number: "Discovered Account" }); 
+                if (t.target_source && !isKnown(t.target_source)) {
+                    bankAccounts.push({ name: t.target_source.trim(), number: "Discovered Account" }); 
                     changed = true;
                 }
             });
@@ -2644,12 +2741,6 @@
             }
         }
 
-        // Calculates:
-        // 1. Previous Month Rest Balance (Carryover balance from prior month)
-        // 2. This Month Inflow
-        // 3. This Month Expense
-        // 4. How much saved in the month (Inflow - Expense - Fees) + Savings Rate %
-        // NOTE: 'Adjustment' is strictly omitted from living expenses and income!
         function calculateStudentAllowanceStatistics() {
             const txs = appState.transactions;
             const now = new Date();
@@ -2668,7 +2759,6 @@
                 const fee = Number(t.fee) || 0;
                 const txDate = String(t.date || '');
 
-                // Prior to this month: compute cumulative rest/carryover balance
                 if (txDate < currentMonthStartDate) {
                     if (t.type === 'Deposit') {
                         prevMonthRestBalance += amt;
@@ -2681,10 +2771,6 @@
                         prevMonthRestBalance -= fee;
                     }
                 } else if (txDate.startsWith(currentYM)) {
-                    // Inside current month — Exclude Adjustment from Income & Expense!
-                    const descLower = (t.description || '').toLowerCase().trim();
-                    const isLendRet = descLower.startsWith('lend') || descLower.startsWith('return from');
-
                     if (t.type === 'Expense') {
                         curExp += amt;
                     } else if (t.type === 'Deposit') {
@@ -2727,7 +2813,6 @@
             document.getElementById('stat-comparison-text').innerHTML = `<i class="fa-solid fa-brain text-brand-400 mr-1.5 animate-pulse"></i><span>${text}</span>`;
         }
 
-        // Computes period-level metrics including previous month rest balance for reporting
         function getPeriodFinancialSnapshot(period, customFrom, customTo) {
             const now = new Date();
             const currentYM = now.toISOString().substring(0, 7);
@@ -2782,7 +2867,6 @@
 
                 if (d >= startDate && d <= endDate) {
                     periodTxs.push(t);
-                    // Adjustments are purely balance reconciliations, not Inflow or Expense
                     if (t.type === 'Deposit') periodInflow += amt;
                     else if (t.type === 'Expense') periodExpense += amt;
                     if (fee > 0) periodFees += fee;
@@ -2886,6 +2970,8 @@
             }));
 
             appState.dps.forEach(d => {
+                const instText = d.installmentNo || d.installment_no || '';
+                const acText = d.acNo || d.ac_no ? `(A/C: ${d.acNo || d.ac_no})` : '';
                 j.push({
                     masterId: d.id, 
                     dbType: 'dps', 
@@ -2896,7 +2982,7 @@
                     target_source: '',
                     amount: d.amount, 
                     fee: 0,
-                    description: `DPS Deposit: ${d.installmentNo} ${d.acNo ? `(A/C: ${d.acNo})` : ''}`, 
+                    description: `DPS Deposit: ${instText} ${acText}`.trim(), 
                     timestamp: d.timestamp,
                     epoch: parseDateTimeToEpoch(d.date, '12:00')
                 });
@@ -3114,14 +3200,10 @@
                 created_at: new Date().toISOString()
             };
 
-            // 1. Optimistic Instant UI Update (Zero Delay)
             appState.transactions.unshift(payload);
             processLedgerData(appState.transactions, appState.dps);
 
-            // 2. Instant Local Storage Save
             await idbPut('transactions', payload);
-            
-            // 3. Queue Background Sync to Cloud & Sheets
             queueMutation('insert', 'transaction', payload);
 
             showTrackerToast(navigator.onLine ? "Transaction saved instantly!" : "Saved locally (Offline Vault)!", "success"); 
@@ -3134,28 +3216,29 @@
         async function handleDPSSubmit(event) {
             event.preventDefault(); 
             const fd = new FormData(event.target);
+            const rawMaturity = fd.get('dps_maturity');
+            const cleanMaturity = (rawMaturity && String(rawMaturity).trim() !== '') ? String(rawMaturity).trim() : null;
+
             const payload = { 
                 id: crypto.randomUUID(),
                 amount: parseFloat(fd.get('dps_amount')), 
-                installment_no: fd.get('dps_installment'), 
+                installment_no: fd.get('dps_installment') || '', 
+                installmentNo: fd.get('dps_installment') || '', 
                 note: fd.get('dps_note') || "", 
                 date: fd.get('dps_date'),
                 bank: fd.get('dps_bank') || "",
                 ac_no: fd.get('dps_ac_no') || "",
-                maturity_date: fd.get('dps_maturity') || null,
+                acNo: fd.get('dps_ac_no') || "",
+                maturity_date: cleanMaturity,
+                maturityDate: cleanMaturity,
                 created_at: new Date().toISOString()
             };
             
-            // 1. Optimistic Instant UI Update
             appState.dps.unshift(payload);
             processLedgerData(appState.transactions, appState.dps);
 
-            // 2. Instant Local Storage Save
             await idbPut('dps', payload);
-
-            // 3. Queue Background Sync
-            const sheetsPayload = { ...payload, installmentNo: payload.installment_no, acNo: payload.ac_no, maturityDate: payload.maturity_date };
-            queueMutation('insert', 'dps', sheetsPayload);
+            queueMutation('insert', 'dps', payload);
 
             showTrackerToast(navigator.onLine ? "DPS installment logged instantly!" : "DPS saved locally (Offline Vault)!", "success"); 
             event.target.reset();
@@ -3236,14 +3319,10 @@
 
             autoLearnKeyword(payload.description);
             
-            // 1. Optimistic Instant UI Update
             appState.transactions.unshift(payload);
             processLedgerData(appState.transactions, appState.dps);
 
-            // 2. Instant Local Storage Save
             await idbPut('transactions', payload);
-
-            // 3. Queue Background Sync
             queueMutation('insert', 'transaction', payload);
 
             showTrackerToast(navigator.onLine ? `Transfer logged! (Fee: ৳${payload.fee})` : `Transfer saved locally! (Fee: ৳${payload.fee})`, "success"); 
@@ -3255,7 +3334,7 @@
         }
 
         // ================= BALANCE ADJUSTMENT CONTROLLER =================
-        let currentAdjustMode = 'target'; // 'target' or 'delta'
+        let currentAdjustMode = 'target';
         let currentAdjustAccount = 'Cash';
 
         function openAdjustBalanceModal() {
@@ -3377,14 +3456,10 @@
 
             closeAdjustBalanceModal();
 
-            // 1. Instant Optimistic UI Update
             appState.transactions.unshift(payload);
             processLedgerData(appState.transactions, appState.dps);
 
-            // 2. Cache Locally
             await idbPut('transactions', payload);
-
-            // 3. Queue Background Sync to Cloud & Google Sheets
             queueMutation('insert', 'transaction', payload);
 
             showTrackerToast(`Balance adjusted by ${isIncrease ? '+' : '−'}৳${Math.abs(delta).toFixed(2)} (Neutral: not counted in Income/Expense)`, "success");
@@ -3441,18 +3516,21 @@
         async function handleDPSEditSubmit(e) {
             e.preventDefault(); 
             const f = e.target;
+            const rawMaturity = f.edit_dps_maturity.value;
+            const cleanMaturity = (rawMaturity && String(rawMaturity).trim() !== '') ? String(rawMaturity).trim() : null;
+
             const payload = { 
                 id: f.edit_dps_id.value, 
                 amount: parseFloat(f.edit_dps_amount.value), 
-                installment_no: f.edit_dps_installment.value, 
-                installmentNo: f.edit_dps_installment.value, 
-                note: f.edit_dps_note.value, 
+                installment_no: f.edit_dps_installment.value || '', 
+                installmentNo: f.edit_dps_installment.value || '', 
+                note: f.edit_dps_note.value || '', 
                 date: f.edit_dps_date.value,
-                bank: f.edit_dps_bank.value,
-                ac_no: f.edit_dps_ac_no.value,
-                acNo: f.edit_dps_ac_no.value,
-                maturity_date: f.edit_dps_maturity.value || null,
-                maturityDate: f.edit_dps_maturity.value || null
+                bank: f.edit_dps_bank.value || '',
+                ac_no: f.edit_dps_ac_no.value || '',
+                acNo: f.edit_dps_ac_no.value || '',
+                maturity_date: cleanMaturity,
+                maturityDate: cleanMaturity
             };
             closeDPSModal(); 
             
@@ -3505,14 +3583,15 @@
             } else {
                 const f = document.getElementById('edit-dps-form');
                 const dpsItem = appState.dps.find(d => d.id === id);
+                if (!dpsItem) return;
                 f.edit_dps_id.value = item.masterId;
                 f.edit_dps_bank.value = dpsItem.bank || "";
-                f.edit_dps_ac_no.value = dpsItem.acNo || "";
+                f.edit_dps_ac_no.value = dpsItem.acNo || dpsItem.ac_no || "";
                 f.edit_dps_amount.value = dpsItem.amount;
-                f.edit_dps_installment.value = dpsItem.installmentNo;
+                f.edit_dps_installment.value = dpsItem.installmentNo || dpsItem.installment_no || "";
                 f.edit_dps_note.value = dpsItem.note || "";
                 f.edit_dps_date.value = dpsItem.date;
-                f.edit_dps_maturity.value = dpsItem.maturityDate || "";
+                f.edit_dps_maturity.value = dpsItem.maturityDate || dpsItem.maturity_date || "";
                 document.getElementById('edit-dps-modal').classList.remove('hidden');
             }
         }
@@ -3632,7 +3711,6 @@
             window.open(`mailto:${targetEmail}?subject=${subject}&body=${body}`, '_blank');
         }
 
-        // Fixes dispatch bug and transmits report to Telegram & Email with previous rest balance carryover
         async function sendAutomatedReport() {
             if (!navigator.onLine) {
                 return showTrackerToast("Internet connection required to dispatch reports.", "error");
@@ -3834,42 +3912,57 @@
 
         function handleBankCreate(e) {
             e.preventDefault(); 
-            const name = document.getElementById('new-bank-name').value.trim();
-            const number = document.getElementById('new-bank-number').value.trim();
+            const nameInput = document.getElementById('new-bank-name');
+            const numberInput = document.getElementById('new-bank-number');
+            const name = (nameInput.value || '').trim();
+            const number = (numberInput.value || '').trim();
             
             if (!name) return showTrackerToast("Bank name is required.", "error");
             
-            const duplicateIdx = bankAccounts.findIndex(b => b.name.toLowerCase() === name.toLowerCase());
+            const duplicateIdx = bankAccounts.findIndex(b => b.name.trim().toLowerCase() === name.toLowerCase());
             if (duplicateIdx !== -1 && duplicateIdx !== editingBankIndex) {
-                return showTrackerToast("Bank already exists.", "error");
+                return showTrackerToast("An account with this name already exists.", "error");
             }
+
+            // If previously in deleted banks tombstone list, allow re-addition
+            deletedBankNames.delete(name.toLowerCase());
+            saveDeletedBanks();
             
             if (editingBankIndex > -1) {
-                bankAccounts[editingBankIndex] = { name, number };
+                bankAccounts[editingBankIndex] = { name, number: number || "Account" };
                 showTrackerToast("Account updated successfully.", "success");
                 editingBankIndex = -1;
                 document.getElementById('bank-submit-btn').textContent = "Add Account Card";
             } else {
-                bankAccounts.push({ name, number }); 
-                showTrackerToast("Account created successfully.", "success");
+                bankAccounts.push({ name, number: number || "Account" }); 
+                showTrackerToast(`Added ${name} account card!`, "success");
             }
             
             saveBanks(); 
             e.target.reset(); 
+            populateAdjustAccountSelect();
         }
 
         function editBank(i) {
+            if (!bankAccounts[i]) return;
             document.getElementById('new-bank-name').value = bankAccounts[i].name;
-            document.getElementById('new-bank-number').value = bankAccounts[i].number;
+            document.getElementById('new-bank-number').value = bankAccounts[i].number || "";
             document.getElementById('bank-submit-btn').textContent = "Update Account Card";
             editingBankIndex = i;
+            document.getElementById('new-bank-name').focus();
         }
 
         function deleteBank(i) { 
-            showConfirmModal("Delete Bank Card?", "Delete from selector?", () => { 
+            if (!bankAccounts[i]) return;
+            const targetName = bankAccounts[i].name;
+            showConfirmModal("Delete Bank Card?", `Remove ${targetName} from your saved cards?`, () => { 
+                // Add to deleted bank names blacklist to prevent automatic auto-discovery re-adding it
+                deletedBankNames.add(targetName.trim().toLowerCase());
+                saveDeletedBanks();
+
                 bankAccounts.splice(i, 1); 
                 saveBanks(); 
-                showTrackerToast("Bank removed.", "success"); 
+                showTrackerToast(`Removed ${targetName}.`, "success"); 
             }); 
         }
         
@@ -3940,7 +4033,10 @@
                     const formattedDps = dpss.map(d => ({
                         id: (d.id && String(d.id).length === 36) ? d.id : crypto.randomUUID(),
                         amount: parseFloat(d.amount) || 0,
-                        installment_no: d.installmentNo || '',
+                        installment_no: d.installmentNo || d.installment_no || '',
+                        bank: d.bank || '',
+                        ac_no: d.acNo || d.ac_no || '',
+                        maturity_date: (d.maturityDate || d.maturity_date) ? (d.maturityDate || d.maturity_date) : null,
                         note: d.note || '',
                         date: parseDateSafe(d.date),
                         created_at: d.timestamp ? new Date(d.timestamp).toISOString() : new Date().toISOString()
@@ -4023,8 +4119,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
