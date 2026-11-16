@@ -365,13 +365,13 @@
                             <i class="fa-solid fa-wallet text-xl md:text-2xl"></i>
                         </div>
                         <div>
-                            <div class="flex items-center gap-2">
+                            <div class="flex items-center gap-2 flex-wrap">
                                 <h1 class="text-lg md:text-xl font-bold text-white tracking-tight">
                                     Expense Tracker
                                 </h1>
-                                <span id="network-status-badge" class="px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5 transition-all">
+                                <button type="button" onclick="processSyncQueue(true)" id="network-status-badge" title="Click to force sync pending records" class="px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5 transition-all cursor-pointer">
                                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Online
-                                </span>
+                                </button>
                             </div>
                             <p class="text-[11px] text-slate-400 font-medium uppercase tracking-widest">Smart Money Management</p>
                         </div>
@@ -524,8 +524,8 @@
                     <!-- Statistics & Controls -->
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         
-                        <!-- Month Snapshot with Savings & Previous Month Rest Balance -->
-                        <div class="glass-panel p-6 rounded-3xl lg:col-span-2 flex flex-col justify-between">
+                        <!-- Month Snapshot with Savings, Budget Target & Previous Month Rest Balance -->
+                        <div class="glass-panel p-6 rounded-3xl lg:col-span-2 flex flex-col justify-between space-y-5">
                             <div>
                                 <div class="flex justify-between items-center mb-4">
                                     <h3 class="font-bold text-sm md:text-base text-white flex items-center gap-2">
@@ -569,8 +569,25 @@
                                         <p id="stat-month-saved-rate" class="text-[10px] text-amber-300/80 mt-1">0% net savings rate</p>
                                     </div>
                                 </div>
+
+                                <!-- Monthly Budget Progress Bar -->
+                                <div class="mt-4 bg-slate-900/60 p-4 rounded-2xl border border-white/5">
+                                    <div class="flex items-center justify-between text-xs mb-2">
+                                        <span class="font-bold text-slate-300 flex items-center gap-1.5">
+                                            <i class="fa-solid fa-gauge-high text-brand-400"></i> Monthly Spending Budget
+                                        </span>
+                                        <div class="flex items-center gap-2">
+                                            <span id="budget-usage-text" class="text-slate-400 font-semibold">No budget target set</span>
+                                            <button type="button" onclick="openBudgetModal()" class="text-[11px] text-brand-400 hover:text-brand-300 underline font-bold">Set Limit</button>
+                                        </div>
+                                    </div>
+                                    <div class="w-full h-2.5 bg-slate-950 rounded-full overflow-hidden border border-white/5">
+                                        <div id="budget-progress-bar" class="h-full bg-emerald-500 transition-all duration-500 rounded-full" style="width: 0%"></div>
+                                    </div>
+                                </div>
                             </div>
-                            <div id="stat-comparison-text" class="text-xs md:text-sm text-slate-300 bg-slate-900/60 p-4 rounded-2xl border border-white/5 leading-relaxed mt-4 flex items-center gap-2">
+
+                            <div id="stat-comparison-text" class="text-xs md:text-sm text-slate-300 bg-slate-900/60 p-4 rounded-2xl border border-white/5 leading-relaxed flex items-center gap-2">
                                 <i class="fa-solid fa-brain text-brand-400 animate-pulse text-base shrink-0"></i>
                                 <span>Analyzing your spending trends... (Excludes lend/return from)</span>
                             </div>
@@ -633,6 +650,22 @@
                         </div>
                     </div>
 
+                    <!-- Lend & Borrow Receivables Tracker Card -->
+                    <div id="lend-tracker-card" class="glass-panel p-6 rounded-3xl border border-amber-500/20 hidden">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                            <div>
+                                <h3 class="font-bold text-sm md:text-base text-white flex items-center gap-2">
+                                    <i class="fa-solid fa-hand-holding-dollar text-amber-400"></i> Active Lend &amp; Borrow Tracker
+                                </h3>
+                                <p class="text-[11px] text-slate-400">Automatically tracks "lend to [Name]" vs "return from [Name]" entries</p>
+                            </div>
+                            <span id="lend-net-badge" class="text-xs font-bold px-3 py-1 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/20 self-start sm:self-auto">
+                                Net Receivable: ৳ 0.00
+                            </span>
+                        </div>
+                        <div id="lend-people-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3"></div>
+                    </div>
+
                     <!-- Latest Activity Widget -->
                     <div class="glass-panel rounded-3xl overflow-hidden border border-white/10">
                         <div class="px-6 py-4 border-b border-white/5 flex justify-between items-center bg-slate-900/60">
@@ -661,6 +694,22 @@
                             </div>
                             <h2 class="text-xl font-bold text-white">Add Account Transaction</h2>
                             <p class="text-xs text-slate-400 mt-1">Archive deposits or expenses with instantaneous balance updates</p>
+                        </div>
+
+                        <!-- 1-Tap Pinned Quick Templates -->
+                        <div class="mb-6 bg-slate-900/60 p-3.5 rounded-2xl border border-white/5">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-thumbtack text-amber-400 text-[10px]"></i> 1-Tap Quick Fill Templates
+                                </span>
+                                <span class="text-[10px] text-slate-500">Tap to pre-fill form</span>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <button type="button" onclick="applyQuickTemplate('Cash', 'Expense', 40, 'Breakfast')" class="suggestion-chip px-3 py-1.5 rounded-xl text-xs font-semibold">🍳 Breakfast ৳40</button>
+                                <button type="button" onclick="applyQuickTemplate('Cash', 'Expense', 30, 'Bus Fare')" class="suggestion-chip px-3 py-1.5 rounded-xl text-xs font-semibold">🚌 Bus Fare ৳30</button>
+                                <button type="button" onclick="applyQuickTemplate('Cash', 'Expense', 20, 'Tea & Snacks')" class="suggestion-chip px-3 py-1.5 rounded-xl text-xs font-semibold">☕ Tea &amp; Snacks ৳20</button>
+                                <button type="button" onclick="applyQuickTemplate('Cash', 'Expense', 100, 'Mobile Recharge')" class="suggestion-chip px-3 py-1.5 rounded-xl text-xs font-semibold">📱 Recharge ৳100</button>
+                            </div>
                         </div>
 
                         <!-- Source Toggle Buttons -->
@@ -706,7 +755,7 @@
                                 <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">Transaction Value (৳)</label>
                                 <div class="relative">
                                     <span class="absolute left-4 top-3 text-slate-400 font-bold text-base">৳</span>
-                                    <input type="number" step="0.01" name="tx_amount" required placeholder="0.00" 
+                                    <input type="number" step="0.01" name="tx_amount" id="tx_amount" required placeholder="0.00" 
                                         class="w-full glass-input rounded-2xl pl-9 pr-4 py-3 text-sm sm:text-base font-bold text-white outline-none">
                                 </div>
                             </div>
@@ -984,11 +1033,16 @@
                         <!-- Mobile Vertical List Container -->
                         <div class="block md:hidden space-y-3" id="master-ledger-vertical-container"></div>
 
-                        <div class="pt-5 mt-6 border-t border-white/5 flex justify-between items-center text-xs text-slate-400 font-semibold uppercase tracking-wider">
+                        <div class="pt-5 mt-6 border-t border-white/5 flex flex-wrap justify-between items-center gap-3 text-xs text-slate-400 font-semibold uppercase tracking-wider">
                             <span id="table-total-indicator">Total Entries: 0</span>
-                            <button onclick="refreshLedgerData()" class="text-brand-400 hover:text-brand-300 transition flex items-center gap-1.5">
-                                <i class="fa-solid fa-arrows-rotate"></i> Force Refresh
-                            </button>
+                            <div class="flex items-center gap-4">
+                                <button type="button" onclick="exportLedgerToCSV()" class="text-emerald-400 hover:text-emerald-300 transition flex items-center gap-1.5">
+                                    <i class="fa-solid fa-file-csv"></i> Export CSV
+                                </button>
+                                <button type="button" onclick="refreshLedgerData()" class="text-brand-400 hover:text-brand-300 transition flex items-center gap-1.5">
+                                    <i class="fa-solid fa-arrows-rotate"></i> Force Refresh
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1287,6 +1341,28 @@
                 </p>
             </footer>
 
+            <!-- MODAL: SET MONTHLY BUDGET LIMIT -->
+            <div id="budget-modal" class="hidden fixed inset-0 bg-slate-950/80 z-50 flex items-center justify-center p-4 backdrop-blur-md transition-all">
+                <div class="glass-panel-elevated rounded-3xl max-w-sm w-full p-6 relative border border-brand-500/30">
+                    <button type="button" onclick="closeBudgetModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white transition text-lg"><i class="fa-solid fa-xmark"></i></button>
+                    <h3 class="font-bold text-base text-white mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-gauge-high text-brand-400"></i> Monthly Spending Limit
+                    </h3>
+                    <p class="text-xs text-slate-400 mb-4">Set a target ceiling for monthly living expenses (set 0 to disable).</p>
+                    <form onsubmit="saveMonthlyBudget(event)" class="space-y-4">
+                        <div class="relative">
+                            <span class="absolute left-4 top-3 text-slate-400 font-bold text-base">৳</span>
+                            <input type="number" step="1" min="0" id="monthly-budget-input" placeholder="e.g. 8000" required
+                                class="w-full glass-input rounded-2xl pl-9 pr-4 py-3 text-sm font-bold text-white outline-none">
+                        </div>
+                        <div class="flex gap-2.5 text-xs font-semibold">
+                            <button type="button" onclick="closeBudgetModal()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 py-2.5 rounded-xl border border-white/5">Cancel</button>
+                            <button type="submit" class="flex-1 bg-brand-500 hover:bg-brand-400 text-slate-950 font-bold py-2.5 rounded-xl">Save Limit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
             <!-- Report Live Preview & Direct Share Modal -->
             <div id="report-preview-modal" class="hidden fixed inset-0 bg-slate-950/85 z-50 flex items-center justify-center p-4 backdrop-blur-md transition-all">
                 <div class="glass-panel-elevated rounded-3xl max-w-lg w-full p-6 sm:p-7 relative border border-brand-500/30">
@@ -1391,7 +1467,7 @@
                 </div>
             </div>
 
-            <!-- Edit Transaction Modal -->
+            <!-- Edit Transaction Modal (Includes Neutral Adjustment Support) -->
             <div id="edit-tx-modal" class="hidden fixed inset-0 bg-slate-950/80 z-50 flex items-center justify-center p-4 backdrop-blur-md transition-all">
                 <div class="glass-panel-elevated rounded-3xl max-w-md w-full p-6 sm:p-7 relative border border-white/10">
                     <button onclick="closeTxModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white transition text-lg"><i class="fa-solid fa-xmark"></i></button>
@@ -1406,6 +1482,7 @@
                                 <select name="edit_tx_type" id="edit_tx_type" class="w-full glass-input rounded-xl px-3 py-2 text-xs font-semibold text-white outline-none" onchange="toggleEditTxSourceVisibility()">
                                     <option value="Expense" class="bg-slate-900">Expense</option>
                                     <option value="Deposit" class="bg-slate-900">Deposit</option>
+                                    <option value="Adjustment" class="bg-slate-900">Neutral Balance Adjustment</option>
                                     <option value="Bank_to_Current" class="bg-slate-900">Bank to Cash Transfer</option>
                                     <option value="Cash_to_Bank" class="bg-slate-900">Cash to Bank Deposit</option>
                                     <option value="Bank_to_Bank" class="bg-slate-900">Bank to Bank Transfer</option>
@@ -1547,6 +1624,17 @@
             });
         }
 
+        // Security helper to escape user input before rendering into HTML templates
+        function escapeHtml(unsafe) {
+            if (unsafe === null || unsafe === undefined) return '';
+            return String(unsafe)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
         // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyCkLksu1JcBUoTU5M_N5TQfHnPJKLWS7y8",
@@ -1625,21 +1713,32 @@
             });
         }
 
-        function updateNetworkStatusIndicator() {
+        async function updateNetworkStatusIndicator() {
             const pill = document.getElementById('network-status-badge');
             if (!pill) return;
+            let pendingCount = 0;
+            try {
+                const q = await idbGetAll('syncQueue');
+                pendingCount = q.length;
+            } catch (e) {}
+
             if (navigator.onLine) {
-                pill.className = "px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5 transition-all";
-                pill.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Online`;
-                processSyncQueue();
+                if (pendingCount > 0) {
+                    pill.className = "px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-brand-500/20 text-brand-300 border border-brand-500/30 flex items-center gap-1.5 transition-all cursor-pointer";
+                    pill.innerHTML = `<i class="fa-solid fa-arrows-rotate animate-spin text-[8px]"></i> Syncing (${pendingCount})`;
+                } else {
+                    pill.className = "px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5 transition-all cursor-pointer";
+                    pill.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Online`;
+                }
             } else {
-                pill.className = "px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1.5 transition-all";
-                pill.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span> Offline Vault`;
+                pill.className = "px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1.5 transition-all cursor-pointer";
+                pill.innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span> Offline${pendingCount > 0 ? ` (${pendingCount} queued)` : ' Vault'}`;
             }
         }
 
         window.addEventListener('online', () => {
             updateNetworkStatusIndicator();
+            processSyncQueue();
             showTrackerToast("Network restored! Synchronizing offline records...", "success");
         });
         window.addEventListener('offline', () => {
@@ -1656,18 +1755,25 @@
                 timestamp: Date.now()
             };
             await idbPut('syncQueue', queueItem);
+            await updateNetworkStatusIndicator();
             if (navigator.onLine) {
                 processSyncQueue();
             }
         }
 
-        async function processSyncQueue() {
-            if (!navigator.onLine || isSyncingQueue) return;
+        async function processSyncQueue(manualTrigger = false) {
+            if (!navigator.onLine) {
+                if (manualTrigger) showTrackerToast("Currently offline. Will sync automatically when reconnected.", "error");
+                return;
+            }
+            if (isSyncingQueue) return;
             isSyncingQueue = true;
+            await updateNetworkStatusIndicator();
+
             try {
                 const queue = await idbGetAll('syncQueue');
                 if (!queue || queue.length === 0) {
-                    isSyncingQueue = false;
+                    if (manualTrigger) showTrackerToast("All cloud records are already up to date!", "success");
                     return;
                 }
 
@@ -1676,8 +1782,21 @@
                         const table = item.target === 'transaction' ? 'transactions' : 'dps';
                         let dbPayload = { ...item.payload };
 
-                        // Normalize columns strictly for Supabase PostgreSQL schema
-                        if (item.target === 'dps') {
+                        // Strip non-schema keys for transactions so Supabase upsert never fails on unknown columns
+                        if (item.target === 'transaction') {
+                            dbPayload = {
+                                id: String(item.payload.id),
+                                date: item.payload.date,
+                                time: item.payload.time || '12:00',
+                                type: item.payload.type,
+                                amount: Number(item.payload.amount) || 0,
+                                fee: Number(item.payload.fee) || 0,
+                                source: String(item.payload.source || 'Cash'),
+                                target_source: String(item.payload.target_source || ''),
+                                description: String(item.payload.description || ''),
+                                created_at: item.payload.created_at || item.payload.timestamp || new Date().toISOString()
+                            };
+                        } else if (item.target === 'dps') {
                             const matDate = item.payload.maturity_date || item.payload.maturityDate;
                             dbPayload = {
                                 id: String(item.payload.id),
@@ -1690,9 +1809,6 @@
                                 maturity_date: (matDate && String(matDate).trim() !== '') ? matDate : null,
                                 created_at: item.payload.created_at || item.payload.timestamp || new Date().toISOString()
                             };
-                            delete dbPayload.installmentNo;
-                            delete dbPayload.acNo;
-                            delete dbPayload.maturityDate;
                         }
 
                         if (item.type === 'insert') {
@@ -1731,10 +1847,12 @@
                         break;
                     }
                 }
+                if (manualTrigger) showTrackerToast("Cloud synchronization complete!", "success");
             } catch (err) {
                 console.error("Queue process error:", err);
             } finally {
                 isSyncingQueue = false;
+                await updateNetworkStatusIndicator();
             }
         }
 
@@ -1759,7 +1877,7 @@
             sessionStorage.removeItem('otp_verified_studybuddy');
         }
 
-        const API_URL = "https://script.google.com/macros/s/AKfycbyB-i2lpgoiHK5KQDEizGhIKaJbRNMjZr3ir4oha7f4bnOZmmuT3qIo1iSVMBwV6VK5/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbypv86qjesATePCJLsrlzQZvfs0lt0vOcp3tlSSXgMqUAGt0iHUGf2_7dvwHSJLf2Re/exec";
         
         async function runRemoteAPI(action, payload) {
             if (!navigator.onLine) {
@@ -1811,6 +1929,53 @@
             else if (/safari/i.test(ua) && !/chrome/i.test(ua)) browser = "Apple Safari";
             else if (/firefox|fxios/i.test(ua)) browser = "Mozilla Firefox";
             return `${device} (${os} · ${browser})`;
+        }
+
+        async function getClientNetworkAndLocation() {
+            let ipAddress = "Unavailable";
+            let locationStr = "Location Unavailable";
+
+            // 1. Fetch public IP and IP-based City/Country lookup with fast timeout
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 3500);
+                const res = await fetch('https://ipapi.co/json/', { signal: controller.signal });
+                clearTimeout(timeoutId);
+                if (res.ok) {
+                    const geo = await res.json();
+                    if (geo.ip) ipAddress = geo.ip;
+                    const parts = [geo.city, geo.region, geo.country_name].filter(Boolean);
+                    if (parts.length > 0) locationStr = parts.join(', ');
+                }
+            } catch (e) {
+                try {
+                    const fallbackRes = await fetch('https://api.ipify.org?format=json');
+                    if (fallbackRes.ok) {
+                        const ipJson = await fallbackRes.json();
+                        if (ipJson.ip) ipAddress = ipJson.ip;
+                    }
+                } catch (_) {}
+            }
+
+            // 2. Refine with browser GPS coordinates if permission is already granted or quickly resolved
+            try {
+                if ('geolocation' in navigator) {
+                    const pos = await new Promise((resolve, reject) => {
+                        navigator.geolocation.getCurrentPosition(resolve, reject, {
+                            enableHighAccuracy: false,
+                            timeout: 2500,
+                            maximumAge: 300000
+                        });
+                    });
+                    if (pos && pos.coords) {
+                        const lat = pos.coords.latitude.toFixed(4);
+                        const lon = pos.coords.longitude.toFixed(4);
+                        locationStr = `${locationStr} (GPS: ${lat}, ${lon})`;
+                    }
+                }
+            } catch (_) {}
+
+            return { ipAddress, locationStr };
         }
 
         async function checkClipboardForOTP() {
@@ -1924,7 +2089,8 @@
 
                 const sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
                 const deviceInfo = getClientDeviceInfo();
-                const appOrigin = "https://pulakchakma.info.mp";
+                const netLoc = await getClientNetworkAndLocation();
+                const appOrigin = window.location.origin;
 
                 const res = await runRemoteAPI('requestOTP', {
                     uid: user.uid,
@@ -1933,7 +2099,9 @@
                     channel: 'all',
                     sessionId: sessionId,
                     appUrl: appOrigin,
-                    deviceName: deviceInfo
+                    deviceName: `${deviceInfo} | IP: ${netLoc.ipAddress} | Loc: ${netLoc.locationStr}`,
+                    ipAddress: netLoc.ipAddress,
+                    location: netLoc.locationStr
                 });
 
                 if (res && res.status === 'success') {
@@ -1946,7 +2114,7 @@
                     indicator.className = "text-[11px] text-brand-400 flex items-center gap-1 font-semibold";
                     iconContainer.innerHTML = `<i class="fa-brands fa-telegram text-brand-400"></i>`;
                     header.textContent = "Check Telegram or Gmail";
-                    desc.innerHTML = `We sent your 6-digit code and a <strong>1-Tap Approval Link</strong> to your Telegram Bot &amp; <strong>${user.email}</strong>.`;
+                    desc.innerHTML = `We sent your 6-digit code and a <strong>1-Tap Approval Link</strong> to your Telegram Bot &amp; <strong>${escapeHtml(user.email)}</strong>.`;
 
                     document.getElementById('step-1-credentials').classList.remove('step-active');
                     document.getElementById('step-1-credentials').classList.add('step-hidden');
@@ -2209,10 +2377,13 @@
                 const returnKeyBadge = isTopMatch ? 
                     `<span class="ml-1 px-1.5 py-0.5 rounded text-[10px] bg-brand-500/20 text-brand-300 font-mono flex items-center gap-0.5"><i class="fa-solid fa-arrow-turn-down text-[8px] rotate-90"></i> Enter</span>` : '';
 
+                const safeKw = escapeHtml(m.keyword);
+                const jsSafeKw = m.keyword.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+
                 return `
-                    <button type="button" onclick="selectSuggestedKeyword('${m.keyword.replace(/'/g, "\\'")}', '${inputId}', '${suggestionsContainerId}')"
+                    <button type="button" onclick="selectSuggestedKeyword('${jsSafeKw}', '${inputId}', '${suggestionsContainerId}')"
                         class="suggestion-chip px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 active:scale-95 ${isTopMatch ? 'suggestion-chip-active' : ''}">
-                        <span>${m.keyword}</span>
+                        <span>${safeKw}</span>
                         ${returnKeyBadge}
                     </button>
                 `;
@@ -2245,15 +2416,24 @@
             showTrackerToast(`Selected "${keyword}"`, "success");
         }
 
+        function applyQuickTemplate(source, type, amount, reason) {
+            selectFormType(source, type);
+            const amtEl = document.getElementById('tx_amount');
+            const descEl = document.getElementById('tx_description');
+            if (amtEl) amtEl.value = amount;
+            if (descEl) descEl.value = reason;
+            showTrackerToast(`Template loaded: ${reason} (৳${amount})`, "success");
+        }
+
         async function initTrackerApp() {
             startClockService();
-            updateNetworkStatusIndicator();
+            await openIndexedDatabase();
+            await updateNetworkStatusIndicator();
             loadKeywordDictionary();
             loadDeletedBanks();
             loadLocalBanks();
             setTodayDateInputs();
             loadVerifiedEmail();
-            await openIndexedDatabase();
             fetchInitialLedgerData();
         }
 
@@ -2272,12 +2452,54 @@
             localStorage.setItem('pocket_deleted_banks', JSON.stringify(Array.from(deletedBankNames)));
         }
 
-        function loadVerifiedEmail() {
+        async function loadVerifiedEmail() {
             let saved = localStorage.getItem('verified_report_email');
             if (!saved && auth.currentUser) saved = auth.currentUser.email;
-            document.getElementById('current-verified-email').textContent = saved || "No email configured";
-            const previewEl = document.getElementById('report-target-email-preview');
-            if (previewEl) previewEl.textContent = saved || "Not configured";
+            
+            const updateEmailUI = (emailVal) => {
+                const displayEl = document.getElementById('current-verified-email');
+                if (displayEl) displayEl.textContent = emailVal || "No email configured";
+                const previewEl = document.getElementById('report-target-email-preview');
+                if (previewEl) previewEl.textContent = emailVal || "Not configured";
+            };
+
+            updateEmailUI(saved);
+
+            // Fetch latest synced Report Delivery Email from cloud
+            if (navigator.onLine) {
+                try {
+                    // 1. Check Supabase app_settings or user_preferences if available
+                    const { data: settingRow, error } = await supabase
+                        .from('app_settings')
+                        .select('value')
+                        .eq('key', 'verified_report_email')
+                        .maybeSingle();
+
+                    if (!error && settingRow && settingRow.value) {
+                        localStorage.setItem('verified_report_email', settingRow.value);
+                        updateEmailUI(settingRow.value);
+                        return;
+                    }
+                } catch (e) {}
+
+                try {
+                    // 2. Also query Google Apps Script backend for saved report email
+                    const res = await fetch(API_URL, {
+                        method: 'POST',
+                        redirect: 'follow',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify({ action: 'getSettings', payload: { uid: auth.currentUser ? auth.currentUser.uid : '' } })
+                    });
+                    if (res.ok) {
+                        const json = await res.json();
+                        const cloudEmail = json.reportEmail || json.email || (json.data && json.data.reportEmail);
+                        if (cloudEmail && cloudEmail.includes('@')) {
+                            localStorage.setItem('verified_report_email', cloudEmail);
+                            updateEmailUI(cloudEmail);
+                        }
+                    }
+                } catch (e) {}
+            }
         }
 
         function startEmailChange() {
@@ -2330,14 +2552,33 @@
             btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Verifying...`;
             btn.disabled = true;
 
-            const res = await runRemoteAPI('verifyEmailOTP', { email, otp });
+            const res = await runRemoteAPI('verifyEmailOTP', {
+                email,
+                otp,
+                uid: auth.currentUser ? auth.currentUser.uid : '',
+                saveAsReportEmail: true
+            });
             btn.innerHTML = ogText;
             btn.disabled = false;
 
             if(res && res.status === 'success') {
                 localStorage.setItem('verified_report_email', email);
-                showTrackerToast("Report Delivery Email updated successfully!", "success");
-                loadVerifiedEmail();
+
+                // Persist new Report Delivery Email to Supabase & Google Apps Script
+                try {
+                    await supabase.from('app_settings').upsert([
+                        { key: 'verified_report_email', value: email, updated_at: new Date().toISOString() }
+                    ], { onConflict: 'key' });
+                } catch (e) {}
+
+                runRemoteAPISilent('updateReportEmail', {
+                    email: email,
+                    reportEmail: email,
+                    uid: auth.currentUser ? auth.currentUser.uid : ''
+                });
+
+                showTrackerToast("Report Delivery Email saved & synced to cloud!", "success");
+                await loadVerifiedEmail();
                 cancelEmailChange();
             } else {
                 showTrackerToast(res ? res.message : "Incorrect verification code. Please check email or Telegram.", "error");
@@ -2402,12 +2643,14 @@
             if (editDestDropdown) editDestDropdown.innerHTML = `<option value="Cash" class="bg-slate-900">💵 Pocket Cash</option>`;
 
             bankAccounts.forEach(b => {
-                const opt = `<option value="${b.name}" class="bg-slate-900">${b.name} (${b.number})</option>`;
+                const safeName = escapeHtml(b.name);
+                const safeNum = escapeHtml(b.number);
+                const opt = `<option value="${safeName}" class="bg-slate-900">${safeName} (${safeNum})</option>`;
                 if (addDropdown) addDropdown.insertAdjacentHTML('beforeend', opt);
                 if (transSourceDropdown) transSourceDropdown.insertAdjacentHTML('beforeend', opt);
                 if (transDestDropdown) transDestDropdown.insertAdjacentHTML('beforeend', opt);
-                if (editSourceDropdown) editSourceDropdown.insertAdjacentHTML('beforeend', `<option value="${b.name}" class="bg-slate-900">🏦 ${b.name}</option>`);
-                if (editDestDropdown) editDestDropdown.insertAdjacentHTML('beforeend', `<option value="${b.name}" class="bg-slate-900">🏦 ${b.name}</option>`);
+                if (editSourceDropdown) editSourceDropdown.insertAdjacentHTML('beforeend', `<option value="${safeName}" class="bg-slate-900">🏦 ${safeName}</option>`);
+                if (editDestDropdown) editDestDropdown.insertAdjacentHTML('beforeend', `<option value="${safeName}" class="bg-slate-900">🏦 ${safeName}</option>`);
             });
         }
 
@@ -2517,7 +2760,7 @@
             let borderClass = type === 'success' ? 'border-emerald-500/80 bg-emerald-950/90 text-emerald-200' : 'border-rose-500/80 bg-rose-950/90 text-rose-200';
             let iconClass = type === 'success' ? 'fa-solid fa-circle-check text-emerald-400' : 'fa-solid fa-triangle-exclamation text-rose-400';
             toast.className = `p-4 glass-panel-elevated border-l-4 ${borderClass} shadow-2xl rounded-2xl flex items-center gap-3 w-full transition-all duration-300 transform translate-y-2 opacity-0 pointer-events-auto`;
-            toast.innerHTML = `<i class="${iconClass} text-base shrink-0"></i><div class="flex-1 text-xs md:text-sm font-semibold">${message}</div><button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-white text-xs shrink-0"><i class="fa-solid fa-xmark"></i></button>`;
+            toast.innerHTML = `<i class="${iconClass} text-base shrink-0"></i><div class="flex-1 text-xs md:text-sm font-semibold">${escapeHtml(message)}</div><button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-white text-xs shrink-0"><i class="fa-solid fa-xmark"></i></button>`;
             container.appendChild(toast);
             setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
             setTimeout(() => { toast.classList.add('opacity-0', 'translate-y-2'); setTimeout(() => toast.remove(), 300); }, 4200);
@@ -2579,12 +2822,10 @@
             let cashBal = 0, dpsBal = 0;
             let bankAccs = {};
 
-            // Initialize all known active bank cards to 0.00
             bankAccounts.forEach(b => {
                 bankAccs[b.name] = 0;
             });
 
-            // Helper to get or create normalized bank account entry
             const getBankKey = (rawSource) => {
                 if (!rawSource) return 'Bank';
                 const trimmed = rawSource.trim();
@@ -2646,10 +2887,12 @@
                 };
             });
 
-            // Ensure bank balance strictly matches the exact sum of all active bank account cards
+            // Sum ALL bank balances across both saved bank cards and any ledger bank accounts
             let computedTotalBank = 0;
-            bankAccounts.forEach(b => {
-                computedTotalBank += (bankAccs[b.name] || 0);
+            Object.keys(bankAccs).forEach(k => {
+                if (k.toLowerCase() !== 'cash') {
+                    computedTotalBank += (bankAccs[k] || 0);
+                }
             });
 
             const formattedDps = (dpss || []).map(item => {
@@ -2686,7 +2929,7 @@
             const isKnown = (name) => {
                 if (!name || name.trim() === '' || name.toLowerCase() === 'cash' || name.toLowerCase() === 'bank') return true;
                 const lower = name.trim().toLowerCase();
-                if (deletedBankNames.has(lower)) return true; // Don't resurrect deleted banks!
+                if (deletedBankNames.has(lower)) return true;
                 return bankAccounts.some(b => b.name.trim().toLowerCase() === lower);
             };
 
@@ -2726,8 +2969,8 @@
                     const balance = appState.balances.bankAccounts[b.name] || 0;
                     bankGrid.insertAdjacentHTML('beforeend', `
                         <div class="bg-slate-900/60 border border-white/5 hover:border-brand-500/20 p-4 rounded-2xl transition-all duration-200 hover:-translate-y-0.5">
-                            <span class="text-[10px] font-bold text-slate-400 uppercase block truncate">${b.name}</span>
-                            <span class="text-[9px] text-slate-500 block truncate mt-0.5">${b.number}</span>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase block truncate">${escapeHtml(b.name)}</span>
+                            <span class="text-[9px] text-slate-500 block truncate mt-0.5">${escapeHtml(b.number)}</span>
                             <p class="text-sm md:text-base font-bold text-brand-400 mt-2">৳ ${balance.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</p>
                         </div>
                     `);
@@ -2735,10 +2978,80 @@
             }
             renderLedgerList(); 
             calculateStudentAllowanceStatistics();
+            renderLendBorrowTracker();
             updateReportSummaryPreview();
             if (currentTrackerTab === 'reports') {
                 generateAnalytics();
             }
+        }
+
+        function openBudgetModal() {
+            const saved = parseFloat(localStorage.getItem('monthly_budget_limit') || '0');
+            document.getElementById('monthly-budget-input').value = saved > 0 ? saved : '';
+            document.getElementById('budget-modal').classList.remove('hidden');
+        }
+
+        function closeBudgetModal() {
+            document.getElementById('budget-modal').classList.add('hidden');
+        }
+
+        function saveMonthlyBudget(e) {
+            e.preventDefault();
+            const val = parseFloat(document.getElementById('monthly-budget-input').value || '0');
+            localStorage.setItem('monthly_budget_limit', val > 0 ? val.toString() : '0');
+            closeBudgetModal();
+            calculateStudentAllowanceStatistics();
+            showTrackerToast(val > 0 ? `Monthly budget set to ৳${val.toLocaleString()}` : "Monthly budget limit cleared.", "success");
+        }
+
+        function renderLendBorrowTracker() {
+            const card = document.getElementById('lend-tracker-card');
+            const grid = document.getElementById('lend-people-grid');
+            const netBadge = document.getElementById('lend-net-badge');
+            if (!card || !grid || !netBadge) return;
+
+            const peopleMap = {};
+            appState.transactions.forEach(t => {
+                const desc = (t.description || '').trim();
+                const lower = desc.toLowerCase();
+                const amt = Number(t.amount) || 0;
+
+                if (lower.startsWith('lend to ')) {
+                    const person = desc.substring(8).trim() || 'Friend';
+                    const key = person.toLowerCase();
+                    if (!peopleMap[key]) peopleMap[key] = { name: person, lent: 0, returned: 0 };
+                    peopleMap[key].lent += amt;
+                } else if (lower.startsWith('return from ')) {
+                    const person = desc.substring(12).trim() || 'Friend';
+                    const key = person.toLowerCase();
+                    if (!peopleMap[key]) peopleMap[key] = { name: person, lent: 0, returned: 0 };
+                    peopleMap[key].returned += amt;
+                }
+            });
+
+            const activePeople = Object.values(peopleMap).filter(p => Math.abs(p.lent - p.returned) > 0.01);
+            if (activePeople.length === 0) {
+                card.classList.add('hidden');
+                return;
+            }
+
+            card.classList.remove('hidden');
+            let totalOwedToMe = 0;
+            grid.innerHTML = activePeople.map(p => {
+                const net = p.lent - p.returned;
+                totalOwedToMe += net;
+                const statusColor = net > 0 ? 'text-amber-400' : 'text-emerald-400';
+                const statusText = net > 0 ? `Owes you ৳${net.toLocaleString()}` : `You owe ৳${Math.abs(net).toLocaleString()}`;
+                return `
+                    <div class="bg-slate-900/60 border border-white/5 p-3.5 rounded-2xl">
+                        <p class="text-xs font-bold text-white truncate">${escapeHtml(p.name)}</p>
+                        <p class="text-sm font-extrabold ${statusColor} mt-1">${statusText}</p>
+                        <p class="text-[10px] text-slate-400 mt-1">Lent: ৳${p.lent.toLocaleString()} &bull; Returned: ৳${p.returned.toLocaleString()}</p>
+                    </div>
+                `;
+            }).join('');
+
+            netBadge.textContent = `Net Receivable: ৳ ${totalOwedToMe.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
         }
 
         function calculateStudentAllowanceStatistics() {
@@ -2804,6 +3117,28 @@
                 }
             }
 
+            // Update Budget Bar
+            const budgetLimit = parseFloat(localStorage.getItem('monthly_budget_limit') || '0');
+            const budgetTextEl = document.getElementById('budget-usage-text');
+            const budgetBarEl = document.getElementById('budget-progress-bar');
+            if (budgetTextEl && budgetBarEl) {
+                if (budgetLimit > 0) {
+                    const pct = Math.min(100, Math.round((curExp / budgetLimit) * 100));
+                    budgetTextEl.textContent = `৳${curExp.toLocaleString()} / ৳${budgetLimit.toLocaleString()} (${pct}%)`;
+                    budgetBarEl.style.width = `${pct}%`;
+                    if (pct >= 100) {
+                        budgetBarEl.className = "h-full bg-rose-500 transition-all duration-500 rounded-full";
+                    } else if (pct >= 80) {
+                        budgetBarEl.className = "h-full bg-amber-400 transition-all duration-500 rounded-full";
+                    } else {
+                        budgetBarEl.className = "h-full bg-emerald-500 transition-all duration-500 rounded-full";
+                    }
+                } else {
+                    budgetTextEl.textContent = "No budget target set";
+                    budgetBarEl.style.width = "0%";
+                }
+            }
+
             const diff = curExp - lastExp;
             let text = lastExp === 0 
                 ? `You saved <strong class="text-amber-300">৳${netSavedThisMonth.toLocaleString()}</strong> and expended <strong class="text-white">৳${curExp.toLocaleString()}</strong> this month.` 
@@ -2845,6 +3180,7 @@
             let periodInflow = 0;
             let periodExpense = 0;
             let periodFees = 0;
+            let periodAdjustments = 0;
             let periodDps = 0;
 
             const periodTxs = [];
@@ -2869,6 +3205,10 @@
                     periodTxs.push(t);
                     if (t.type === 'Deposit') periodInflow += amt;
                     else if (t.type === 'Expense') periodExpense += amt;
+                    else if (t.type === 'Adjustment') {
+                        const direction = t.adjustment_direction || (t.description && t.description.startsWith('[-]') ? 'decrease' : 'increase');
+                        periodAdjustments += (direction === 'decrease' ? -Math.abs(amt) : Math.abs(amt));
+                    }
                     if (fee > 0) periodFees += fee;
                 }
             });
@@ -2883,7 +3223,9 @@
             });
 
             const netSaved = periodInflow - periodExpense - periodFees;
-            const endingRestBalance = prevRestBalance + netSaved;
+            const endingRestBalance = (period === 'this_month' || period === 'all_time')
+                ? (appState.balances.cash + appState.balances.bank)
+                : (prevRestBalance + netSaved + periodAdjustments);
             const savingsRate = periodInflow > 0 ? ((netSaved / periodInflow) * 100).toFixed(1) : 0;
 
             return {
@@ -2895,6 +3237,7 @@
                 periodInflow,
                 periodExpense,
                 periodFees,
+                periodAdjustments,
                 periodDps,
                 netSaved,
                 endingRestBalance,
@@ -3094,6 +3437,11 @@
                     let dStr = item.date; 
                     try { dStr = new Date(item.date).toLocaleDateString('en-US', {month: 'short', day: 'numeric', year: 'numeric'}); } catch(e){}
 
+                    const safeDesc = escapeHtml(item.description);
+                    const safeRoute = escapeHtml(routeDisplay);
+                    const safeDate = escapeHtml(item.date);
+                    const safeTime = escapeHtml(item.time || '');
+
                     const feeBadge = (item.fee && item.fee > 0) 
                         ? `<span class="inline-flex items-center gap-1 bg-amber-500/10 text-amber-300 border border-amber-500/20 px-2 py-0.5 rounded-md text-[10px] font-bold ml-1.5"><i class="fa-solid fa-receipt text-[9px]"></i> Fee: ৳${item.fee.toLocaleString()}</span>` 
                         : '';
@@ -3102,12 +3450,12 @@
                         <div class="glass-panel p-4 rounded-2xl flex justify-between items-center gap-2 hover:bg-white/[0.02] transition-all duration-200">
                             <div class="flex-1 min-w-0">
                                 <div class="flex items-center gap-1.5 flex-wrap">
-                                    <span class="text-[10px] font-bold text-slate-400 uppercase">${dStr} ${item.time || ''}</span>
-                                    <span class="text-[9px] font-bold bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-slate-300 uppercase">${l}</span>
+                                    <span class="text-[10px] font-bold text-slate-400 uppercase">${escapeHtml(dStr)} ${safeTime}</span>
+                                    <span class="text-[9px] font-bold bg-white/5 border border-white/10 px-1.5 py-0.5 rounded text-slate-300 uppercase">${escapeHtml(l)}</span>
                                     ${feeBadge}
                                 </div>
-                                <p class="text-xs font-semibold text-white mt-1.5 truncate">${item.description}</p>
-                                <p class="text-[10px] text-brand-300 font-semibold mt-0.5"><i class="fa-solid fa-route text-[9px] mr-1"></i>${routeDisplay}</p>
+                                <p class="text-xs font-semibold text-white mt-1.5 truncate">${safeDesc}</p>
+                                <p class="text-[10px] text-brand-300 font-semibold mt-0.5"><i class="fa-solid fa-route text-[9px] mr-1"></i>${safeRoute}</p>
                             </div>
                             <div class="text-right flex flex-col items-end shrink-0">
                                 <span class="text-xs font-bold ${c}">${s} ৳${item.amount.toLocaleString()}</span>
@@ -3122,16 +3470,16 @@
                     desk.insertAdjacentHTML('beforeend', `
                         <tr class="hover:bg-white/[0.02] transition-colors">
                             <td class="py-3 px-4 text-xs text-slate-400 whitespace-nowrap">
-                                <div class="font-semibold text-slate-200">${item.date}</div>
-                                <div class="text-[10px] text-slate-500">${item.time || ''}</div>
+                                <div class="font-semibold text-slate-200">${safeDate}</div>
+                                <div class="text-[10px] text-slate-500">${safeTime}</div>
                             </td>
                             <td class="py-3 px-4 whitespace-nowrap">
-                                <span class="text-xs font-semibold px-2 py-0.5 rounded-md bg-white/5 text-slate-300 border border-white/10">${l}</span>
+                                <span class="text-xs font-semibold px-2 py-0.5 rounded-md bg-white/5 text-slate-300 border border-white/10">${escapeHtml(l)}</span>
                             </td>
-                            <td class="py-3 px-4 text-xs font-semibold text-brand-300 whitespace-nowrap">${routeDisplay}</td>
+                            <td class="py-3 px-4 text-xs font-semibold text-brand-300 whitespace-nowrap">${safeRoute}</td>
                             <td class="py-3 px-4 text-xs font-medium text-slate-200 max-w-sm">
                                 <div class="flex items-center gap-1.5 flex-wrap">
-                                    <span class="truncate font-semibold">${item.description}</span>
+                                    <span class="truncate font-semibold">${safeDesc}</span>
                                     ${feeBadge}
                                 </div>
                             </td>
@@ -3166,8 +3514,8 @@
                     mini.insertAdjacentHTML('beforeend', `
                         <div class="p-4 flex justify-between items-center text-xs md:text-sm hover:bg-white/[0.02] transition-colors">
                             <div class="min-w-0 flex-1">
-                                <p class="font-semibold text-white truncate">${i.description}${feeText}</p>
-                                <p class="text-[10px] text-slate-500 mt-0.5">${i.date} ${i.time || ''} | ${i.source}</p>
+                                <p class="font-semibold text-white truncate">${escapeHtml(i.description)}${feeText}</p>
+                                <p class="text-[10px] text-slate-500 mt-0.5">${escapeHtml(i.date)} ${escapeHtml(i.time || '')} | ${escapeHtml(i.source)}</p>
                             </div>
                             <span class="font-bold shrink-0 ml-3 ${c}">${s} ৳${i.amount.toLocaleString()}</span>
                         </div>
@@ -3175,6 +3523,35 @@
                 });
             }
             document.getElementById('table-total-indicator').textContent = `Total active logs: ${journal.length}`;
+        }
+
+        function exportLedgerToCSV() {
+            const journal = getCombinedJournal();
+            if (journal.length === 0) {
+                return showTrackerToast("No records available to export.", "error");
+            }
+            const headers = ["Date", "Time", "Category", "Source Account", "Target Account", "Amount", "Fee", "Description"];
+            const rows = journal.map(item => [
+                item.date,
+                item.time || "",
+                item.type,
+                `"${String(item.source || "").replace(/"/g, '""')}"`,
+                `"${String(item.target_source || "").replace(/"/g, '""')}"`,
+                item.amount,
+                item.fee || 0,
+                `"${String(item.description || "").replace(/"/g, '""')}"`
+            ]);
+            const csvContent = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+            const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `Expense_Tracker_Ledger_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            showTrackerToast(`Exported ${journal.length} records to CSV!`, "success");
         }
 
         function filterLedgers() { renderLedgerList(); }
@@ -3353,7 +3730,9 @@
             const select = document.getElementById('adjust-account-select');
             select.innerHTML = `<option value="Cash" class="bg-slate-900">💵 Pocket Cash Wallet</option>`;
             bankAccounts.forEach(b => {
-                select.insertAdjacentHTML('beforeend', `<option value="${b.name}" class="bg-slate-900">🏦 ${b.name} (${b.number || 'Account'})</option>`);
+                const safeName = escapeHtml(b.name);
+                const safeNum = escapeHtml(b.number || 'Account');
+                select.insertAdjacentHTML('beforeend', `<option value="${safeName}" class="bg-slate-900">🏦 ${safeName} (${safeNum})</option>`);
             });
         }
 
@@ -3437,7 +3816,7 @@
             const now = new Date();
             const isIncrease = delta >= 0;
             const signPrefix = isIncrease ? '[+] ' : '[-] ';
-            const userReason = document.getElementById('adjust-reason').value.trim();
+            const userReason = document.getElementById('adjust-reason').value.trim().replace(/^(\[\+\]\s*|\[\-\]\s*)/, '');
             const fullDescription = `${signPrefix}Adjust: ${userReason} (Discrepancy: ${isIncrease ? '+' : ''}${delta.toFixed(2)})`;
 
             const payload = {
@@ -3486,6 +3865,7 @@
             e.preventDefault(); 
             const f = e.target;
             const type = f.edit_tx_type.value;
+            const desc = f.edit_tx_description.value;
             const payload = { 
                 id: f.edit_tx_id.value, 
                 type: type, 
@@ -3493,10 +3873,14 @@
                 target_source: type === 'Bank_to_Bank' ? f.edit_tx_target.value : '',
                 amount: parseFloat(f.edit_tx_amount.value), 
                 fee: parseFloat(f.edit_tx_fee.value || 0),
-                description: f.edit_tx_description.value, 
+                description: desc, 
                 date: f.edit_tx_date.value, 
                 time: f.edit_tx_time.value 
             };
+
+            if (type === 'Adjustment') {
+                payload.adjustment_direction = desc.trim().startsWith('[-]') ? 'decrease' : 'increase';
+            }
 
             autoLearnKeyword(payload.description);
             closeTxModal();
@@ -3686,13 +4070,9 @@
         function copyReportPreviewText() {
             const area = document.getElementById('report-preview-textarea');
             if (!area) return;
-            navigator.clipboard.writeText(area.value).then(() => {
-                showTrackerToast("Report text copied to clipboard!", "success");
-            }).catch(() => {
-                area.select();
-                document.execCommand('copy');
-                showTrackerToast("Report text copied!", "success");
-            });
+            area.select();
+            document.execCommand('copy');
+            showTrackerToast("Report text copied to clipboard!", "success");
         }
 
         function shareReportToTelegram() {
@@ -3759,6 +4139,7 @@
                         reportTypeLabel: typeLabel,
                         period: period,
                         periodTitle: snap.periodTitle,
+                        budgetLimit: Number(localStorage.getItem('monthly_budget_limit') || 0),
                         reportText: reportText,
                         summaryText: reportText,
                         message: reportText,
@@ -3768,12 +4149,14 @@
                         totalIncome: snap.periodInflow,
                         totalExpense: snap.periodExpense,
                         totalFees: snap.periodFees,
+                        periodAdjustments: snap.periodAdjustments,
                         endingRestBalance: snap.endingRestBalance,
                         summary: {
                             previousMonthRestBalance: snap.prevRestBalance,
                             totalIncome: snap.periodInflow,
                             totalExpense: snap.periodExpense,
                             totalFees: snap.periodFees,
+                            periodAdjustments: snap.periodAdjustments,
                             netSavings: snap.netSaved,
                             endingRestBalance: snap.endingRestBalance,
                             savingsRate: snap.savingsRate,
@@ -3898,8 +4281,8 @@
                 const listHtml = validTxs.map(t => `
                     <div class="flex justify-between items-center text-xs py-2.5 px-3 rounded-xl bg-slate-900/60 border border-white/5 hover:border-white/10 transition-colors">
                         <div class="flex-1 min-w-0 pr-2">
-                            <p class="font-semibold text-slate-200 truncate">${t.description}</p>
-                            <p class="text-[10px] text-slate-500 mt-0.5">${t.date} | ${t.source}</p>
+                            <p class="font-semibold text-slate-200 truncate">${escapeHtml(t.description)}</p>
+                            <p class="text-[10px] text-slate-500 mt-0.5">${escapeHtml(t.date)} | ${escapeHtml(t.source)}</p>
                         </div>
                         <span class="font-bold text-rose-400 shrink-0">৳${Number(t.amount).toLocaleString()}</span>
                     </div>
@@ -3924,7 +4307,6 @@
                 return showTrackerToast("An account with this name already exists.", "error");
             }
 
-            // If previously in deleted banks tombstone list, allow re-addition
             deletedBankNames.delete(name.toLowerCase());
             saveDeletedBanks();
             
@@ -3955,8 +4337,12 @@
         function deleteBank(i) { 
             if (!bankAccounts[i]) return;
             const targetName = bankAccounts[i].name;
-            showConfirmModal("Delete Bank Card?", `Remove ${targetName} from your saved cards?`, () => { 
-                // Add to deleted bank names blacklist to prevent automatic auto-discovery re-adding it
+            const currentBal = appState.balances.bankAccounts[targetName] || 0;
+            const warningMsg = Math.abs(currentBal) > 0.01
+                ? `Warning: ${targetName} still holds a balance of ৳${currentBal.toLocaleString()}. Removing this card will hide it from Total Bank Balance until re-added.`
+                : `Remove ${targetName} from your saved cards?`;
+
+            showConfirmModal("Delete Bank Card?", warningMsg, () => { 
                 deletedBankNames.add(targetName.trim().toLowerCase());
                 saveDeletedBanks();
 
@@ -3973,8 +4359,8 @@
             bankAccounts.forEach((b, i) => l.insertAdjacentHTML('beforeend', `
                 <div class="flex justify-between items-center bg-slate-900/60 border border-white/5 p-2.5 rounded-xl text-xs">
                     <div>
-                        <span class="font-semibold text-slate-200 block">${b.name}</span>
-                        <span class="text-[10px] text-slate-500">${b.number}</span>
+                        <span class="font-semibold text-slate-200 block">${escapeHtml(b.name)}</span>
+                        <span class="text-[10px] text-slate-500">${escapeHtml(b.number)}</span>
                     </div>
                     <div>
                         <button type="button" onclick="editBank(${i})" class="text-brand-400 hover:text-brand-300 mr-3 transition"><i class="fa-solid fa-pen"></i></button>
@@ -3997,6 +4383,7 @@
         
         async function triggerConnectionTest() {
              showTrackerToast("Testing connection with API...", "success");
+             await processSyncQueue(true);
         }
 
         async function syncLegacyDataFromSheets() {
@@ -4101,6 +4488,7 @@
         window.handleKeywordInput = handleKeywordInput;
         window.handleKeywordKeydown = handleKeywordKeydown;
         window.selectSuggestedKeyword = selectSuggestedKeyword;
+        window.applyQuickTemplate = applyQuickTemplate;
         window.onReportPeriodChange = onReportPeriodChange;
         window.updateReportSummaryPreview = updateReportSummaryPreview;
         window.sendAutomatedReport = sendAutomatedReport;
@@ -4116,6 +4504,11 @@
         window.calculateAdjustDelta = calculateAdjustDelta;
         window.calculateAdjustTarget = calculateAdjustTarget;
         window.handleAdjustBalanceSubmit = handleAdjustBalanceSubmit;
+        window.openBudgetModal = openBudgetModal;
+        window.closeBudgetModal = closeBudgetModal;
+        window.saveMonthlyBudget = saveMonthlyBudget;
+        window.exportLedgerToCSV = exportLedgerToCSV;
+        window.processSyncQueue = processSyncQueue;
     </script>
 </body>
 </html>
