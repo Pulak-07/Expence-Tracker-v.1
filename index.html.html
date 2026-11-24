@@ -13,7 +13,7 @@
     <meta name="apple-mobile-web-app-title" content="Tracker">
     
     <!-- Favicon -->
-    <link rel="icon" type="image/png" sizes="16x16" href="https://eunobyvdokmswxbfxent.supabase.co/storage/v1/object/sign/pulak%20chakma/logo.png?token=eyJraWQiOiJjOTk5NTg3MC0yODYxLTRlN2YtODMxMi0yNDBjYzg1NzQ4ODkiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwdWxhayBjaGFrbWEvbG9nby5wbmciLCJzY29wZSI6ImRvd25sb2FkIiwiaWF0IjoxNzg3OTc0NDgwLCJleHAiOjI0MTg2OTQ0ODB9.9j-A-_QBZ9aVadYrLOdLeBHDNJ33FpuBKJ9ZCrk4dO0">
+    <link rel="icon" type="image/png" sizes="16x16" href="/logo.png">
     
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -243,7 +243,7 @@
                     <form id="step-1-credentials" onsubmit="handleTrackerLogin(event)" class="space-y-5 step-container step-active w-full">
                         <div class="flex items-center justify-between pb-1 border-b border-white/5">
                             <span class="text-xs uppercase tracking-wider font-semibold text-slate-400">Step 01 / Identity</span>
-                            <span class="text-[11px] text-brand-400 flex items-center gap-1"><i class="fa-solid fa-lock text-[10px]"></i> Encrypted</span>
+                            <span id="env-status-pill" class="text-[11px] text-amber-400 flex items-center gap-1"><i class="fa-solid fa-spinner animate-spin text-[10px]"></i> Connecting Vault</span>
                         </div>
 
                         <div>
@@ -281,8 +281,8 @@
                             <span>Authentication failed. Check credentials.</span>
                         </div>
 
-                        <button id="login-btn-submit" type="submit" 
-                            class="w-full bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-400 hover:to-brand-500 text-slate-950 font-bold py-3.5 rounded-2xl shadow-lg shadow-brand-500/20 hover:shadow-brand-500/35 transition-all duration-200 flex items-center justify-center gap-2.5 text-sm active:scale-[0.98]">
+                        <button id="login-btn-submit" type="submit" disabled
+                            class="w-full bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-400 hover:to-brand-500 disabled:opacity-50 disabled:cursor-not-allowed text-slate-950 font-bold py-3.5 rounded-2xl shadow-lg shadow-brand-500/20 hover:shadow-brand-500/35 transition-all duration-200 flex items-center justify-center gap-2.5 text-sm active:scale-[0.98]">
                             <i class="fa-solid fa-fingerprint text-base"></i> 
                             <span>Authenticate &amp; Request OTP</span>
                         </button>
@@ -1635,23 +1635,79 @@
                 .replace(/'/g, "&#039;");
         }
 
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyCkLksu1JcBUoTU5M_N5TQfHnPJKLWS7y8",
-            authDomain: "expence-tracker-64440.firebaseapp.com",
-            projectId: "expence-tracker-64440",
-            storageBucket: "expence-tracker-64440.firebasestorage.app",
-            messagingSenderId: "638836488723",
-            appId: "1:638836488723:web:bbf27257d382acc5a4dde6",
-            measurementId: "G-K5KJJQZEDG"
-        };
+        // Dynamic runtime variables loaded from Vercel Environment Variables via /api/config
+        let firebaseApp = null;
+        let auth = null;
+        let supabase = null;
+        let API_URL = "";
+        let isBackendConfigured = false;
 
-        const firebaseApp = initializeApp(firebaseConfig);
-        const auth = getAuth(firebaseApp);
+        async function bootstrapRuntimeConfig() {
+            const envPill = document.getElementById('env-status-pill');
+            const loginBtn = document.getElementById('login-btn-submit');
 
-        const supabaseUrl = 'https://jnaqclumiuhflcvirkgv.supabase.co';
-        const supabaseKey = 'sb_publishable_hZyk2xZ6zy86jQJbKIa92g_TVlOup3O';
-        const supabase = createClient(supabaseUrl, supabaseKey);
+            try {
+                // Fetch secrets injected via Vercel Environment Variables
+                const res = await fetch('/api/config', { cache: 'no-store' });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const cfg = await res.json();
+
+                if (!cfg.firebaseConfig || !cfg.firebaseConfig.apiKey || !cfg.supabaseUrl || !cfg.supabaseKey) {
+                    throw new Error("Incomplete environment variables returned by Vercel.");
+                }
+
+                // Cache non-sensitive runtime config for offline PWA startup
+                localStorage.setItem('cached_runtime_config', JSON.stringify(cfg));
+                initializeCloudClients(cfg);
+            } catch (err) {
+                console.warn("Could not fetch /api/config live, checking local cache:", err);
+                const cachedRaw = localStorage.getItem('cached_runtime_config');
+                if (cachedRaw) {
+                    try {
+                        initializeCloudClients(JSON.parse(cachedRaw));
+                        return;
+                    } catch (_) {}
+                }
+
+                if (envPill) {
+                    envPill.className = "text-[11px] text-rose-400 flex items-center gap-1 font-semibold";
+                    envPill.innerHTML = `<i class="fa-solid fa-triangle-exclamation text-[10px]"></i> Missing Vercel Env`;
+                }
+                showTrackerToast("Missing Vercel Environment Variables (/api/config). Check Vercel Project Settings.", "error");
+            }
+        }
+
+        function initializeCloudClients(cfg) {
+            firebaseApp = initializeApp(cfg.firebaseConfig);
+            auth = getAuth(firebaseApp);
+            supabase = createClient(cfg.supabaseUrl, cfg.supabaseKey);
+            API_URL = cfg.appsScriptUrl || "";
+            isBackendConfigured = true;
+
+            const envPill = document.getElementById('env-status-pill');
+            const loginBtn = document.getElementById('login-btn-submit');
+            if (envPill) {
+                envPill.className = "text-[11px] text-brand-400 flex items-center gap-1";
+                envPill.innerHTML = `<i class="fa-solid fa-lock text-[10px]"></i> Encrypted`;
+            }
+            if (loginBtn) loginBtn.disabled = false;
+
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    if (isSessionValid()) {
+                        document.getElementById('login-view').classList.add('hidden');
+                        document.getElementById('app-view').classList.remove('hidden');
+                        document.getElementById('app-view').classList.add('flex');
+                        initTrackerApp();
+                    } else {
+                        checkURLApprovalToken();
+                    }
+                } else {
+                    clearSession();
+                    checkURLApprovalToken();
+                }
+            });
+        }
 
         const DB_NAME = 'ExpenseTrackerDB';
         const DB_VERSION = 1;
@@ -1766,6 +1822,7 @@
                 if (manualTrigger) showTrackerToast("Currently offline. Will sync automatically when reconnected.", "error");
                 return;
             }
+            if (!supabase) return;
             if (isSyncingQueue) return;
             isSyncingQueue = true;
             await updateNetworkStatusIndicator();
@@ -1782,7 +1839,6 @@
                         const table = item.target === 'transaction' ? 'transactions' : 'dps';
                         let dbPayload = { ...item.payload };
 
-                        // Strip non-schema keys for transactions so Supabase upsert never fails on unknown columns
                         if (item.target === 'transaction') {
                             dbPayload = {
                                 id: String(item.payload.id),
@@ -1813,10 +1869,7 @@
 
                         if (item.type === 'insert') {
                             const { error } = await supabase.from(table).upsert([dbPayload], { onConflict: 'id' });
-                            if (error) {
-                                console.error("Supabase insert error for " + table, error);
-                                throw error;
-                            }
+                            if (error) throw error;
                             if (item.target === 'transaction') {
                                 runRemoteAPISilent('addTransaction', item.payload);
                             } else {
@@ -1825,10 +1878,7 @@
                             await idbDelete('syncQueue', item.queueId);
                         } else if (item.type === 'update') {
                             const { error } = await supabase.from(table).update(dbPayload).eq('id', dbPayload.id);
-                            if (error) {
-                                console.error("Supabase update error for " + table, error);
-                                throw error;
-                            }
+                            if (error) throw error;
                             if (item.target === 'transaction') {
                                 runRemoteAPISilent('editTransaction', item.payload);
                             } else {
@@ -1876,12 +1926,14 @@
             localStorage.removeItem('otp_verified_timestamp');
             sessionStorage.removeItem('otp_verified_studybuddy');
         }
-
-        const API_URL = "https://script.google.com/macros/s/AKfycbypv86qjesATePCJLsrlzQZvfs0lt0vOcp3tlSSXgMqUAGt0iHUGf2_7dvwHSJLf2Re/exec";
         
         async function runRemoteAPI(action, payload) {
             if (!navigator.onLine) {
                 showTrackerToast("You are offline. Connect to internet for this action.", 'error');
+                return null;
+            }
+            if (!API_URL) {
+                showTrackerToast("Apps Script URL is not configured in Vercel Variables.", 'error');
                 return null;
             }
             setLoadingState(true, "Synchronizing...", "Connecting with Google Sheets & 2FA Service.");
@@ -1906,7 +1958,7 @@
         }
 
         function runRemoteAPISilent(action, payload) {
-            if (!navigator.onLine) return;
+            if (!navigator.onLine || !API_URL) return;
             fetch(API_URL, { 
                 method: 'POST', 
                 redirect: 'follow', 
@@ -1935,7 +1987,6 @@
             let ipAddress = "Unavailable";
             let locationStr = "Location Unavailable";
 
-            // 1. Fetch public IP and IP-based City/Country lookup with fast timeout
             try {
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 3500);
@@ -1957,7 +2008,6 @@
                 } catch (_) {}
             }
 
-            // 2. Refine with browser GPS coordinates if permission is already granted or quickly resolved
             try {
                 if ('geolocation' in navigator) {
                     const pos = await new Promise((resolve, reject) => {
@@ -2063,6 +2113,9 @@
 
         async function handleTrackerLogin(event) {
             event.preventDefault();
+            if (!isBackendConfigured || !auth) {
+                return showTrackerToast("Backend environment variables are still loading or missing.", "error");
+            }
             const idInput = document.getElementById('login-id').value.trim();
             const passInput = document.getElementById('login-pass').value;
             const errorEl = document.getElementById('login-error');
@@ -2164,7 +2217,7 @@
                 return;
             }
 
-            if (!auth.currentUser) {
+            if (!auth || !auth.currentUser) {
                 showTrackerToast("Authentication session not found. Please log in again.", "error");
                 cancelOTPLogin();
                 return;
@@ -2231,7 +2284,7 @@
             showConfirmModal("Lock Session?", "Log out and secure the gateway?", async () => {
                 try {
                     stopApprovalPolling();
-                    await signOut(auth);
+                    if (auth) await signOut(auth);
                     clearSession();
                     document.getElementById('login-id').value = '';
                     document.getElementById('login-pass').value = '';
@@ -2251,21 +2304,8 @@
             });
         }
 
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                if (isSessionValid()) {
-                    document.getElementById('login-view').classList.add('hidden');
-                    document.getElementById('app-view').classList.remove('hidden');
-                    document.getElementById('app-view').classList.add('flex');
-                    initTrackerApp();
-                } else {
-                    checkURLApprovalToken();
-                }
-            } else {
-                clearSession();
-                checkURLApprovalToken();
-            }
-        });
+        // Start bootstrap sequence
+        bootstrapRuntimeConfig();
 
         let appState = { transactions: [], dps: [], balances: { cash: 0, bank: 0, dps: 0, bankAccounts: {} } };
         let bankAccounts = []; 
@@ -2454,7 +2494,7 @@
 
         async function loadVerifiedEmail() {
             let saved = localStorage.getItem('verified_report_email');
-            if (!saved && auth.currentUser) saved = auth.currentUser.email;
+            if (!saved && auth && auth.currentUser) saved = auth.currentUser.email;
             
             const updateEmailUI = (emailVal) => {
                 const displayEl = document.getElementById('current-verified-email');
@@ -2465,10 +2505,8 @@
 
             updateEmailUI(saved);
 
-            // Fetch latest synced Report Delivery Email from cloud
-            if (navigator.onLine) {
+            if (navigator.onLine && supabase) {
                 try {
-                    // 1. Check Supabase app_settings or user_preferences if available
                     const { data: settingRow, error } = await supabase
                         .from('app_settings')
                         .select('value')
@@ -2482,23 +2520,24 @@
                     }
                 } catch (e) {}
 
-                try {
-                    // 2. Also query Google Apps Script backend for saved report email
-                    const res = await fetch(API_URL, {
-                        method: 'POST',
-                        redirect: 'follow',
-                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                        body: JSON.stringify({ action: 'getSettings', payload: { uid: auth.currentUser ? auth.currentUser.uid : '' } })
-                    });
-                    if (res.ok) {
-                        const json = await res.json();
-                        const cloudEmail = json.reportEmail || json.email || (json.data && json.data.reportEmail);
-                        if (cloudEmail && cloudEmail.includes('@')) {
-                            localStorage.setItem('verified_report_email', cloudEmail);
-                            updateEmailUI(cloudEmail);
+                if (API_URL) {
+                    try {
+                        const res = await fetch(API_URL, {
+                            method: 'POST',
+                            redirect: 'follow',
+                            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                            body: JSON.stringify({ action: 'getSettings', payload: { uid: (auth && auth.currentUser) ? auth.currentUser.uid : '' } })
+                        });
+                        if (res.ok) {
+                            const json = await res.json();
+                            const cloudEmail = json.reportEmail || json.email || (json.data && json.data.reportEmail);
+                            if (cloudEmail && cloudEmail.includes('@')) {
+                                localStorage.setItem('verified_report_email', cloudEmail);
+                                updateEmailUI(cloudEmail);
+                            }
                         }
-                    }
-                } catch (e) {}
+                    } catch (e) {}
+                }
             }
         }
 
@@ -2555,7 +2594,7 @@
             const res = await runRemoteAPI('verifyEmailOTP', {
                 email,
                 otp,
-                uid: auth.currentUser ? auth.currentUser.uid : '',
+                uid: (auth && auth.currentUser) ? auth.currentUser.uid : '',
                 saveAsReportEmail: true
             });
             btn.innerHTML = ogText;
@@ -2564,17 +2603,18 @@
             if(res && res.status === 'success') {
                 localStorage.setItem('verified_report_email', email);
 
-                // Persist new Report Delivery Email to Supabase & Google Apps Script
-                try {
-                    await supabase.from('app_settings').upsert([
-                        { key: 'verified_report_email', value: email, updated_at: new Date().toISOString() }
-                    ], { onConflict: 'key' });
-                } catch (e) {}
+                if (supabase) {
+                    try {
+                        await supabase.from('app_settings').upsert([
+                            { key: 'verified_report_email', value: email, updated_at: new Date().toISOString() }
+                        ], { onConflict: 'key' });
+                    } catch (e) {}
+                }
 
                 runRemoteAPISilent('updateReportEmail', {
                     email: email,
                     reportEmail: email,
-                    uid: auth.currentUser ? auth.currentUser.uid : ''
+                    uid: (auth && auth.currentUser) ? auth.currentUser.uid : ''
                 });
 
                 showTrackerToast("Report Delivery Email saved & synced to cloud!", "success");
@@ -2785,7 +2825,7 @@
         }
 
         async function fetchInitialLedgerData() {
-            if (navigator.onLine) {
+            if (navigator.onLine && supabase) {
                 setLoadingState(true, "Loading Records...", "Fetching live ledger records from Supabase...");
                 try {
                     const { data: cloudTxs, error: txErr } = await supabase.from('transactions').select('*').order('date', { ascending: false }).order('time', { ascending: false });
@@ -2817,7 +2857,6 @@
             }
         }
 
-        // Synchronously recompute running balances from transaction & DPS arrays
         function processLedgerData(txs, dpss) {
             let cashBal = 0, dpsBal = 0;
             let bankAccs = {};
@@ -2887,7 +2926,6 @@
                 };
             });
 
-            // Sum ALL bank balances across both saved bank cards and any ledger bank accounts
             let computedTotalBank = 0;
             Object.keys(bankAccs).forEach(k => {
                 if (k.toLowerCase() !== 'cash') {
@@ -3117,7 +3155,6 @@
                 }
             }
 
-            // Update Budget Bar
             const budgetLimit = parseFloat(localStorage.getItem('monthly_budget_limit') || '0');
             const budgetTextEl = document.getElementById('budget-usage-text');
             const budgetBarEl = document.getElementById('budget-progress-bar');
@@ -3995,7 +4032,6 @@
             updateReportSummaryPreview();
         }
 
-        // Generates formatted text report for Telegram and Email
         function buildFormattedReportText(type, snap, targetEmail) {
             const datePrinted = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
             let t = `🏛️ EXPENSE TRACKER FINANCIAL REPORT\n`;
@@ -4053,7 +4089,7 @@
             const period = document.getElementById('auto-report-period').value;
             const from = document.getElementById('auto-report-from').value;
             const to = document.getElementById('auto-report-to').value;
-            const targetEmail = localStorage.getItem('verified_report_email') || (auth.currentUser ? auth.currentUser.email : '');
+            const targetEmail = localStorage.getItem('verified_report_email') || ((auth && auth.currentUser) ? auth.currentUser.email : '');
 
             const snap = getPeriodFinancialSnapshot(period, from, to);
             const reportText = buildFormattedReportText(type, snap, targetEmail);
@@ -4085,7 +4121,7 @@
         function shareReportToEmail() {
             const area = document.getElementById('report-preview-textarea');
             if (!area) return;
-            const targetEmail = localStorage.getItem('verified_report_email') || (auth.currentUser ? auth.currentUser.email : '');
+            const targetEmail = localStorage.getItem('verified_report_email') || ((auth && auth.currentUser) ? auth.currentUser.email : '');
             const subject = encodeURIComponent("Monthly Financial Summary Report");
             const body = encodeURIComponent(area.value);
             window.open(`mailto:${targetEmail}?subject=${subject}&body=${body}`, '_blank');
@@ -4100,7 +4136,7 @@
             const channel = document.getElementById('auto-report-channel').value;
             const from = document.getElementById('auto-report-from').value;
             const to = document.getElementById('auto-report-to').value;
-            const targetEmail = localStorage.getItem('verified_report_email') || (auth.currentUser ? auth.currentUser.email : '');
+            const targetEmail = localStorage.getItem('verified_report_email') || ((auth && auth.currentUser) ? auth.currentUser.email : '');
 
             const snap = getPeriodFinancialSnapshot(period, from, to);
             const reportText = buildFormattedReportText(type, snap, targetEmail);
@@ -4216,236 +4252,193 @@
 
             const labels = Object.keys(groups);
             const data = Object.values(groups);
-            const colors = ['#f43f5e', '#38bdf8', '#10b981', '#fbbf24', '#818cf8', '#f472b6', '#06b6d4', '#c084fc', '#f59e0b'];
+            const colors = ['#f43f5e', '#38bdf8', '#10b981', '#fbbf24', '#818cf8', '#f472b6', '#2dd4bf', '#a78bfa', '#fb923c', '#94a3b8'];
 
+            const detailsEl = document.getElementById('analytics-details');
+            if (labels.length === 0) {
+                detailsEl.innerHTML = `<p class="text-xs text-slate-500 text-center py-4">No living expense data found for this month.</p>`;
+            } else {
+                const total = data.reduce((a, b) => a + b, 0);
+                detailsEl.innerHTML = labels.map((lbl, idx) => {
+                    const amt = data[idx];
+                    const pct = ((amt / total) * 100).toFixed(1);
+                    return `
+                        <div class="flex justify-between items-center bg-slate-900/60 p-3 rounded-xl border border-white/5 text-xs">
+                            <span class="font-semibold text-slate-200 flex items-center gap-2 truncate pr-2">
+                                <span class="w-2.5 h-2.5 rounded-full shrink-0" style="background-color: ${colors[idx % colors.length]}"></span>
+                                <span class="truncate">${escapeHtml(lbl)}</span>
+                            </span>
+                            <span class="font-bold text-slate-300 shrink-0">৳${amt.toLocaleString()} <span class="text-[10px] text-slate-500 font-normal">(${pct}%)</span></span>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            const ctx = document.getElementById('expense-pie-chart').getContext('2d');
             if (analyticsPieChart) analyticsPieChart.destroy();
             
-            const ctx = document.getElementById('expense-pie-chart').getContext('2d');
-            
-            if (labels.length === 0) {
+            if (labels.length > 0) {
                 analyticsPieChart = new Chart(ctx, {
-                    type: 'pie',
-                    data: { labels: ['No Expenses'], datasets: [{ data: [1], backgroundColor: ['#1e293b'] }] },
-                    options: { 
-                        responsive: true,
-                        plugins: { 
-                            tooltip: { enabled: false },
-                            legend: { labels: { color: '#64748b', font: { family: '"Times New Roman", Times, serif' } } }
-                        } 
-                    }
-                });
-            } else {
-                analyticsPieChart = new Chart(ctx, {
-                    type: 'pie',
+                    type: 'doughnut',
                     data: {
                         labels: labels,
                         datasets: [{
                             data: data,
-                            backgroundColor: colors.slice(0, labels.length),
+                            backgroundColor: colors,
                             borderWidth: 2,
-                            borderColor: '#0f172a'
+                            borderColor: '#090d16'
                         }]
                     },
                     options: {
                         responsive: true,
-                        maintainAspectRatio: false,
+                        cutout: '68%',
                         plugins: {
-                            legend: { 
-                                position: 'bottom', 
-                                labels: { 
-                                    font: { size: 11, family: '"Times New Roman", Times, serif' },
-                                    color: '#cbd5e1',
-                                    boxWidth: 12,
-                                    padding: 12
-                                } 
-                            },
-                            tooltip: {
-                                backgroundColor: 'rgba(15, 23, 42, 0.95)',
-                                titleColor: '#f1f5f9',
-                                bodyColor: '#cbd5e1',
-                                borderColor: 'rgba(255, 255, 255, 0.1)',
-                                borderWidth: 1,
-                                padding: 10,
-                                cornerRadius: 10
-                            }
+                            legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 11, family: 'Times New Roman' }, padding: 15 } }
                         }
                     }
                 });
             }
-
-            const detailsContainer = document.getElementById('analytics-details');
-            if (validTxs.length === 0) {
-                detailsContainer.innerHTML = '<p class="text-xs text-slate-500 py-3">No qualifying expenses for this month.</p>';
-            } else {
-                validTxs.sort((a,b) => b.amount - a.amount);
-                const listHtml = validTxs.map(t => `
-                    <div class="flex justify-between items-center text-xs py-2.5 px-3 rounded-xl bg-slate-900/60 border border-white/5 hover:border-white/10 transition-colors">
-                        <div class="flex-1 min-w-0 pr-2">
-                            <p class="font-semibold text-slate-200 truncate">${escapeHtml(t.description)}</p>
-                            <p class="text-[10px] text-slate-500 mt-0.5">${escapeHtml(t.date)} | ${escapeHtml(t.source)}</p>
-                        </div>
-                        <span class="font-bold text-rose-400 shrink-0">৳${Number(t.amount).toLocaleString()}</span>
-                    </div>
-                `).join('');
-                detailsContainer.innerHTML = listHtml;
-            }
         }
-
-        let editingBankIndex = -1;
 
         function handleBankCreate(e) {
             e.preventDefault(); 
-            const nameInput = document.getElementById('new-bank-name');
-            const numberInput = document.getElementById('new-bank-number');
-            const name = (nameInput.value || '').trim();
-            const number = (numberInput.value || '').trim();
-            
-            if (!name) return showTrackerToast("Bank name is required.", "error");
-            
-            const duplicateIdx = bankAccounts.findIndex(b => b.name.trim().toLowerCase() === name.toLowerCase());
-            if (duplicateIdx !== -1 && duplicateIdx !== editingBankIndex) {
-                return showTrackerToast("An account with this name already exists.", "error");
-            }
+            const n = document.getElementById('new-bank-name').value.trim();
+            const num = document.getElementById('new-bank-number').value.trim();
+            if (!n) return;
 
-            deletedBankNames.delete(name.toLowerCase());
-            saveDeletedBanks();
-            
-            if (editingBankIndex > -1) {
-                bankAccounts[editingBankIndex] = { name, number: number || "Account" };
-                showTrackerToast("Account updated successfully.", "success");
-                editingBankIndex = -1;
-                document.getElementById('bank-submit-btn').textContent = "Add Account Card";
-            } else {
-                bankAccounts.push({ name, number: number || "Account" }); 
-                showTrackerToast(`Added ${name} account card!`, "success");
-            }
-            
-            saveBanks(); 
-            e.target.reset(); 
-            populateAdjustAccountSelect();
-        }
-
-        function editBank(i) {
-            if (!bankAccounts[i]) return;
-            document.getElementById('new-bank-name').value = bankAccounts[i].name;
-            document.getElementById('new-bank-number').value = bankAccounts[i].number || "";
-            document.getElementById('bank-submit-btn').textContent = "Update Account Card";
-            editingBankIndex = i;
-            document.getElementById('new-bank-name').focus();
-        }
-
-        function deleteBank(i) { 
-            if (!bankAccounts[i]) return;
-            const targetName = bankAccounts[i].name;
-            const currentBal = appState.balances.bankAccounts[targetName] || 0;
-            const warningMsg = Math.abs(currentBal) > 0.01
-                ? `Warning: ${targetName} still holds a balance of ৳${currentBal.toLocaleString()}. Removing this card will hide it from Total Bank Balance until re-added.`
-                : `Remove ${targetName} from your saved cards?`;
-
-            showConfirmModal("Delete Bank Card?", warningMsg, () => { 
-                deletedBankNames.add(targetName.trim().toLowerCase());
+            const lower = n.toLowerCase();
+            if (deletedBankNames.has(lower)) {
+                deletedBankNames.delete(lower);
                 saveDeletedBanks();
+            }
 
-                bankAccounts.splice(i, 1); 
-                saveBanks(); 
-                showTrackerToast(`Removed ${targetName}.`, "success"); 
-            }); 
+            if (bankAccounts.some(b => b.name.toLowerCase() === lower)) {
+                showTrackerToast(`"${n}" already exists!`, "error");
+                return;
+            }
+
+            bankAccounts.push({ name: n, number: num || "Account" }); 
+            saveBanks();
+            e.target.reset(); 
+            showTrackerToast(`Added ${n} account!`, "success");
         }
-        
-        function renderSetupBanks() { 
-            const l = document.getElementById('setup-banks-list'); 
-            if (!l) return;
-            l.innerHTML = ''; 
-            bankAccounts.forEach((b, i) => l.insertAdjacentHTML('beforeend', `
-                <div class="flex justify-between items-center bg-slate-900/60 border border-white/5 p-2.5 rounded-xl text-xs">
-                    <div>
-                        <span class="font-semibold text-slate-200 block">${escapeHtml(b.name)}</span>
-                        <span class="text-[10px] text-slate-500">${escapeHtml(b.number)}</span>
+
+        function deleteBankAccount(idx) {
+            const target = bankAccounts[idx];
+            if (!target) return;
+
+            showConfirmModal("Remove Bank Account?", `Permanently delete "${target.name}"?`, () => {
+                deletedBankNames.add(target.name.trim().toLowerCase());
+                saveDeletedBanks();
+                bankAccounts.splice(idx, 1); 
+                saveBanks(); 
+                showTrackerToast(`${target.name} removed permanently.`, "success");
+            });
+        }
+
+        function renderSetupBanks() {
+            const container = document.getElementById('setup-banks-list'); 
+            container.innerHTML = '';
+            if (bankAccounts.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 text-center py-2">No accounts added yet.</p>`;
+            }
+            bankAccounts.forEach((b, idx) => {
+                container.insertAdjacentHTML('beforeend', `
+                    <div class="flex justify-between items-center bg-slate-900/60 p-3 rounded-xl border border-white/5 text-xs">
+                        <div class="truncate pr-2">
+                            <span class="font-bold text-slate-200 block truncate">${escapeHtml(b.name)}</span>
+                            <span class="text-[10px] text-slate-500 block truncate">${escapeHtml(b.number)}</span>
+                        </div>
+                        <button onclick="deleteBankAccount(${idx})" class="text-rose-400 hover:text-rose-300 font-semibold px-2 py-1 rounded bg-rose-500/10 transition shrink-0">Remove</button>
                     </div>
-                    <div>
-                        <button type="button" onclick="editBank(${i})" class="text-brand-400 hover:text-brand-300 mr-3 transition"><i class="fa-solid fa-pen"></i></button>
-                        <button type="button" onclick="deleteBank(${i})" class="text-rose-400 hover:text-rose-300 transition"><i class="fa-solid fa-trash-can"></i></button>
-                    </div>
-                </div>
-            `)); 
+                `);
+            });
         }
 
         async function triggerTelegramPDFReport() {
-            const selectedMonth = document.getElementById('pdf-report-month').value;
-            let reportEmail = localStorage.getItem('verified_report_email') || (auth.currentUser ? auth.currentUser.email : '');
+            const month = document.getElementById('pdf-report-month').value;
+            const targetEmail = localStorage.getItem('verified_report_email') || ((auth && auth.currentUser) ? auth.currentUser.email : '');
+            if(!month) return showTrackerToast("Please select a report month.", "error");
+            
+            const [yearStr, monthStr] = month.split('-');
+            const year = parseInt(yearStr, 10);
+            const monthNum = parseInt(monthStr, 10);
+            const lastDay = new Date(year, monthNum, 0).getDate();
+            const snap = getPeriodFinancialSnapshot('custom', `${month}-01`, `${month}-${String(lastDay).padStart(2, '0')}`);
 
-            showConfirmModal("Send PDF Report?", `Generate and send the PDF Report for ${selectedMonth}?`, async () => {
-                if (await runRemoteAPI('generateReport', { month: selectedMonth, email: reportEmail })) {
-                    showTrackerToast(`Report for ${selectedMonth} sent to Telegram & ${reportEmail}!`, "success");
-                }
+            showConfirmModal("Dispatch Monthly PDF?", `Send financial report for ${month} to Telegram & ${targetEmail}?`, async () => {
+                const res = await runRemoteAPI('generateReport', { 
+                    month: month, 
+                    email: targetEmail,
+                    reportType: 'details',
+                    openingBalance: snap.prevRestBalance,
+                    previousMonthRestBalance: snap.prevRestBalance,
+                    monthlySavings: snap.netSaved,
+                    totalIncome: snap.periodInflow,
+                    totalExpense: snap.periodExpense,
+                    totalFees: snap.periodFees,
+                    endingRestBalance: snap.endingRestBalance,
+                    bankBalances: appState.balances.bankAccounts
+                });
+                if (res) showTrackerToast(`PDF Report dispatched to Telegram & ${targetEmail}!`, "success");
             });
         }
-        
+
         async function triggerConnectionTest() {
-             showTrackerToast("Testing connection with API...", "success");
-             await processSyncQueue(true);
+            const res = await runRemoteAPI('testBot', {});
+            if (res) showTrackerToast("Bot is live & online! Check Telegram.", "success");
         }
 
         async function syncLegacyDataFromSheets() {
-            showConfirmModal("Sync Legacy Data?", "Download all old records from Google Sheets and push them to Supabase?", async () => {
-                setLoadingState(true, "Downloading...", "Fetching legacy data from Google Sheets.");
-                try {
-                    const result = await runRemoteAPI('getData', {});
-                    if (!result || !result.data) throw new Error("No data received from Sheets.");
-                    
-                    const sheetsData = result.data;
-                    const txs = sheetsData.transactions || [];
-                    const dpss = sheetsData.dps || [];
-                    
-                    if (txs.length === 0 && dpss.length === 0) {
-                         showTrackerToast("No legacy data found in Sheets.", "success");
-                         return;
-                    }
+            showConfirmModal("Pull Legacy Data from Google Sheets?", "Import historical entries from Google Sheets into Supabase?", async () => {
+                const res = await runRemoteAPI('getInitialData', {});
+                if (res && res.data && supabase) {
+                    setLoadingState(true, "Migrating Legacy Data...", "Uploading historical records to Supabase...");
+                    try {
+                        const legacyTxs = res.data.transactions || [];
+                        const legacyDps = res.data.dps || [];
 
-                    const parseDateSafe = (dateStr) => dateStr ? String(dateStr).split('T')[0] : new Date().toISOString().split('T')[0];
+                        for (const item of legacyTxs) {
+                            const payload = {
+                                id: String(item.id || crypto.randomUUID()),
+                                date: String(item.date || new Date().toISOString().split('T')[0]),
+                                time: String(item.time || '12:00'),
+                                type: String(item.type || 'Expense'),
+                                amount: Number(item.amount) || 0,
+                                fee: Number(item.fee) || 0,
+                                source: String(item.source || 'Cash'),
+                                target_source: String(item.target_source || ''),
+                                description: String(item.description || ''),
+                                created_at: item.timestamp ? new Date(item.timestamp).toISOString() : new Date().toISOString()
+                            };
+                            await supabase.from('transactions').upsert([payload], { onConflict: 'id' });
+                        }
 
-                    const formattedTxs = txs.map(t => ({
-                        id: (t.id && String(t.id).length === 36) ? t.id : crypto.randomUUID(),
-                        date: parseDateSafe(t.date),
-                        time: t.time ? String(t.time).substring(0, 5) : '12:00',
-                        type: t.type,
-                        amount: parseFloat(t.amount) || 0,
-                        fee: parseFloat(t.fee) || 0,
-                        source: t.source,
-                        target_source: t.target_source || '',
-                        description: t.description || '',
-                        created_at: t.timestamp ? new Date(t.timestamp).toISOString() : new Date().toISOString()
-                    }));
-                    
-                    const formattedDps = dpss.map(d => ({
-                        id: (d.id && String(d.id).length === 36) ? d.id : crypto.randomUUID(),
-                        amount: parseFloat(d.amount) || 0,
-                        installment_no: d.installmentNo || d.installment_no || '',
-                        bank: d.bank || '',
-                        ac_no: d.acNo || d.ac_no || '',
-                        maturity_date: (d.maturityDate || d.maturity_date) ? (d.maturityDate || d.maturity_date) : null,
-                        note: d.note || '',
-                        date: parseDateSafe(d.date),
-                        created_at: d.timestamp ? new Date(d.timestamp).toISOString() : new Date().toISOString()
-                    }));
-                    
-                    if (formattedTxs.length > 0) {
-                        const { error: txErr } = await supabase.from('transactions').upsert(formattedTxs, { onConflict: 'id' });
-                        if (txErr) throw txErr;
-                        for (const item of formattedTxs) { await idbPut('transactions', item); }
+                        for (const item of legacyDps) {
+                            const rawMat = item.maturity_date || item.maturityDate;
+                            const cleanMat = (rawMat && String(rawMat).trim() !== '') ? String(rawMat).trim() : null;
+                            const payload = {
+                                id: String(item.id || crypto.randomUUID()),
+                                amount: Number(item.amount) || 0,
+                                installment_no: String(item.installment_no || item.installmentNo || ''),
+                                note: String(item.note || ''),
+                                date: String(item.date || new Date().toISOString().split('T')[0]),
+                                bank: String(item.bank || ''),
+                                ac_no: String(item.ac_no || item.acNo || ''),
+                                maturity_date: cleanMat,
+                                created_at: item.timestamp ? new Date(item.timestamp).toISOString() : new Date().toISOString()
+                            };
+                            await supabase.from('dps').upsert([payload], { onConflict: 'id' });
+                        }
+
+                        showTrackerToast(`Successfully imported ${legacyTxs.length} transactions & ${legacyDps.length} DPS logs!`, "success");
+                        fetchInitialLedgerData();
+                    } catch (e) {
+                        console.error(e);
+                        showTrackerToast("Error importing some legacy records.", "error");
+                    } finally {
+                        setLoadingState(false);
                     }
-                    if (formattedDps.length > 0) {
-                        const { error: dpsErr } = await supabase.from('dps').upsert(formattedDps, { onConflict: 'id' });
-                        if (dpsErr) throw dpsErr;
-                        for (const item of formattedDps) { await idbPut('dps', item); }
-                    }
-                    
-                    showTrackerToast("Legacy data successfully synced to Supabase & Local Cache!", "success");
-                    await fetchInitialLedgerData();
-                } catch (err) {
-                    showTrackerToast("Sync failed: " + err.message, "error");
-                } finally {
-                    setLoadingState(false);
                 }
             });
         }
@@ -4456,42 +4449,41 @@
         window.cancelOTPLogin = cancelOTPLogin;
         window.handleTrackerLogout = handleTrackerLogout;
         window.switchTrackerTab = switchTrackerTab;
-        window.toggleAccountSection = toggleAccountSection;
         window.selectFormType = selectFormType;
+        window.toggleAccountSection = toggleAccountSection;
         window.onTxTypeChanged = onTxTypeChanged;
         window.toggleCustomTimeFields = toggleCustomTimeFields;
         window.handleTransactionSubmit = handleTransactionSubmit;
-        window.handleDPSSubmit = handleDPSSubmit;
-        window.setTransferDirection = setTransferDirection;
         window.handleTransferSubmit = handleTransferSubmit;
+        window.setTransferDirection = setTransferDirection;
+        window.handleDPSSubmit = handleDPSSubmit;
+        window.filterLedgers = filterLedgers;
+        window.toggleLedgerSortOrder = toggleLedgerSortOrder;
+        window.refreshLedgerData = refreshLedgerData;
+        window.exportLedgerToCSV = exportLedgerToCSV;
+        window.openEditModal = openEditModal;
         window.closeTxModal = closeTxModal;
         window.closeDPSModal = closeDPSModal;
         window.toggleEditTxSourceVisibility = toggleEditTxSourceVisibility;
         window.handleTxEditSubmit = handleTxEditSubmit;
         window.handleDPSEditSubmit = handleDPSEditSubmit;
         window.triggerDeletionPrompt = triggerDeletionPrompt;
-        window.handleBankCreate = handleBankCreate;
-        window.editBank = editBank;
-        window.deleteBank = deleteBank;
+        window.generateAnalytics = generateAnalytics;
         window.triggerTelegramPDFReport = triggerTelegramPDFReport;
         window.triggerConnectionTest = triggerConnectionTest;
         window.syncLegacyDataFromSheets = syncLegacyDataFromSheets;
-        window.openEditModal = openEditModal;
-        window.filterLedgers = filterLedgers;
-        window.refreshLedgerData = refreshLedgerData;
-        window.toggleLedgerSortOrder = toggleLedgerSortOrder;
-        window.generateAnalytics = generateAnalytics;
         window.startEmailChange = startEmailChange;
         window.cancelEmailChange = cancelEmailChange;
         window.requestReportEmailOTP = requestReportEmailOTP;
         window.verifyReportEmailOTP = verifyReportEmailOTP;
+        window.handleBankCreate = handleBankCreate;
+        window.deleteBankAccount = deleteBankAccount;
         window.handleKeywordInput = handleKeywordInput;
         window.handleKeywordKeydown = handleKeywordKeydown;
         window.selectSuggestedKeyword = selectSuggestedKeyword;
-        window.applyQuickTemplate = applyQuickTemplate;
         window.onReportPeriodChange = onReportPeriodChange;
-        window.updateReportSummaryPreview = updateReportSummaryPreview;
         window.sendAutomatedReport = sendAutomatedReport;
+        window.updateReportSummaryPreview = updateReportSummaryPreview;
         window.openReportPreviewModal = openReportPreviewModal;
         window.closeReportPreviewModal = closeReportPreviewModal;
         window.copyReportPreviewText = copyReportPreviewText;
@@ -4504,10 +4496,10 @@
         window.calculateAdjustDelta = calculateAdjustDelta;
         window.calculateAdjustTarget = calculateAdjustTarget;
         window.handleAdjustBalanceSubmit = handleAdjustBalanceSubmit;
+        window.applyQuickTemplate = applyQuickTemplate;
         window.openBudgetModal = openBudgetModal;
         window.closeBudgetModal = closeBudgetModal;
         window.saveMonthlyBudget = saveMonthlyBudget;
-        window.exportLedgerToCSV = exportLedgerToCSV;
         window.processSyncQueue = processSyncQueue;
     </script>
 </body>
