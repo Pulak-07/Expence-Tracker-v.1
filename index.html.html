@@ -1111,12 +1111,12 @@
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 my-5">
                             <div>
                                 <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">1. Report Type</label>
-                                <select id="auto-report-type" onchange="updateReportSummaryPreview()" 
+                                <select id="auto-report-type" onchange="onReportTypeOrPeriodChange()" 
                                     class="w-full glass-input rounded-xl px-3 py-2.5 text-xs font-semibold text-white outline-none">
-                                    <option value="short" class="bg-slate-900">📄 Short Summary (Savings + Rest Balance)</option>
-                                    <option value="details" class="bg-slate-900">📑 Detailed Itemized Ledger</option>
-                                    <option value="bank" class="bg-slate-900">🏦 Bank Accounts Statement</option>
-                                    <option value="cash" class="bg-slate-900">💵 Cash Wallet Activity Report</option>
+                                    <option value="short" class="bg-slate-900">📄 Short Summary (All Balances, Income, Expense &amp; DPS)</option>
+                                    <option value="details" class="bg-slate-900">📑 Detailed Itemized Ledger (Full History &amp; Analytics)</option>
+                                    <option value="bank" class="bg-slate-900">🏦 Bank Accounts Statement (Bank Inflow/Outflow &amp; Details)</option>
+                                    <option value="cash" class="bg-slate-900">💵 Cash Wallet Activity (Pocket Cash Only)</option>
                                 </select>
                             </div>
 
@@ -1146,12 +1146,52 @@
                         <div id="custom-range-row" class="hidden grid-cols-1 sm:grid-cols-2 gap-4 mb-5 p-3.5 bg-slate-900/60 rounded-2xl border border-white/5">
                             <div>
                                 <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">From Date</label>
-                                <input type="date" id="auto-report-from" onchange="updateReportSummaryPreview()" class="w-full glass-input rounded-xl px-3 py-2 text-xs text-white">
+                                <input type="date" id="auto-report-from" onchange="onReportTypeOrPeriodChange()" class="w-full glass-input rounded-xl px-3 py-2 text-xs text-white">
                             </div>
                             <div>
                                 <label class="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">To Date</label>
-                                <input type="date" id="auto-report-to" onchange="updateReportSummaryPreview()" class="w-full glass-input rounded-xl px-3 py-2 text-xs text-white">
+                                <input type="date" id="auto-report-to" onchange="onReportTypeOrPeriodChange()" class="w-full glass-input rounded-xl px-3 py-2 text-xs text-white">
                             </div>
+                        </div>
+
+                        <!-- LIVE VISUAL REPORT DASHBOARD (PIE & BAR CHARTS + DYNAMIC ACCOUNT BREAKDOWN) -->
+                        <div id="live-report-visual-board" class="mb-5 p-5 bg-slate-950/60 rounded-2xl border border-white/10 space-y-5">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-white/5">
+                                <div>
+                                    <span id="report-visual-badge" class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-brand-500/15 text-brand-300 border border-brand-500/20">
+                                        Short Summary View
+                                    </span>
+                                    <h4 id="report-visual-title" class="text-sm font-bold text-white mt-1.5">Every Account Balance, Total Expense &amp; Income with DPS</h4>
+                                </div>
+                                <span id="report-visual-period-tag" class="text-xs font-semibold text-slate-400">This Month</span>
+                            </div>
+
+                            <!-- Dynamic KPI Cards tailored to Selected Report Type -->
+                            <div id="report-visual-kpis" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div>
+
+                            <!-- Dual Chart Design: Doughnut/Pie Chart + Bar Graph -->
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-center pt-1">
+                                <div class="bg-slate-900/60 p-4 rounded-2xl border border-white/5">
+                                    <h5 id="report-pie-title" class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-chart-pie text-brand-400"></i> Distribution Breakdown
+                                    </h5>
+                                    <div class="w-full max-w-[260px] mx-auto relative min-h-[220px] flex items-center justify-center">
+                                        <canvas id="report-dynamic-pie-chart"></canvas>
+                                    </div>
+                                </div>
+
+                                <div class="bg-slate-900/60 p-4 rounded-2xl border border-white/5">
+                                    <h5 id="report-bar-title" class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                                        <i class="fa-solid fa-chart-column text-emerald-400"></i> Income vs Expense Comparison
+                                    </h5>
+                                    <div class="w-full relative min-h-[220px] flex items-center justify-center">
+                                        <canvas id="report-dynamic-bar-chart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Dynamic Table / Breakdown Section (Account Balances, Bank Inflow/Outflow, Cash Logs, or Full Details) -->
+                            <div id="report-visual-details-box" class="bg-slate-900/50 rounded-2xl border border-white/5 p-4 overflow-x-auto"></div>
                         </div>
 
                         <!-- Active Delivery Destination Info Banner -->
@@ -1166,7 +1206,7 @@
                                     <span>Email Destination: <strong class="text-white" id="report-target-email-preview">Loading...</strong></span>
                                 </div>
                             </div>
-                            <span class="text-[11px] text-slate-400 font-medium">Includes Rest Balance Carryover &amp; Monthly Net Savings.</span>
+                            <span class="text-[11px] text-slate-400 font-medium">Tailored report content &amp; charts synced for Telegram &amp; Email.</span>
                         </div>
 
                         <!-- Action Buttons: Send via Bot/Server + Instant Preview & Manual Share -->
@@ -1179,29 +1219,33 @@
                             <button type="button" onclick="openReportPreviewModal()" 
                                 class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-3.5 rounded-2xl border border-white/10 transition-all duration-200 flex items-center justify-center gap-2 text-xs sm:text-sm active:scale-[0.98]">
                                 <i class="fa-solid fa-eye text-brand-400"></i>
-                                <span>Preview Report &amp; 1-Tap Share</span>
+                                <span>Preview Text Report &amp; 1-Tap Share</span>
                             </button>
                         </div>
                     </div>
 
-                    <!-- Analytics Breakdown Card -->
+                    <!-- Analytics Breakdown Card (Pie + Graph Chart Design) -->
                     <div class="glass-panel p-6 sm:p-8 rounded-3xl">
                         <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 mb-6 pb-4 border-b border-white/5">
                             <h3 class="font-bold text-lg text-white flex items-center gap-2">
-                                <i class="fa-solid fa-chart-pie text-brand-400"></i> Expense Analytics Breakdown
+                                <i class="fa-solid fa-chart-pie text-brand-400"></i> Monthly Expense Analytics (Pie &amp; Bar Graph)
                             </h3>
                             <input type="month" id="analytics-month" onchange="generateAnalytics()" 
                                 class="glass-input rounded-xl px-3 py-1.5 text-xs font-semibold text-brand-300 outline-none">
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-                            <!-- Chart Canvas Container -->
-                            <div class="w-full max-w-xs mx-auto relative min-h-[260px] flex items-center justify-center">
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
+                            <!-- Doughnut / Pie Chart -->
+                            <div class="w-full max-w-xs mx-auto relative min-h-[250px] flex items-center justify-center bg-slate-950/40 p-4 rounded-2xl border border-white/5">
                                 <canvas id="expense-pie-chart"></canvas>
                             </div>
+                            <!-- Bar Graph Chart -->
+                            <div class="w-full relative min-h-[250px] flex items-center justify-center bg-slate-950/40 p-4 rounded-2xl border border-white/5">
+                                <canvas id="expense-bar-chart"></canvas>
+                            </div>
                             <!-- Detailed Itemized List -->
-                            <div class="bg-slate-950/40 p-4 rounded-2xl border border-white/5 h-full max-h-80 overflow-y-auto">
+                            <div class="bg-slate-950/40 p-4 rounded-2xl border border-white/5 h-full max-h-72 overflow-y-auto">
                                 <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3 sticky top-0 bg-[#0c1424] py-1">
-                                    Itemized Details
+                                    Itemized Expense Categories
                                 </h4>
                                 <div id="analytics-details" class="space-y-2">
                                     <p class="text-xs text-slate-500">Loading details...</p>
@@ -2313,6 +2357,9 @@
         let currentTrackerTab = 'home';
         let confirmingCallback = null;
         let analyticsPieChart = null;
+        let analyticsBarChart = null;
+        let reportDynamicPieChart = null;
+        let reportDynamicBarChart = null;
         let ledgerSortDescending = true;
         let currentBestMatchSuggestion = null;
 
@@ -2755,7 +2802,7 @@
             document.getElementById('expense-tracker-system').scrollTo({ top: 0, behavior: 'smooth' });
 
             if (tabId === 'reports') {
-                updateReportSummaryPreview();
+                onReportTypeOrPeriodChange();
                 generateAnalytics();
             }
         }
@@ -3018,6 +3065,7 @@
             calculateStudentAllowanceStatistics();
             renderLendBorrowTracker();
             updateReportSummaryPreview();
+            renderLiveReportVisuals();
             if (currentTrackerTab === 'reports') {
                 generateAnalytics();
             }
@@ -4029,51 +4077,625 @@
                     customRangeRow.classList.remove('grid');
                 }
             }
+            onReportTypeOrPeriodChange();
+        }
+
+        function onReportTypeOrPeriodChange() {
             updateReportSummaryPreview();
+            renderLiveReportVisuals();
+        }
+
+        function getAccountBreakdownForPeriod(snap) {
+            // Compute per-bank inflow, outflow, fees, and current balance
+            const bankStats = {};
+            const allBankNames = new Set(bankAccounts.map(b => b.name));
+            Object.keys(appState.balances.bankAccounts || {}).forEach(k => {
+                if (k.toLowerCase() !== 'cash') allBankNames.add(k);
+            });
+
+            allBankNames.forEach(name => {
+                const meta = bankAccounts.find(b => b.name.toLowerCase() === name.toLowerCase());
+                bankStats[name] = {
+                    name: name,
+                    accountNumber: meta ? meta.number : 'Account',
+                    currentBalance: Number(appState.balances.bankAccounts[name] || 0),
+                    inflow: 0,
+                    expense: 0,
+                    fees: 0,
+                    txCount: 0,
+                    transactions: []
+                };
+            });
+
+            // Compute Pocket Cash activity for period
+            const cashStats = {
+                currentBalance: Number(appState.balances.cash || 0),
+                inflow: 0,
+                expense: 0,
+                fees: 0,
+                txCount: 0,
+                transactions: []
+            };
+
+            snap.transactions.forEach(t => {
+                const amt = Number(t.amount) || 0;
+                const fee = Number(t.fee) || 0;
+                const src = t.source || 'Cash';
+                const tgt = t.target_source || '';
+
+                // Check Cash involvement
+                if (src === 'Cash') {
+                    if (t.type === 'Deposit') {
+                        cashStats.inflow += amt;
+                        cashStats.txCount++;
+                        cashStats.transactions.push({ ...t, cashEffect: `+৳${amt.toLocaleString()}`, flow: 'Inflow' });
+                    } else if (t.type === 'Expense') {
+                        cashStats.expense += amt;
+                        cashStats.txCount++;
+                        cashStats.transactions.push({ ...t, cashEffect: `-৳${amt.toLocaleString()}`, flow: 'Expense' });
+                    } else if (t.type === 'Cash_to_Bank') {
+                        cashStats.expense += (amt + fee);
+                        cashStats.fees += fee;
+                        cashStats.txCount++;
+                        cashStats.transactions.push({ ...t, cashEffect: `-৳${(amt + fee).toLocaleString()}`, flow: 'Outflow (To Bank)' });
+                    } else if (t.type === 'Adjustment') {
+                        const isDec = t.adjustment_direction === 'decrease' || (t.description && t.description.startsWith('[-]'));
+                        cashStats.txCount++;
+                        cashStats.transactions.push({ ...t, cashEffect: `${isDec ? '-' : '+'}৳${amt.toLocaleString()}`, flow: 'Adjustment' });
+                    }
+                } else if (t.type === 'Bank_to_Current') {
+                    // Bank -> Cash increases pocket cash
+                    cashStats.inflow += amt;
+                    cashStats.txCount++;
+                    cashStats.transactions.push({ ...t, cashEffect: `+৳${amt.toLocaleString()}`, flow: 'Inflow (From Bank)' });
+                }
+
+                // Check Bank involvement
+                if (src !== 'Cash') {
+                    if (!bankStats[src]) {
+                        bankStats[src] = { name: src, accountNumber: 'Account', currentBalance: Number(appState.balances.bankAccounts[src] || 0), inflow: 0, expense: 0, fees: 0, txCount: 0, transactions: [] };
+                    }
+                    if (t.type === 'Deposit') {
+                        bankStats[src].inflow += amt;
+                        bankStats[src].txCount++;
+                        bankStats[src].transactions.push({ ...t, bankEffect: `+৳${amt.toLocaleString()}`, flow: 'Income' });
+                    } else if (t.type === 'Expense') {
+                        bankStats[src].expense += amt;
+                        bankStats[src].txCount++;
+                        bankStats[src].transactions.push({ ...t, bankEffect: `-৳${amt.toLocaleString()}`, flow: 'Expense' });
+                    } else if (t.type === 'Bank_to_Current') {
+                        bankStats[src].expense += (amt + fee);
+                        bankStats[src].fees += fee;
+                        bankStats[src].txCount++;
+                        bankStats[src].transactions.push({ ...t, bankEffect: `-৳${(amt + fee).toLocaleString()}`, flow: 'Expense/Withdraw' });
+                    } else if (t.type === 'Cash_to_Bank') {
+                        bankStats[src].inflow += amt;
+                        bankStats[src].txCount++;
+                        bankStats[src].transactions.push({ ...t, bankEffect: `+৳${amt.toLocaleString()}`, flow: 'Income/Deposit' });
+                    } else if (t.type === 'Bank_to_Bank') {
+                        bankStats[src].expense += (amt + fee);
+                        bankStats[src].fees += fee;
+                        bankStats[src].txCount++;
+                        bankStats[src].transactions.push({ ...t, bankEffect: `-৳${(amt + fee).toLocaleString()}`, flow: 'Transfer Out' });
+                    } else if (t.type === 'Adjustment') {
+                        const isDec = t.adjustment_direction === 'decrease' || (t.description && t.description.startsWith('[-]'));
+                        bankStats[src].txCount++;
+                        bankStats[src].transactions.push({ ...t, bankEffect: `${isDec ? '-' : '+'}৳${amt.toLocaleString()}`, flow: 'Adjustment' });
+                    }
+                }
+
+                if (t.type === 'Bank_to_Bank' && tgt && tgt !== 'Cash') {
+                    if (!bankStats[tgt]) {
+                        bankStats[tgt] = { name: tgt, accountNumber: 'Account', currentBalance: Number(appState.balances.bankAccounts[tgt] || 0), inflow: 0, expense: 0, fees: 0, txCount: 0, transactions: [] };
+                    }
+                    bankStats[tgt].inflow += amt;
+                    bankStats[tgt].txCount++;
+                    bankStats[tgt].transactions.push({ ...t, bankEffect: `+৳${amt.toLocaleString()}`, flow: 'Transfer In' });
+                }
+            });
+
+            return { bankStats, cashStats };
+        }
+
+        function renderLiveReportVisuals() {
+            const typeEl = document.getElementById('auto-report-type');
+            if (!typeEl) return;
+
+            const type = typeEl.value;
+            const period = document.getElementById('auto-report-period').value;
+            const from = document.getElementById('auto-report-from').value;
+            const to = document.getElementById('auto-report-to').value;
+
+            const snap = getPeriodFinancialSnapshot(period, from, to);
+            const { bankStats, cashStats } = getAccountBreakdownForPeriod(snap);
+
+            const badgeEl = document.getElementById('report-visual-badge');
+            const titleEl = document.getElementById('report-visual-title');
+            const periodTagEl = document.getElementById('report-visual-period-tag');
+            const kpisEl = document.getElementById('report-visual-kpis');
+            const pieTitleEl = document.getElementById('report-pie-title');
+            const barTitleEl = document.getElementById('report-bar-title');
+            const detailsBoxEl = document.getElementById('report-visual-details-box');
+
+            if (periodTagEl) periodTagEl.textContent = snap.periodTitle;
+
+            const palette = ['#38bdf8', '#10b981', '#f43f5e', '#fbbf24', '#818cf8', '#f472b6', '#2dd4bf', '#a78bfa', '#fb923c'];
+
+            let pieLabels = [];
+            let pieValues = [];
+            let barLabels = [];
+            let barIncomeData = [];
+            let barExpenseData = [];
+
+            if (type === 'short') {
+                // 1. SHORT REPORT: Only every account balance, total expense and income, with DPS
+                badgeEl.textContent = "1. Short Summary Report";
+                titleEl.textContent = "Every Account Balance, Total Expense & Income with DPS";
+
+                kpisEl.innerHTML = `
+                    <div class="bg-emerald-950/40 p-3.5 rounded-2xl border border-emerald-500/20">
+                        <span class="text-[10px] font-bold uppercase text-emerald-400 block">Total Income</span>
+                        <p class="text-base sm:text-lg font-extrabold text-emerald-300 mt-1">৳ ${snap.periodInflow.toLocaleString('en-US', {minimumFractionDigits: 2})}</p>
+                    </div>
+                    <div class="bg-rose-950/40 p-3.5 rounded-2xl border border-rose-500/20">
+                        <span class="text-[10px] font-bold uppercase text-rose-400 block">Total Expense</span>
+                        <p class="text-base sm:text-lg font-extrabold text-rose-300 mt-1">৳ ${(snap.periodExpense + snap.periodFees).toLocaleString('en-US', {minimumFractionDigits: 2})}</p>
+                    </div>
+                    <div class="bg-pink-950/40 p-3.5 rounded-2xl border border-pink-500/20">
+                        <span class="text-[10px] font-bold uppercase text-pink-400 block">DPS Savings Total</span>
+                        <p class="text-base sm:text-lg font-extrabold text-pink-300 mt-1">৳ ${appState.balances.dps.toLocaleString('en-US', {minimumFractionDigits: 2})}</p>
+                    </div>
+                    <div class="bg-brand-950/40 p-3.5 rounded-2xl border border-brand-500/20">
+                        <span class="text-[10px] font-bold uppercase text-brand-400 block">Total Net Assets</span>
+                        <p class="text-base sm:text-lg font-extrabold text-brand-300 mt-1">৳ ${(appState.balances.cash + appState.balances.bank + appState.balances.dps).toLocaleString('en-US', {minimumFractionDigits: 2})}</p>
+                    </div>
+                `;
+
+                // Build All Accounts List (Pocket Cash + Every Bank + DPS)
+                const accountsRows = [
+                    { name: 'Pocket Cash Wallet', sub: 'Liquid Physical Cash', bal: appState.balances.cash, tag: 'Cash' }
+                ];
+                Object.values(bankStats).forEach(b => {
+                    accountsRows.push({ name: b.name, sub: b.accountNumber, bal: b.currentBalance, tag: 'Bank' });
+                });
+                accountsRows.push({ name: 'DPS Cumulative Savings', sub: `Period Deposit: ৳${snap.periodDps.toLocaleString()}`, bal: appState.balances.dps, tag: 'DPS' });
+
+                detailsBoxEl.innerHTML = `
+                    <h5 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-3">All Account Balances &amp; DPS Snapshot</h5>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        ${accountsRows.map(acc => `
+                            <div class="bg-slate-950/70 p-3 rounded-xl border border-white/5 flex justify-between items-center">
+                                <div class="min-w-0 pr-2">
+                                    <span class="text-xs font-bold text-white block truncate">${escapeHtml(acc.name)}</span>
+                                    <span class="text-[10px] text-slate-400 block truncate">${escapeHtml(acc.sub)}</span>
+                                </div>
+                                <span class="text-xs font-extrabold text-brand-300 shrink-0">৳ ${acc.bal.toLocaleString('en-US', {minimumFractionDigits: 2})}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+
+                pieTitleEl.innerHTML = `<i class="fa-solid fa-chart-pie text-brand-400"></i> Portfolio Balance Distribution`;
+                barTitleEl.innerHTML = `<i class="fa-solid fa-chart-column text-emerald-400"></i> Income vs Expense &amp; DPS`;
+
+                accountsRows.forEach(a => {
+                    if (a.bal > 0) {
+                        pieLabels.push(a.name);
+                        pieValues.push(a.bal);
+                    }
+                });
+
+                barLabels = ['Total Income', 'Total Expense', 'DPS Period Deposit'];
+                barIncomeData = [snap.periodInflow, 0, snap.periodDps];
+                barExpenseData = [0, snap.periodExpense + snap.periodFees, 0];
+
+            } else if (type === 'details') {
+                // 2. DETAILED REPORT: Full itemized ledger + DPS + category breakdown
+                badgeEl.textContent = "2. Detailed Itemized Report";
+                titleEl.textContent = "Complete Itemized Ledger, DPS Installments & Category Analytics";
+
+                kpisEl.innerHTML = `
+                    <div class="bg-indigo-950/40 p-3.5 rounded-2xl border border-indigo-500/20">
+                        <span class="text-[10px] font-bold uppercase text-indigo-300 block">Opening Carryover</span>
+                        <p class="text-base sm:text-lg font-extrabold text-indigo-300 mt-1">৳ ${snap.prevRestBalance.toLocaleString('en-US', {minimumFractionDigits: 2})}</p>
+                    </div>
+                    <div class="bg-emerald-950/40 p-3.5 rounded-2xl border border-emerald-500/20">
+                        <span class="text-[10px] font-bold uppercase text-emerald-400 block">Total Inflow (+)</span>
+                        <p class="text-base sm:text-lg font-extrabold text-emerald-300 mt-1">৳ ${snap.periodInflow.toLocaleString('en-US', {minimumFractionDigits: 2})}</p>
+                    </div>
+                    <div class="bg-rose-950/40 p-3.5 rounded-2xl border border-rose-500/20">
+                        <span class="text-[10px] font-bold uppercase text-rose-400 block">Total Outflow (-)</span>
+                        <p class="text-base sm:text-lg font-extrabold text-rose-300 mt-1">৳ ${(snap.periodExpense + snap.periodFees).toLocaleString('en-US', {minimumFractionDigits: 2})}</p>
+                    </div>
+                    <div class="bg-amber-950/40 p-3.5 rounded-2xl border border-amber-500/20">
+                        <span class="text-[10px] font-bold uppercase text-amber-300 block">Total Records</span>
+                        <p class="text-base sm:text-lg font-extrabold text-amber-300 mt-1">${snap.transactions.length + snap.dpsList.length} Entries</p>
+                    </div>
+                `;
+
+                const rowsHtml = snap.transactions.slice(0, 15).map(t => {
+                    const isExp = t.type === 'Expense';
+                    const isDep = t.type === 'Deposit';
+                    const color = isExp ? 'text-rose-400' : (isDep ? 'text-emerald-400' : 'text-brand-300');
+                    const prefix = isExp ? '-' : (isDep ? '+' : '');
+                    return `
+                        <tr class="border-b border-white/5 text-xs">
+                            <td class="py-2 px-2 text-slate-400 whitespace-nowrap">${escapeHtml(t.date)} <span class="text-[10px]">${escapeHtml(t.time || '')}</span></td>
+                            <td class="py-2 px-2 font-semibold text-slate-200">${escapeHtml(t.type)}</td>
+                            <td class="py-2 px-2 text-brand-300">${escapeHtml(t.source)}${t.target_source ? ' → ' + escapeHtml(t.target_source) : ''}</td>
+                            <td class="py-2 px-2 text-slate-300 truncate max-w-[180px]">${escapeHtml(t.description)}</td>
+                            <td class="py-2 px-2 text-right font-bold ${color} whitespace-nowrap">${prefix}৳${Number(t.amount).toLocaleString()}</td>
+                        </tr>
+                    `;
+                }).join('');
+
+                detailsBoxEl.innerHTML = `
+                    <div class="flex items-center justify-between mb-2">
+                        <h5 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Detailed Transaction Log (Showing up to 15 of ${snap.transactions.length})</h5>
+                        <span class="text-[10px] text-pink-400 font-semibold">DPS Entries in Period: ${snap.dpsList.length} (৳${snap.periodDps.toLocaleString()})</span>
+                    </div>
+                    ${snap.transactions.length === 0 ? `<p class="text-xs text-slate-500 py-3 text-center">No transactions found in this period.</p>` : `
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="text-[10px] uppercase text-slate-400 border-b border-white/10">
+                                <th class="py-2 px-2">Date</th>
+                                <th class="py-2 px-2">Type</th>
+                                <th class="py-2 px-2">Account</th>
+                                <th class="py-2 px-2">Description</th>
+                                <th class="py-2 px-2 text-right">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rowsHtml}</tbody>
+                    </table>`}
+                `;
+
+                pieTitleEl.innerHTML = `<i class="fa-solid fa-chart-pie text-brand-400"></i> Expense Category Breakdown`;
+                barTitleEl.innerHTML = `<i class="fa-solid fa-chart-column text-emerald-400"></i> Account-Wise Inflow vs Expense`;
+
+                const catMap = {};
+                snap.transactions.filter(t => t.type === 'Expense').forEach(t => {
+                    const key = (t.description || 'Other').trim();
+                    catMap[key] = (catMap[key] || 0) + Number(t.amount);
+                });
+                const sortedCats = Object.entries(catMap).sort((a, b) => b[1] - a[1]).slice(0, 7);
+                sortedCats.forEach(([k, v]) => { pieLabels.push(k); pieValues.push(v); });
+
+                barLabels = ['Pocket Cash', ...Object.keys(bankStats)];
+                barIncomeData = [cashStats.inflow, ...Object.values(bankStats).map(b => b.inflow)];
+                barExpenseData = [cashStats.expense, ...Object.values(bankStats).map(b => b.expense)];
+
+            } else if (type === 'bank') {
+                // 3. BANK ACCOUNTS REPORT: Full bank account details only + which account had income or expense
+                badgeEl.textContent = "3. Bank Accounts Statement";
+                titleEl.textContent = "Full Bank Account Details — Account-by-Account Income & Expense";
+
+                const bankList = Object.values(bankStats);
+                const totalBankInflow = bankList.reduce((s, b) => s + b.inflow, 0);
+                const totalBankExpense = bankList.reduce((s, b) => s + b.expense, 0);
+                const totalBankFees = bankList.reduce((s, b) => s + b.fees, 0);
+
+                kpisEl.innerHTML = `
+                    <div class="bg-brand-950/40 p-3.5 rounded-2xl border border-brand-500/20">
+                        <span class="text-[10px] font-bold uppercase text-brand-400 block">Total Bank Balance</span>
+                        <p class="text-base sm:text-lg font-extrabold text-brand-300 mt-1">৳ ${appState.balances.bank.toLocaleString('en-US', {minimumFractionDigits: 2})}</p>
+                    </div>
+                    <div class="bg-emerald-950/40 p-3.5 rounded-2xl border border-emerald-500/20">
+                        <span class="text-[10px] font-bold uppercase text-emerald-400 block">Bank Income / Deposits (+)</span>
+                        <p class="text-base sm:text-lg font-extrabold text-emerald-300 mt-1">৳ ${totalBankInflow.toLocaleString('en-US', {minimumFractionDigits: 2})}</p>
+                    </div>
+                    <div class="bg-rose-950/40 p-3.5 rounded-2xl border border-rose-500/20">
+                        <span class="text-[10px] font-bold uppercase text-rose-400 block">Bank Expense / Outflow (-)</span>
+                        <p class="text-base sm:text-lg font-extrabold text-rose-300 mt-1">৳ ${totalBankExpense.toLocaleString('en-US', {minimumFractionDigits: 2})}</p>
+                    </div>
+                    <div class="bg-amber-950/40 p-3.5 rounded-2xl border border-amber-500/20">
+                        <span class="text-[10px] font-bold uppercase text-amber-300 block">Bank Transfer Fees</span>
+                        <p class="text-base sm:text-lg font-extrabold text-amber-300 mt-1">৳ ${totalBankFees.toLocaleString('en-US', {minimumFractionDigits: 2})}</p>
+                    </div>
+                `;
+
+                detailsBoxEl.innerHTML = `
+                    <h5 class="text-xs font-bold text-slate-300 uppercase tracking-wider mb-3">Individual Bank Account Income &amp; Expense Breakdown</h5>
+                    ${bankList.length === 0 ? `<p class="text-xs text-slate-500 py-3 text-center">No bank accounts found.</p>` : `
+                    <div class="space-y-3">
+                        ${bankList.map(b => `
+                            <div class="bg-slate-950/70 p-4 rounded-xl border border-white/10">
+                                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-white/5">
+                                    <div>
+                                        <span class="text-sm font-bold text-white flex items-center gap-2">
+                                            <i class="fa-solid fa-building-columns text-brand-400"></i> ${escapeHtml(b.name)}
+                                        </span>
+                                        <span class="text-[11px] text-slate-400">A/C: ${escapeHtml(b.accountNumber)} &bull; ${b.txCount} transactions in period</span>
+                                    </div>
+                                    <div class="flex flex-wrap items-center gap-3 text-xs">
+                                        <span class="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 font-bold border border-emerald-500/20">Income: +৳${b.inflow.toLocaleString()}</span>
+                                        <span class="px-2.5 py-1 rounded-lg bg-rose-500/10 text-rose-400 font-bold border border-rose-500/20">Expense: -৳${b.expense.toLocaleString()}</span>
+                                        <span class="px-2.5 py-1 rounded-lg bg-brand-500/10 text-brand-300 font-extrabold border border-brand-500/20">Bal: ৳${b.currentBalance.toLocaleString()}</span>
+                                    </div>
+                                </div>
+                                ${b.transactions.length > 0 ? `
+                                <div class="mt-2.5 space-y-1.5 max-h-36 overflow-y-auto pr-1">
+                                    ${b.transactions.map(tx => `
+                                        <div class="flex justify-between items-center text-[11px] bg-slate-900/60 px-2.5 py-1.5 rounded-lg">
+                                            <span class="text-slate-300 truncate pr-2"><strong class="text-slate-400">[${escapeHtml(tx.date)}]</strong> ${escapeHtml(tx.description)} <span class="text-[10px] text-slate-500">(${escapeHtml(tx.flow)})</span></span>
+                                            <span class="font-bold shrink-0 ${tx.bankEffect.startsWith('+') ? 'text-emerald-400' : 'text-rose-400'}">${escapeHtml(tx.bankEffect)}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>` : `<p class="text-[11px] text-slate-500 mt-2">No income or expense recorded on this bank account during this period.</p>`}
+                            </div>
+                        `).join('')}
+                    </div>`}
+                `;
+
+                pieTitleEl.innerHTML = `<i class="fa-solid fa-chart-pie text-brand-400"></i> Bank Balance Share by Account`;
+                barTitleEl.innerHTML = `<i class="fa-solid fa-chart-column text-emerald-400"></i> Bank Income vs Expense per Account`;
+
+                bankList.forEach(b => {
+                    if (b.currentBalance > 0) {
+                        pieLabels.push(b.name);
+                        pieValues.push(b.currentBalance);
+                    }
+                    barLabels.push(b.name);
+                    barIncomeData.push(b.inflow);
+                    barExpenseData.push(b.expense);
+                });
+
+            } else if (type === 'cash') {
+                // 4. CASH WALLET ACTIVITY REPORT: Only show Pocket Cash Wallet
+                badgeEl.textContent = "4. Cash Wallet Activity";
+                titleEl.textContent = "Pocket Cash Wallet Only — Inflow, Outflow & Daily Cash Logs";
+
+                const cashNet = cashStats.inflow - cashStats.expense;
+                kpisEl.innerHTML = `
+                    <div class="bg-emerald-950/40 p-3.5 rounded-2xl border border-emerald-500/20">
+                        <span class="text-[10px] font-bold uppercase text-emerald-400 block">Current Pocket Cash</span>
+                        <p class="text-base sm:text-lg font-extrabold text-emerald-300 mt-1">৳ ${cashStats.currentBalance.toLocaleString('en-US', {minimumFractionDigits: 2})}</p>
+                    </div>
+                    <div class="bg-brand-950/40 p-3.5 rounded-2xl border border-brand-500/20">
+                        <span class="text-[10px] font-bold uppercase text-brand-400 block">Cash Inflow (+)</span>
+                        <p class="text-base sm:text-lg font-extrabold text-brand-300 mt-1">৳ ${cashStats.inflow.toLocaleString('en-US', {minimumFractionDigits: 2})}</p>
+                    </div>
+                    <div class="bg-rose-950/40 p-3.5 rounded-2xl border border-rose-500/20">
+                        <span class="text-[10px] font-bold uppercase text-rose-400 block">Cash Spent / Outflow (-)</span>
+                        <p class="text-base sm:text-lg font-extrabold text-rose-300 mt-1">৳ ${cashStats.expense.toLocaleString('en-US', {minimumFractionDigits: 2})}</p>
+                    </div>
+                    <div class="bg-amber-950/40 p-3.5 rounded-2xl border border-amber-500/20">
+                        <span class="text-[10px] font-bold uppercase text-amber-300 block">Net Cash Flow</span>
+                        <p class="text-base sm:text-lg font-extrabold ${cashNet >= 0 ? 'text-emerald-300' : 'text-rose-300'} mt-1">${cashNet >= 0 ? '+' : ''}৳ ${cashNet.toLocaleString('en-US', {minimumFractionDigits: 2})}</p>
+                    </div>
+                `;
+
+                detailsBoxEl.innerHTML = `
+                    <div class="flex items-center justify-between mb-2.5">
+                        <h5 class="text-xs font-bold text-slate-300 uppercase tracking-wider">Pocket Cash Wallet Ledger (${cashStats.transactions.length} Entries)</h5>
+                        <span class="text-[10px] text-emerald-400 font-semibold">Pocket Cash Only</span>
+                    </div>
+                    ${cashStats.transactions.length === 0 ? `<p class="text-xs text-slate-500 py-3 text-center">No Pocket Cash activity found in this period.</p>` : `
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="text-[10px] uppercase text-slate-400 border-b border-white/10">
+                                <th class="py-2 px-2">Date &amp; Time</th>
+                                <th class="py-2 px-2">Activity Type</th>
+                                <th class="py-2 px-2">Description</th>
+                                <th class="py-2 px-2 text-right">Cash Effect</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${cashStats.transactions.map(tx => `
+                                <tr class="border-b border-white/5 text-xs">
+                                    <td class="py-2 px-2 text-slate-400 whitespace-nowrap">${escapeHtml(tx.date)} <span class="text-[10px]">${escapeHtml(tx.time || '')}</span></td>
+                                    <td class="py-2 px-2 font-semibold text-slate-200">${escapeHtml(tx.flow)}</td>
+                                    <td class="py-2 px-2 text-slate-300">${escapeHtml(tx.description)}</td>
+                                    <td class="py-2 px-2 text-right font-bold whitespace-nowrap ${tx.cashEffect.startsWith('+') ? 'text-emerald-400' : 'text-rose-400'}">${escapeHtml(tx.cashEffect)}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>`}
+                `;
+
+                pieTitleEl.innerHTML = `<i class="fa-solid fa-chart-pie text-brand-400"></i> Pocket Cash Spending Categories`;
+                barTitleEl.innerHTML = `<i class="fa-solid fa-chart-column text-emerald-400"></i> Pocket Cash Inflow vs Outflow`;
+
+                const cashExpCats = {};
+                cashStats.transactions.filter(t => t.cashEffect.startsWith('-')).forEach(t => {
+                    const k = (t.description || 'Cash Expense').trim();
+                    cashExpCats[k] = (cashExpCats[k] || 0) + Number(t.amount);
+                });
+                Object.entries(cashExpCats).sort((a, b) => b[1] - a[1]).slice(0, 7).forEach(([k, v]) => {
+                    pieLabels.push(k);
+                    pieValues.push(v);
+                });
+
+                barLabels = ['Pocket Cash Wallet'];
+                barIncomeData = [cashStats.inflow];
+                barExpenseData = [cashStats.expense];
+            }
+
+            // Render Report Pie Chart
+            const pieCanvas = document.getElementById('report-dynamic-pie-chart');
+            if (pieCanvas) {
+                if (reportDynamicPieChart) reportDynamicPieChart.destroy();
+                if (pieLabels.length === 0) {
+                    pieLabels = ['No Data'];
+                    pieValues = [1];
+                }
+                reportDynamicPieChart = new Chart(pieCanvas.getContext('2d'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: pieLabels,
+                        datasets: [{
+                            data: pieValues,
+                            backgroundColor: pieLabels[0] === 'No Data' ? ['#1e293b'] : palette,
+                            borderWidth: 2,
+                            borderColor: '#05070a'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        cutout: '66%',
+                        plugins: {
+                            legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 10, family: 'Times New Roman' }, padding: 10 } }
+                        }
+                    }
+                });
+            }
+
+            // Render Report Bar Graph Chart
+            const barCanvas = document.getElementById('report-dynamic-bar-chart');
+            if (barCanvas) {
+                if (reportDynamicBarChart) reportDynamicBarChart.destroy();
+                reportDynamicBarChart = new Chart(barCanvas.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: barLabels.length ? barLabels : ['No Data'],
+                        datasets: [
+                            {
+                                label: 'Income / Inflow (৳)',
+                                data: barIncomeData.length ? barIncomeData : [0],
+                                backgroundColor: 'rgba(16, 185, 129, 0.75)',
+                                borderColor: '#10b981',
+                                borderWidth: 1,
+                                borderRadius: 6
+                            },
+                            {
+                                label: 'Expense / Outflow (৳)',
+                                data: barExpenseData.length ? barExpenseData : [0],
+                                backgroundColor: 'rgba(244, 63, 94, 0.75)',
+                                borderColor: '#f43f5e',
+                                borderWidth: 1,
+                                borderRadius: 6
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            x: { ticks: { color: '#94a3b8', font: { size: 10, family: 'Times New Roman' } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+                            y: { ticks: { color: '#94a3b8', font: { size: 10, family: 'Times New Roman' } }, grid: { color: 'rgba(255,255,255,0.06)' } }
+                        },
+                        plugins: {
+                            legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 10, family: 'Times New Roman' }, padding: 10 } }
+                        }
+                    }
+                });
+            }
         }
 
         function buildFormattedReportText(type, snap, targetEmail) {
             const datePrinted = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-            let t = `🏛️ EXPENSE TRACKER FINANCIAL REPORT\n`;
+            const { bankStats, cashStats } = getAccountBreakdownForPeriod(snap);
+
+            let reportHeaderName = "SHORT SUMMARY REPORT";
+            if (type === 'details') reportHeaderName = "DETAILED ITEMIZED LEDGER REPORT";
+            else if (type === 'bank') reportHeaderName = "BANK ACCOUNTS STATEMENT REPORT";
+            else if (type === 'cash') reportHeaderName = "POCKET CASH WALLET ACTIVITY REPORT";
+
+            let t = `🏛️ EXPENSE TRACKER — ${reportHeaderName}\n`;
             t += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
             t += `📅 Period: ${snap.periodTitle}\n`;
             t += `🕒 Generated: ${datePrinted}\n`;
             t += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
 
-            t += `📊 BALANCE & SAVINGS SUMMARY:\n`;
-            t += `• Rest Balance (Prev Month): ৳${snap.prevRestBalance.toLocaleString('en-US', {minimumFractionDigits: 2})}\n`;
-            t += `• Inflow Deposits (+): ৳${snap.periodInflow.toLocaleString('en-US', {minimumFractionDigits: 2})}\n`;
-            t += `• Total Expenses (-): ৳${snap.periodExpense.toLocaleString('en-US', {minimumFractionDigits: 2})}\n`;
-            if (snap.periodFees > 0) {
-                t += `• Transfer Fees (-): ৳${snap.periodFees.toLocaleString('en-US', {minimumFractionDigits: 2})}\n`;
-            }
-            if (snap.periodDps > 0) {
-                t += `• DPS Savings Deposit: ৳${snap.periodDps.toLocaleString('en-US', {minimumFractionDigits: 2})}\n`;
-            }
-            t += `────────────────────────────\n`;
-            t += `💰 NET SAVED THIS MONTH: ৳${snap.netSaved.toLocaleString('en-US', {minimumFractionDigits: 2})} (${snap.savingsRate}% of inflow)\n`;
-            t += `💼 ENDING REST BALANCE: ৳${snap.endingRestBalance.toLocaleString('en-US', {minimumFractionDigits: 2})}\n\n`;
+            if (type === 'short') {
+                // 1. SHORT REPORT: Only every account balance, total expense and income, with DPS
+                t += `📊 TOTAL INCOME, EXPENSE & DPS:\n`;
+                t += `• Total Income (+): ৳${snap.periodInflow.toLocaleString('en-US', {minimumFractionDigits: 2})}\n`;
+                t += `• Total Expense (-): ৳${(snap.periodExpense + snap.periodFees).toLocaleString('en-US', {minimumFractionDigits: 2})}\n`;
+                t += `• DPS Period Deposit: ৳${snap.periodDps.toLocaleString('en-US', {minimumFractionDigits: 2})}\n`;
+                t += `• Cumulative DPS Balance: ৳${appState.balances.dps.toLocaleString('en-US', {minimumFractionDigits: 2})}\n\n`;
 
-            t += `🏦 CURRENT ASSET BALANCES:\n`;
-            t += `• Cash Wallet: ৳${appState.balances.cash.toLocaleString('en-US', {minimumFractionDigits: 2})}\n`;
-            t += `• Bank Total: ৳${appState.balances.bank.toLocaleString('en-US', {minimumFractionDigits: 2})}\n`;
-            t += `• DPS Total: ৳${appState.balances.dps.toLocaleString('en-US', {minimumFractionDigits: 2})}\n`;
-
-            const bKeys = Object.keys(appState.balances.bankAccounts);
-            if (bKeys.length > 0) {
-                t += `\nAccounts Breakdown:\n`;
-                bKeys.forEach(k => {
-                    t += `  - ${k}: ৳${(appState.balances.bankAccounts[k] || 0).toLocaleString('en-US', {minimumFractionDigits: 2})}\n`;
+                t += `💼 EVERY ACCOUNT CURRENT BALANCE:\n`;
+                t += `• Pocket Cash Wallet: ৳${appState.balances.cash.toLocaleString('en-US', {minimumFractionDigits: 2})}\n`;
+                Object.values(bankStats).forEach(b => {
+                    t += `• ${b.name} (${b.accountNumber}): ৳${b.currentBalance.toLocaleString('en-US', {minimumFractionDigits: 2})}\n`;
                 });
-            }
+                t += `────────────────────────────\n`;
+                t += `• Total Bank Balance: ৳${appState.balances.bank.toLocaleString('en-US', {minimumFractionDigits: 2})}\n`;
+                t += `• Total Liquid + DPS Assets: ৳${(appState.balances.cash + appState.balances.bank + appState.balances.dps).toLocaleString('en-US', {minimumFractionDigits: 2})}\n`;
 
-            if (type === 'details') {
-                t += `\n📑 RECENT ENTRIES (${snap.transactions.length} records):\n`;
-                snap.transactions.slice(0, 25).forEach((item, i) => {
-                    t += `${i+1}. [${item.date}] ${item.type.toUpperCase()}: ৳${item.amount} (${item.source}) - ${item.description}\n`;
+            } else if (type === 'details') {
+                // 2. DETAILED REPORT: Full detailed summary + itemized entries + DPS entries
+                t += `📊 COMPLETE FINANCIAL SUMMARY:\n`;
+                t += `• Rest Balance (Prev Month): ৳${snap.prevRestBalance.toLocaleString('en-US', {minimumFractionDigits: 2})}\n`;
+                t += `• Total Inflow Deposits (+): ৳${snap.periodInflow.toLocaleString('en-US', {minimumFractionDigits: 2})}\n`;
+                t += `• Total Living Expenses (-): ৳${snap.periodExpense.toLocaleString('en-US', {minimumFractionDigits: 2})}\n`;
+                if (snap.periodFees > 0) {
+                    t += `• Transfer Fees (-): ৳${snap.periodFees.toLocaleString('en-US', {minimumFractionDigits: 2})}\n`;
+                }
+                t += `• Net Saved This Period: ৳${snap.netSaved.toLocaleString('en-US', {minimumFractionDigits: 2})} (${snap.savingsRate}%)\n`;
+                t += `• Ending Rest Balance: ৳${snap.endingRestBalance.toLocaleString('en-US', {minimumFractionDigits: 2})}\n\n`;
+
+                t += `🏦 ALL ACCOUNT BALANCES:\n`;
+                t += `• Pocket Cash: ৳${appState.balances.cash.toLocaleString('en-US', {minimumFractionDigits: 2})}\n`;
+                Object.values(bankStats).forEach(b => {
+                    t += `• ${b.name}: ৳${b.currentBalance.toLocaleString('en-US', {minimumFractionDigits: 2})}\n`;
                 });
-                if (snap.transactions.length > 25) {
-                    t += `... and ${snap.transactions.length - 25} more records.\n`;
+                t += `• Cumulative DPS: ৳${appState.balances.dps.toLocaleString('en-US', {minimumFractionDigits: 2})}\n\n`;
+
+                t += `📑 FULL ITEMIZED TRANSACTIONS (${snap.transactions.length} entries):\n`;
+                if (snap.transactions.length === 0) {
+                    t += `  (No transactions in this period)\n`;
+                } else {
+                    snap.transactions.forEach((item, i) => {
+                        const feeNote = Number(item.fee) > 0 ? ` [Fee: ৳${item.fee}]` : '';
+                        const route = item.target_source ? `${item.source} -> ${item.target_source}` : item.source;
+                        t += `${i+1}. [${item.date} ${item.time || ''}] ${item.type.toUpperCase()}: ৳${Number(item.amount).toLocaleString()} (${route}) - ${item.description}${feeNote}\n`;
+                    });
+                }
+
+                if (snap.dpsList.length > 0) {
+                    t += `\n🐖 DPS INSTALLMENTS IN PERIOD (${snap.dpsList.length} entries):\n`;
+                    snap.dpsList.forEach((d, idx) => {
+                        t += `${idx+1}. [${d.date}] ${d.bank} (A/C: ${d.acNo || d.ac_no}): ৳${Number(d.amount).toLocaleString()} - ${d.installmentNo || d.installment_no}\n`;
+                    });
+                }
+
+            } else if (type === 'bank') {
+                // 3. BANK ACCOUNTS REPORT: Full bank account details only + show which account income or expense money
+                const bankList = Object.values(bankStats);
+                const totalBankIn = bankList.reduce((s, b) => s + b.inflow, 0);
+                const totalBankOut = bankList.reduce((s, b) => s + b.expense, 0);
+
+                t += `🏦 BANK ACCOUNTS OVERVIEW (BANK ONLY):\n`;
+                t += `• Total Combined Bank Balance: ৳${appState.balances.bank.toLocaleString('en-US', {minimumFractionDigits: 2})}\n`;
+                t += `• Total Bank Income / Deposits (+): ৳${totalBankIn.toLocaleString('en-US', {minimumFractionDigits: 2})}\n`;
+                t += `• Total Bank Expense / Outflow (-): ৳${totalBankOut.toLocaleString('en-US', {minimumFractionDigits: 2})}\n\n`;
+
+                t += `📋 ACCOUNT-BY-ACCOUNT INCOME & EXPENSE DETAILS:\n`;
+                if (bankList.length === 0) {
+                    t += `  (No bank accounts configured)\n`;
+                } else {
+                    bankList.forEach((b, idx) => {
+                        t += `\n[${idx+1}] ${b.name} (A/C: ${b.accountNumber})\n`;
+                        t += `    • Current Balance: ৳${b.currentBalance.toLocaleString('en-US', {minimumFractionDigits: 2})}\n`;
+                        t += `    • Period Income (+): ৳${b.inflow.toLocaleString('en-US', {minimumFractionDigits: 2})}\n`;
+                        t += `    • Period Expense (-): ৳${b.expense.toLocaleString('en-US', {minimumFractionDigits: 2})}\n`;
+                        if (b.transactions.length > 0) {
+                            t += `    • Activity Log:\n`;
+                            b.transactions.forEach(tx => {
+                                t += `       - [${tx.date}] ${tx.flow}: ${tx.bankEffect} | ${tx.description}\n`;
+                            });
+                        } else {
+                            t += `    • Activity Log: No transactions in period\n`;
+                        }
+                    });
+                }
+
+            } else if (type === 'cash') {
+                // 4. CASH WALLET ACTIVITY: Only show Pocket Cash Wallet
+                const cashNet = cashStats.inflow - cashStats.expense;
+                t += `💵 POCKET CASH WALLET ONLY:\n`;
+                t += `• Current Pocket Cash Balance: ৳${cashStats.currentBalance.toLocaleString('en-US', {minimumFractionDigits: 2})}\n`;
+                t += `• Total Cash Inflow (+): ৳${cashStats.inflow.toLocaleString('en-US', {minimumFractionDigits: 2})}\n`;
+                t += `• Total Cash Spent / Outflow (-): ৳${cashStats.expense.toLocaleString('en-US', {minimumFractionDigits: 2})}\n`;
+                t += `• Net Cash Change: ${cashNet >= 0 ? '+' : ''}৳${cashNet.toLocaleString('en-US', {minimumFractionDigits: 2})}\n\n`;
+
+                t += `🧾 POCKET CASH ACTIVITY LOG (${cashStats.transactions.length} entries):\n`;
+                if (cashStats.transactions.length === 0) {
+                    t += `  (No Pocket Cash activity in this period)\n`;
+                } else {
+                    cashStats.transactions.forEach((tx, idx) => {
+                        t += `${idx+1}. [${tx.date} ${tx.time || ''}] ${tx.flow}: ${tx.cashEffect} — ${tx.description}\n`;
+                    });
                 }
             }
 
@@ -4202,8 +4824,10 @@
                             totalRecordsCount: snap.transactions.length + snap.dpsList.length
                         },
                         bankBalances: appState.balances.bankAccounts,
-                        transactions: snap.transactions.slice(0, 50),
-                        dpsEntries: snap.dpsList
+                        transactions: type === 'cash' 
+                            ? snap.transactions.filter(t => t.source === 'Cash' || t.type === 'Bank_to_Current')
+                            : (type === 'bank' ? snap.transactions.filter(t => t.source !== 'Cash' || t.type === 'Bank_to_Current') : snap.transactions),
+                        dpsEntries: type === 'cash' || type === 'bank' ? [] : snap.dpsList
                     };
 
                     setLoadingState(true, "Dispatching Report...", `Transmitting report via ${channelLabel}...`);
@@ -4297,6 +4921,36 @@
                         }
                     }
                 });
+            }
+
+            // Render matching Bar Graph for Monthly Expense Analytics
+            const barCanvas = document.getElementById('expense-bar-chart');
+            if (barCanvas) {
+                if (analyticsBarChart) analyticsBarChart.destroy();
+                if (labels.length > 0) {
+                    analyticsBarChart = new Chart(barCanvas.getContext('2d'), {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Expended (৳)',
+                                data: data,
+                                backgroundColor: colors,
+                                borderRadius: 6
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            scales: {
+                                x: { ticks: { color: '#94a3b8', font: { size: 10, family: 'Times New Roman' } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+                                y: { ticks: { color: '#94a3b8', font: { size: 10, family: 'Times New Roman' } }, grid: { color: 'rgba(255,255,255,0.06)' } }
+                            },
+                            plugins: {
+                                legend: { display: false }
+                            }
+                        }
+                    });
+                }
             }
         }
 
@@ -4482,8 +5136,10 @@
         window.handleKeywordKeydown = handleKeywordKeydown;
         window.selectSuggestedKeyword = selectSuggestedKeyword;
         window.onReportPeriodChange = onReportPeriodChange;
+        window.onReportTypeOrPeriodChange = onReportTypeOrPeriodChange;
         window.sendAutomatedReport = sendAutomatedReport;
         window.updateReportSummaryPreview = updateReportSummaryPreview;
+        window.renderLiveReportVisuals = renderLiveReportVisuals;
         window.openReportPreviewModal = openReportPreviewModal;
         window.closeReportPreviewModal = closeReportPreviewModal;
         window.copyReportPreviewText = copyReportPreviewText;
